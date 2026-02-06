@@ -1,0 +1,22 @@
+:host ::ng-deep {
+  .p-button {
+    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important;
+    border: none !important;
+
+    &:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+    }
+  }
+
+  .p-select {
+    width: 100%;
+  }
+
+  .p-inputnumber {
+    width: 100%;
+  }
+}

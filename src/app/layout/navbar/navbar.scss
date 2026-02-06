@@ -1,0 +1,31 @@
+:host ::ng-deep {
+  .navbar-custom {
+    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .p-toolbar-group-start,
+    .p-toolbar-group-end {
+      display: flex;
+      align-items: center;
+    }
+
+    .p-button-text {
+      color: white !important;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+}
+
+.logo {
+  font-size: 1.8rem;
+  color: white !important;
+}
+
+.text-900 {
+  color: white !important;
+}

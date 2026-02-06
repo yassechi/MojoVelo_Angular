@@ -1,0 +1,225 @@
+
+<div class="flex align-items-center justify-content-center" style="min-height: 100vh; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 2rem 0;">
+  <p-toast></p-toast>
+
+  <div style="width: 600px;">
+    <p-card styleClass="shadow-8">
+      <ng-template pTemplate="header">
+        <div class="text-center pt-4">
+          <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 3rem; margin: 0; color: #333;">mojo</h1>
+          <p class="text-600 mt-2">Créer votre compte</p>
+        </div>
+      </ng-template>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <!-- Prénom et Nom -->
+        <div class="grid">
+          <div class="col-6">
+            <div class="field mb-4">
+              <label for="firstName" class="block mb-2 font-semibold">Prénom</label>
+              <input
+                pInputText
+                id="firstName"
+                formControlName="firstName"
+                placeholder="Votre prénom"
+                class="w-full"
+                [class.ng-invalid]="firstName?.invalid && firstName?.touched"
+              />
+              <small *ngIf="firstName?.invalid && firstName?.touched" class="text-red-500">
+                Prénom requis
+              </small>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="field mb-4">
+              <label for="lastName" class="block mb-2 font-semibold">Nom</label>
+              <input
+                pInputText
+                id="lastName"
+                formControlName="lastName"
+                placeholder="Votre nom"
+                class="w-full"
+                [class.ng-invalid]="lastName?.invalid && lastName?.touched"
+              />
+              <small *ngIf="lastName?.invalid && lastName?.touched" class="text-red-500">
+                Nom requis
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nom d'utilisateur -->
+        <div class="field mb-4">
+          <label for="userName" class="block mb-2 font-semibold">Nom d'utilisateur</label>
+          <input
+            pInputText
+            id="userName"
+            formControlName="userName"
+            placeholder="Nom d'utilisateur"
+            class="w-full"
+            [class.ng-invalid]="userName?.invalid && userName?.touched"
+          />
+          <small *ngIf="userName?.invalid && userName?.touched" class="text-red-500">
+            Nom d'utilisateur requis
+          </small>
+        </div>
+
+        <!-- Email -->
+        <div class="field mb-4">
+          <label for="email" class="block mb-2 font-semibold">Email</label>
+          <input
+            pInputText
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="exemple@email.com"
+            class="w-full"
+            [class.ng-invalid]="email?.invalid && email?.touched"
+          />
+          <small *ngIf="email?.invalid && email?.touched" class="text-red-500">
+            <span *ngIf="email?.errors?.['required']">Email requis</span>
+            <span *ngIf="email?.errors?.['email']">Format email invalide</span>
+          </small>
+        </div>
+
+        <!-- Téléphone -->
+        <div class="field mb-4">
+          <label for="phoneNumber" class="block mb-2 font-semibold">Téléphone</label>
+          <input
+            pInputText
+            id="phoneNumber"
+            formControlName="phoneNumber"
+            placeholder="+32 XXX XX XX XX"
+            class="w-full"
+            [class.ng-invalid]="phoneNumber?.invalid && phoneNumber?.touched"
+          />
+          <small *ngIf="phoneNumber?.invalid && phoneNumber?.touched" class="text-red-500">
+            Téléphone requis
+          </small>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="grid">
+          <div class="col-6">
+            <div class="field mb-4">
+              <label for="password" class="block mb-2 font-semibold">Mot de passe</label>
+              <p-password
+                id="password"
+                formControlName="password"
+                placeholder="Mot de passe"
+                [toggleMask]="true"
+                [feedback]="true"
+                styleClass="w-full"
+                [inputStyleClass]="'w-full'"
+                [class.ng-invalid]="password?.invalid && password?.touched"
+              ></p-password>
+              <small class="text-600 block mt-1" style="font-size: 0.75rem;">
+                Doit contenir : 8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
+              </small>
+              <small *ngIf="password?.invalid && password?.touched" class="text-red-500 block mt-1">
+                <span *ngIf="password?.errors?.['required']">Mot de passe requis</span>
+                <span *ngIf="password?.errors?.['minlength']">Minimum 8 caractères</span>
+              </small>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="field mb-4">
+              <label for="confirmPassword" class="block mb-2 font-semibold">Confirmer</label>
+              <p-password
+                id="confirmPassword"
+                formControlName="confirmPassword"
+                placeholder="Confirmer"
+                [toggleMask]="true"
+                [feedback]="false"
+                styleClass="w-full"
+                [inputStyleClass]="'w-full'"
+                [class.ng-invalid]="confirmPassword?.invalid && confirmPassword?.touched"
+              ></p-password>
+              <small *ngIf="confirmPassword?.invalid && confirmPassword?.touched" class="text-red-500 block mt-1">
+                <span *ngIf="confirmPassword?.errors?.['required']">Confirmation requise</span>
+                <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Mots de passe différents</span>
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rôle et Organisation -->
+        <div class="grid">
+          <div class="col-6">
+            <div class="field mb-4">
+              <label for="role" class="block mb-2 font-semibold">Rôle</label>
+              <p-select
+                id="role"
+                formControlName="role"
+                [options]="roles"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Sélectionnez un rôle"
+                styleClass="w-full"
+                [class.ng-invalid]="role?.invalid && role?.touched"
+              ></p-select>
+              <small *ngIf="role?.invalid && role?.touched" class="text-red-500">
+                Rôle requis
+              </small>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="field mb-4">
+              <label for="organisationId" class="block mb-2 font-semibold">Organisation</label>
+              <p-select
+                id="organisationId"
+                formControlName="organisationId"
+                [options]="organisations"
+                optionLabel="nom"
+                optionValue="id"
+                placeholder="Sélectionnez une organisation"
+                styleClass="w-full"
+                [class.ng-invalid]="organisationId?.invalid && organisationId?.touched"
+              ></p-select>
+              <small *ngIf="organisationId?.invalid && organisationId?.touched" class="text-red-500">
+                Organisation requise
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Taille (optionnel) -->
+        <div class="field mb-4">
+          <label for="tailleCm" class="block mb-2 font-semibold">Taille (cm) - Optionnel</label>
+          <p-inputnumber
+            id="tailleCm"
+            formControlName="tailleCm"
+            placeholder="170"
+            [min]="100"
+            [max]="250"
+            styleClass="w-full"
+            [inputStyleClass]="'w-full'"
+          ></p-inputnumber>
+        </div>
+
+        <!-- Submit button -->
+        <p-button
+          label="S'inscrire"
+          type="submit"
+          [loading]="loading"
+          styleClass="w-full"
+          [disabled]="registerForm.invalid"
+        ></p-button>
+      </form>
+
+      <ng-template pTemplate="footer">
+        <div class="text-center pt-3">
+          <p class="text-600">
+            Vous avez déjà un compte ?
+            <a routerLink="/login" class="font-semibold cursor-pointer hover:underline" style="color: #1e3a8a;">
+              Se connecter
+            </a>
+          </p>
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+</div>

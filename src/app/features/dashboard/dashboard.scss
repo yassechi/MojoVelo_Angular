@@ -1,0 +1,78 @@
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  h1 {
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+  }
+}
+
+:host ::ng-deep {
+  .stat-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .p-card-body {
+      padding: 1.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      opacity: 0.3;
+    }
+
+    &.card-blue {
+      border-left: 4px solid #1e3a8a;
+
+      .stat-icon {
+        color: #1e3a8a;
+      }
+    }
+
+    &.card-green {
+      border-left: 4px solid #059669;
+
+      .stat-icon {
+        color: #059669;
+      }
+    }
+
+    &.card-orange {
+      border-left: 4px solid #ea580c;
+
+      .stat-icon {
+        color: #ea580c;
+      }
+    }
+
+    &.card-purple {
+      border-left: 4px solid #7c3aed;
+
+      .stat-icon {
+        color: #7c3aed;
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+<p-toolbar styleClass="navbar-custom">
+  <ng-template pTemplate="start">
+    <button
+      pButton
+      icon="pi pi-bars"
+      class="p-button-text p-button-rounded"
+      (click)="onToggleSidebar()"
+    ></button>
+
+    <h2 class="logo ml-3" style="font-family: 'Poppins', sans-serif; font-weight: 700; margin: 0; color: #1e3a8a;">
+      mojo
+    </h2>
+  </ng-template>
+
+  <ng-template pTemplate="end">
+    <div class="flex align-items-center gap-3">
+      <span class="text-900 font-semibold" *ngIf="currentUser$ | async as user">
+        {{ user.userName }}
+      </span>
+
+      <p-avatar
+        icon="pi pi-user"
+        styleClass="cursor-pointer"
+        shape="circle"
+        [style]="{'background-color':'#1e3a8a', 'color': '#ffffff'}"
+        (click)="menu.toggle($event)"
+      ></p-avatar>
+
+      <p-menu
+        #menu
+        [model]="userMenuItems"
+        [popup]="true"
+      ></p-menu>
+    </div>
+  </ng-template>
+</p-toolbar>
