@@ -13,8 +13,8 @@ import { ButtonModule } from 'primeng/button';
     CardModule,
     ButtonModule
   ],
-  templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.scss']
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
   currentUser: any;

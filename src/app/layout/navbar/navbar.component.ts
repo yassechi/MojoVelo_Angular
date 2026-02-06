@@ -21,8 +21,8 @@ import { MenuItem } from 'primeng/api';
     AvatarModule,
     MenuModule
   ],
-  templateUrl: './navbar.html',
-  styleUrls: ['./navbar.scss']
+  templateUrl: './navbar.component.html',
+  styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
   @Output() toggleSidebar = new EventEmitter<void>();
