@@ -163,7 +163,6 @@ onUpload(event: any): void {
     this.loading = true;
     const formValue = this.form.value;
 
-    // ✅ FIX : Forcer id à 0 si null pour la création
     const payload = {
       ...formValue,
       id: formValue.id || 0,

@@ -5,6 +5,7 @@ import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { CompagniesComponent } from './features/compagnies/compagnies.component';
 import { authGuard } from './core/guards/auth.guard';
+import { DemandesComponent } from './features/demandes/demande.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -18,7 +19,8 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'compagnies', component: CompagniesComponent }
+      { path: 'compagnies', component: CompagniesComponent },
+      { path: 'demandes', component: DemandesComponent }
     ]
   },
 
