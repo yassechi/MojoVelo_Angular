@@ -1,0 +1,207 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '700px' }"
+  [header]="contrat ? 'Modifier le contrat' : 'Créer un contrat'"
+  (onHide)="close()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <!-- Référence -->
+      <div class="col-12 md:col-6">
+        <div class="field mb-4">
+          <label for="ref" class="block mb-2 font-semibold">Référence *</label>
+          <input
+            pInputText
+            id="ref"
+            formControlName="ref"
+            placeholder="CTR-XXX"
+            class="w-full"
+          />
+          <small class="p-error" *ngIf="ref?.invalid && ref?.touched">
+            La référence est obligatoire
+          </small>
+        </div>
+      </div>
+
+      <!-- Statut -->
+      <div class="col-12 md:col-6">
+        <div class="field mb-4">
+          <label for="statut" class="block mb-2 font-semibold">Statut *</label>
+          <p-select
+            id="statut"
+            formControlName="statutContrat"
+            [options]="statutOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sélectionnez un statut"
+            styleClass="w-full"
+          ></p-select>
+        </div>
+      </div>
+
+      <!-- Date début -->
+      <div class="col-12 md:col-6">
+        <div class="field mb-4">
+          <label for="dateDebut" class="block mb-2 font-semibold">Date début *</label>
+          <p-datepicker
+            id="dateDebut"
+            formControlName="dateDebut"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            styleClass="w-full"
+          ></p-datepicker>
+          <small class="p-error" *ngIf="dateDebut?.invalid && dateDebut?.touched">
+            La date de début est obligatoire
+          </small>
+        </div>
+      </div>
+
+      <!-- Date fin -->
+      <div class="col-12 md:col-6">
+        <div class="field mb-4">
+          <label for="dateFin" class="block mb-2 font-semibold">Date fin *</label>
+          <p-datepicker
+            id="dateFin"
+            formControlName="dateFin"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            styleClass="w-full"
+          ></p-datepicker>
+          <small class="p-error" *ngIf="dateFin?.invalid && dateFin?.touched">
+            La date de fin est obligatoire
+          </small>
+        </div>
+      </div>
+
+      <!-- Durée -->
+      <div class="col-12 md:col-6">
+        <div class="field mb-4">
+          <label for="duree" class="block mb-2 font-semibold">Durée (mois) *</label>
+          <p-inputnumber
+            id="duree"
+            formControlName="duree"
+            [min]="1"
+            [showButtons]="true"
+            styleClass="w-full"
+          ></p-inputnumber>
+          <small class="p-error" *ngIf="duree?.invalid && duree?.touched">
+            La durée est obligatoire (min. 1 mois)
+          </small>
+        </div>
+      </div>
+
+      <!-- Loyer mensuel HT -->
+      <div class="col-12 md:col-6">
+        <div class="field mb-4">
+          <label for="loyer" class="block mb-2 font-semibold">Loyer mensuel HT (€) *</label>
+          <p-inputnumber
+            id="loyer"
+            formControlName="loyerMensuelHT"
+            mode="currency"
+            currency="EUR"
+            locale="fr-FR"
+            [min]="0"
+            styleClass="w-full"
+          ></p-inputnumber>
+          <small class="p-error" *ngIf="loyerMensuelHT?.invalid && loyerMensuelHT?.touched">
+            Le loyer est obligatoire
+          </small>
+        </div>
+      </div>
+
+      <!-- Vélo ID -->
+      <div class="col-12 md:col-4">
+        <div class="field mb-4">
+          <label for="veloId" class="block mb-2 font-semibold">ID Vélo *</label>
+          <p-inputnumber
+            id="veloId"
+            formControlName="veloId"
+            [min]="1"
+            [useGrouping]="false"
+            styleClass="w-full"
+          ></p-inputnumber>
+          <small class="p-error" *ngIf="veloId?.invalid && veloId?.touched">
+            L'ID du vélo est obligatoire
+          </small>
+        </div>
+      </div>
+
+      <!-- Bénéficiaire -->
+      <div class="col-12 md:col-4">
+        <div class="field mb-4">
+          <label for="beneficiaire" class="block mb-2 font-semibold">Bénéficiaire *</label>
+          <p-select
+            id="beneficiaire"
+            formControlName="beneficiaireId"
+            [options]="users"
+            optionLabel="userName"
+            optionValue="id"
+            placeholder="Sélectionnez"
+            [filter]="true"
+            filterBy="userName,email"
+            [showClear]="true"
+            styleClass="w-full"
+            [loading]="loadingUsers"
+          >
+            <ng-template let-user pTemplate="item">
+              <div class="flex flex-column">
+                <div>{{ user.userName }}</div>
+                <small class="text-600">{{ user.email }}</small>
+              </div>
+            </ng-template>
+          </p-select>
+          <small class="p-error" *ngIf="beneficiaireId?.invalid && beneficiaireId?.touched">
+            Le bénéficiaire est obligatoire
+          </small>
+        </div>
+      </div>
+
+      <!-- User RH -->
+      <div class="col-12 md:col-4">
+        <div class="field mb-4">
+          <label for="userRh" class="block mb-2 font-semibold">Responsable RH *</label>
+          <p-select
+            id="userRh"
+            formControlName="userRhId"
+            [options]="users"
+            optionLabel="userName"
+            optionValue="id"
+            placeholder="Sélectionnez"
+            [filter]="true"
+            filterBy="userName,email"
+            [showClear]="true"
+            styleClass="w-full"
+            [loading]="loadingUsers"
+          >
+            <ng-template let-user pTemplate="item">
+              <div class="flex flex-column">
+                <div>{{ user.userName }}</div>
+                <small class="text-600">{{ user.email }}</small>
+              </div>
+            </ng-template>
+          </p-select>
+          <small class="p-error" *ngIf="userRhId?.invalid && userRhId?.touched">
+            Le responsable RH est obligatoire
+          </small>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Annuler"
+      icon="pi pi-times"
+      (onClick)="close()"
+      [text]="true"
+    ></p-button>
+    <p-button
+      [label]="contrat ? 'Modifier' : 'Créer'"
+      icon="pi pi-check"
+      (onClick)="onSubmit()"
+      [loading]="loading"
+      [disabled]="form.invalid"
+    ></p-button>
+  </ng-template>
+</p-dialog>

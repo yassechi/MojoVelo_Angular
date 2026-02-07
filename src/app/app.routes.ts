@@ -6,6 +6,8 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { CompagniesComponent } from './features/compagnies/compagnies.component';
 import { authGuard } from './core/guards/auth.guard';
 import { DemandesComponent } from './features/demandes/demande.component';
+import { ContratsComponent } from './features/contrats/contrats.component';
+import { EmployesComponent } from './features/employes/employes.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -20,7 +22,9 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'compagnies', component: CompagniesComponent },
-      { path: 'demandes', component: DemandesComponent }
+      { path: 'employes', component: EmployesComponent },
+      { path: 'demandes', component: DemandesComponent },
+      { path: 'contrats', component: ContratsComponent }
     ]
   },
 
