@@ -28,6 +28,11 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  // ✅ AJOUT DE getCurrentUser()
+  public getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
@@ -38,7 +43,9 @@ export class AuthService {
               localStorage.setItem('token', response.token);
               localStorage.setItem('currentUser', JSON.stringify(user));
               this.currentUserSubject.next(user);
-              this.router.navigate(['/dashboard']);
+
+              // ✅ REDIRECTION SELON LE RÔLE
+              this.redirectToRoleDashboard(user.role);
             });
           }
         })
@@ -55,8 +62,10 @@ export class AuthService {
               localStorage.setItem('token', response.token);
               localStorage.setItem('currentUser', JSON.stringify(user));
               this.currentUserSubject.next(user);
+
               setTimeout(() => {
-                this.router.navigate(['/dashboard']);
+                // ✅ REDIRECTION SELON LE RÔLE
+                this.redirectToRoleDashboard(user.role);
               }, 1000);
             });
           }
@@ -82,4 +91,42 @@ export class AuthService {
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
+
+  // // ✅ NOUVELLE MÉTHODE - Redirection selon le rôle
+  // private redirectToRoleDashboard(role: number): void {
+  //   switch (role) {
+  //     case 1: // Admin
+  //       this.router.navigate(['/admin/dashboard']);
+  //       break;
+  //     case 2: // Manager
+  //       this.router.navigate(['/manager/dashboard']);
+  //       break;
+  //     case 3: // User
+  //       this.router.navigate(['/user/dashboard']);
+  //       break;
+  //     default:
+  //       this.router.navigate(['/login']);
+  //   }
+  // }
+
+  private redirectToRoleDashboard(role: number): void {
+  console.log('🔍 REDIRECTION - Role:', role);
+  switch (role) {
+    case 1: // Admin
+      console.log('➡️ Redirection vers /admin/dashboard');
+      this.router.navigate(['/admin/dashboard']);
+      break;
+    case 2: // Manager
+      console.log('➡️ Redirection vers /manager/dashboard');
+      this.router.navigate(['/manager/dashboard']);
+      break;
+    case 3: // User
+      console.log('➡️ Redirection vers /user/dashboard');
+      this.router.navigate(['/user/dashboard']);
+      break;
+    default:
+      console.log('➡️ Redirection vers /login');
+      this.router.navigate(['/login']);
+  }
+}
 }

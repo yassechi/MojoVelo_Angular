@@ -44,62 +44,62 @@ export class SidebarComponent implements OnInit {
         {
           label: 'Dashboard',
           icon: 'pi pi-home',
-          routerLink: ['/dashboard']
+          routerLink: ['/admin/dashboard']
         },
         {
           label: 'Compagnies',
           icon: 'pi pi-building',
-          routerLink: ['/compagnies']
+          routerLink: ['/admin/compagnies']
         },
         {
           label: 'Employés',
           icon: 'pi pi-users',
-          routerLink: ['/employes']
+          routerLink: ['/admin/employes']
         },
         {
           label: 'Contrats',
           icon: 'pi pi-file',
-          routerLink: ['/contrats']
+          routerLink: ['/admin/contrats']
         },
         {
           label: 'Demandes',
           icon: 'pi pi-inbox',
-          routerLink: ['/demandes']
+          routerLink: ['/admin/demandes']
         },
         {
           label: 'Paramètres',
           icon: 'pi pi-cog',
-          routerLink: ['/parametres'] // ← CORRIGÉ
+          routerLink: ['/admin/parametres']
         }
       ];
     }
-    // Menu Compagnie (Role = 2)
+    // Menu Manager (Role = 2)
     else if (this.userRole === 2) {
       this.menuItems = [
         {
           label: 'Dashboard',
           icon: 'pi pi-home',
-          routerLink: ['/dashboard']
+          routerLink: ['/manager/dashboard']
         },
         {
           label: 'Employés',
           icon: 'pi pi-users',
-          routerLink: ['/employes']
+          routerLink: ['/manager/employes']
         },
         {
           label: 'Contrats',
           icon: 'pi pi-file',
-          routerLink: ['/contrats']
+          routerLink: ['/manager/contrats']
         },
         {
           label: 'Demandes',
           icon: 'pi pi-inbox',
-          routerLink: ['/demandes']
+          routerLink: ['/manager/demandes']
         },
         {
           label: 'Paramètres',
           icon: 'pi pi-cog',
-          routerLink: ['/parametres'] // ← CORRIGÉ
+          routerLink: ['/manager/parametres']
         }
       ];
     }
@@ -107,19 +107,24 @@ export class SidebarComponent implements OnInit {
     else {
       this.menuItems = [
         {
-          label: 'Contrats',
-          icon: 'pi pi-file',
-          routerLink: ['/contrats']
+          label: 'Dashboard',
+          icon: 'pi pi-home',
+          routerLink: ['/user/dashboard']
         },
         {
-          label: 'Demandes',
+          label: 'Mes Contrats',
+          icon: 'pi pi-file',
+          routerLink: ['/user/contrats']
+        },
+        {
+          label: 'Mes Demandes',
           icon: 'pi pi-inbox',
-          routerLink: ['/demandes']
+          routerLink: ['/user/demandes']
         },
         {
           label: 'Paramètres',
           icon: 'pi pi-cog',
-          routerLink: ['/parametres'] // ← CORRIGÉ
+          routerLink: ['/user/parametres']
         }
       ];
     }

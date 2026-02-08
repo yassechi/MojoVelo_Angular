@@ -17,7 +17,7 @@ export interface User {
   phoneNumber: string;
   role: UserRole;
   isActif: boolean;
-  organisationId: number;
+  organisationId: number | { id: number; name: string };  // ✅ MODIFIÉ - Support objet populate
   password?: string;
   confirmPassword?: string;
   tailleCm?: number;

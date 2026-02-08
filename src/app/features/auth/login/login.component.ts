@@ -53,14 +53,13 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
+        this.loading = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Connexion réussie',
           detail: `Bienvenue ${response.userName}!`
         });
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 1000);
+        // ✅ PAS DE REDIRECTION ICI - Le AuthService s'en charge déjà !
       },
       error: (error) => {
         this.loading = false;
