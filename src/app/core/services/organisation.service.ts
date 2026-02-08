@@ -11,7 +11,7 @@ export interface Organisation {
   isActif: boolean;
   logoUrl?: string;
   emailAutorise: string;
-  idContact: string;  
+  idContact: string;
 }
 
 @Injectable({

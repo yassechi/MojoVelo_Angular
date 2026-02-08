@@ -6,9 +6,9 @@
       <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
         Gestion des Employés
       </h1>
-      <p class="text-600">Liste et gestion des utilisateurs</p>
+      <p class="text-600">Liste et gestion des employés</p>
     </div>
-    <p-button label="Créer un employé" icon="pi pi-plus" (click)="onCreate()"></p-button>
+    <p-button label="Créer un employé" icon="pi pi-plus" (click)="openDialog()"></p-button>
   </div>
 
   <div class="grid">
@@ -30,14 +30,8 @@
                 Nom d'utilisateur
                 <p-sortIcon field="userName"></p-sortIcon>
               </th>
-              <th pSortableColumn="firstName">
-                Prénom
-                <p-sortIcon field="firstName"></p-sortIcon>
-              </th>
-              <th pSortableColumn="lastName">
-                Nom
-                <p-sortIcon field="lastName"></p-sortIcon>
-              </th>
+              <th>Prénom</th>
+              <th>Nom</th>
               <th>Email</th>
               <th>Téléphone</th>
               <th>Rôle</th>
@@ -56,13 +50,13 @@
               <td>
                 <p-tag
                   [value]="getRoleLabel(user.role)"
-                  [severity]="getRoleSeverity(user.role)"
+                  [severity]="user.role === 1 ? 'danger' : user.role === 2 ? 'info' : 'success'"
                 ></p-tag>
               </td>
               <td>
                 <p-tag
-                  [value]="user.isActif ? 'Actif' : 'Inactif'"
-                  [severity]="user.isActif ? 'success' : 'danger'"
+                  [value]="getStatusLabel(user.isActif)"
+                  [severity]="getSeverity(user.isActif)"
                 ></p-tag>
               </td>
               <td>
@@ -70,7 +64,7 @@
                   <p-button
                     icon="pi pi-pencil"
                     styleClass="p-button-rounded p-button-text"
-                    (click)="onEdit(user)"
+                    (click)="openDialog(user)"
                     [pTooltip]="'Modifier'"
                   ></p-button>
                   <p-button
@@ -102,8 +96,8 @@
 <app-employe-form-dialog
   [(visible)]="dialogVisible"
   [user]="selectedUser"
-  (onSave)="onSave()"
-/>
+  (onSave)="onDialogSave()"
+></app-employe-form-dialog>
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>

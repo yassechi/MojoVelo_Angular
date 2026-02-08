@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DemandeService, Demande, DemandeStatus } from '../../core/services/demande.service';
+import { DemandeFormDialogComponent } from './demande-form-dialog/demande-form-dialog';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -27,14 +28,17 @@ import { FormsModule } from '@angular/forms';
     TooltipModule,
     ConfirmDialogModule,
     SelectModule,
+    DemandeFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './demande.component.html',
-  styleUrls: ['./demande.component.scss'],
+  templateUrl: './admin-demande.component.html',
+  styleUrls: ['./admin-demande.component.scss'],
 })
-export class DemandesComponent implements OnInit {
+export class AdminDemandesComponent implements OnInit {
   demandes: Demande[] = [];
   loading = false;
+  dialogVisible = false;
+  selectedDemande: Demande | null = null;
 
   statusOptions = [
     { label: 'En cours', value: DemandeStatus.Encours },
@@ -69,6 +73,15 @@ export class DemandesComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  openDialog(demande?: Demande): void {
+    this.selectedDemande = demande || null;
+    this.dialogVisible = true;
+  }
+
+  onDialogSave(): void {
+    this.loadDemandes();
   }
 
   onStatusChange(demande: Demande, newStatus: DemandeStatus): void {

@@ -13,10 +13,10 @@ import { ButtonModule } from 'primeng/button';
     CardModule,
     ButtonModule
   ],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  templateUrl: './admin-dashboard.component.html',
+  styleUrls: ['./admin-dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit {
   currentUser: any;
   userRole: number = 3;
   roleName: string = '';

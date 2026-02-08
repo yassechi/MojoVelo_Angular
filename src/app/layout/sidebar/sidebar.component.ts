@@ -21,7 +21,7 @@ export class SidebarComponent implements OnInit {
   @Input() visible = true;
 
   menuItems: MenuItem[] = [];
-  userRole: number = 3; // Default: User
+  userRole: number = 3;
 
   constructor(
     private authService: AuthService,
@@ -69,7 +69,7 @@ export class SidebarComponent implements OnInit {
         {
           label: 'Paramètres',
           icon: 'pi pi-cog',
-          routerLink: ['/settings']
+          routerLink: ['/parametres'] // ← CORRIGÉ
         }
       ];
     }
@@ -99,7 +99,7 @@ export class SidebarComponent implements OnInit {
         {
           label: 'Paramètres',
           icon: 'pi pi-cog',
-          routerLink: ['/settings']
+          routerLink: ['/parametres'] // ← CORRIGÉ
         }
       ];
     }
@@ -119,7 +119,7 @@ export class SidebarComponent implements OnInit {
         {
           label: 'Paramètres',
           icon: 'pi pi-cog',
-          routerLink: ['/settings']
+          routerLink: ['/parametres'] // ← CORRIGÉ
         }
       ];
     }

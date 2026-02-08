@@ -2,12 +2,15 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
-import { CompagniesComponent } from './features/compagnies/compagnies.component';
 import { authGuard } from './core/guards/auth.guard';
-import { DemandesComponent } from './features/demandes/demande.component';
-import { ContratsComponent } from './features/contrats/contrats.component';
-import { EmployesComponent } from './features/employes/employes.component';
+import { AdminDashboardComponent } from './features/dashboard/admin-dashboard.component';
+import { AdminCompagniesComponent } from './features/compagnies/admin-compagnies.component';
+// import { AdminEmployesComponent } from './features/employes/admin-employes.component';
+import { AdminDemandesComponent } from './features/demandes/admin-demande.component';
+import { AdminContratsComponent } from './features/contrats/admin-contrats.component';
+import { AdminParametresComponent } from './features/parametres/admin-parametres.component';
+import { AdminEmployesComponent } from './features/employes/admin-employes.component';
+
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -20,11 +23,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'compagnies', component: CompagniesComponent },
-      { path: 'employes', component: EmployesComponent },
-      { path: 'demandes', component: DemandesComponent },
-      { path: 'contrats', component: ContratsComponent }
+      { path: 'dashboard', component: AdminDashboardComponent },
+      { path: 'compagnies', component: AdminCompagniesComponent },
+      { path: 'employes', component: AdminEmployesComponent },
+      { path: 'demandes', component: AdminDemandesComponent },
+      { path: 'contrats', component: AdminContratsComponent },
+      { path: 'parametres', component: AdminParametresComponent }
     ]
   },
 

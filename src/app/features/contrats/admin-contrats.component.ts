@@ -28,10 +28,10 @@ import { UserService, User } from '../../core/services/user.service';
     ContratFormDialogComponent,
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './contrats.component.html',
-  styleUrls: ['./contrats.component.scss'],
+  templateUrl: './admin-contrats.component.html',
+  styleUrls: ['./admin-contrats.component.scss'],
 })
-export class ContratsComponent implements OnInit {
+export class AdminContratsComponent implements OnInit {
   contrats: Contrat[] = [];
   loading = false;
   dialogVisible = false;

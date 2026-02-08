@@ -11,6 +11,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { MessageService } from 'primeng/api';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-contrat-form-dialog',
@@ -23,7 +24,8 @@ import { MessageService } from 'primeng/api';
     InputTextModule,
     InputNumberModule,
     DatePickerModule,
-    SelectModule
+    SelectModule,
+    CheckboxModule
   ],
   templateUrl: './contrat-form-dialog.html',
   styleUrls: ['./contrat-form-dialog.scss']
@@ -62,7 +64,8 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
     } else {
       this.form?.reset({
         id: 0,
-        statutContrat: StatutContrat.EnCours
+        statutContrat: StatutContrat.EnCours,
+        isActif: true
       });
     }
   }
@@ -78,7 +81,8 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
       statutContrat: [StatutContrat.EnCours, [Validators.required]],
       veloId: [null, [Validators.required]],
       beneficiaireId: ['', [Validators.required]],
-      userRhId: ['', [Validators.required]]
+      userRhId: ['', [Validators.required]],
+      isActif: [true]
     });
   }
 
@@ -89,8 +93,7 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
         this.users = data;
         this.loadingUsers = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des utilisateurs', error);
+      error: () => {
         this.loadingUsers = false;
       }
     });
@@ -115,7 +118,6 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
     this.loading = true;
     const formValue = this.form.value;
 
-    // Convertir les dates en ISO string
     const payload = {
       ...formValue,
       id: formValue.id || 0,
@@ -128,7 +130,7 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
       : this.contratService.update(payload);
 
     operation.subscribe({
-      next: (response) => {
+      next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -138,14 +140,9 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
         this.close();
         this.onSave.emit();
       },
-      error: (error) => {
-        console.error('Erreur', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Une erreur est survenue'
-        });
+      error: () => {
         this.loading = false;
+        // L'intercepteur affiche déjà l'erreur dans le toast
       }
     });
   }
@@ -155,7 +152,8 @@ export class ContratFormDialogComponent implements OnInit, OnChanges {
     this.visibleChange.emit(false);
     this.form.reset({
       id: 0,
-      statutContrat: StatutContrat.EnCours
+      statutContrat: StatutContrat.EnCours,
+      isActif: true
     });
   }
 

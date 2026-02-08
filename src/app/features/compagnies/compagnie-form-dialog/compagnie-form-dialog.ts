@@ -88,8 +88,7 @@ export class CompagnieFormDialogComponent implements OnInit, OnChanges {
         this.users = data;
         this.loadingUsers = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des utilisateurs', error);
+      error: () => {
         this.loadingUsers = false;
       },
     });
@@ -102,57 +101,50 @@ export class CompagnieFormDialogComponent implements OnInit, OnChanges {
     }
   }
 
-onUpload(event: any): void {
-  const file = event.files[0];
+  onUpload(event: any): void {
+    const file = event.files[0];
 
-  if (!file) {
-    return;
-  }
+    if (!file) {
+      return;
+    }
 
-  // Validation côté client
-  const maxSize = 5 * 1024 * 1024; // 5 MB
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const maxSize = 5 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
-  if (file.size > maxSize) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Le fichier est trop volumineux (max 5 MB)'
-    });
-    return;
-  }
-
-  if (!allowedTypes.includes(file.type)) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'Format non autorisé (jpg, png, gif uniquement)'
-    });
-    return;
-  }
-
-  // Upload vers le backend
-  this.fileUploadService.uploadLogo(file).subscribe({
-    next: (response) => {
-      const logoUrl = `https://localhost:7126${response.url}`;
-      this.uploadedLogo = logoUrl;
-      this.form.patchValue({ logoUrl: logoUrl });
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Succès',
-        detail: 'Logo téléchargé avec succès'
-      });
-    },
-    error: (error) => {
-      console.error('Erreur upload', error);
+    if (file.size > maxSize) {
       this.messageService.add({
         severity: 'error',
         summary: 'Erreur',
-        detail: 'Erreur lors du téléchargement du logo'
+        detail: 'Le fichier est trop volumineux (max 5 MB)'
       });
+      return;
     }
-  });
-}
+
+    if (!allowedTypes.includes(file.type)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Format non autorisé (jpg, png, gif uniquement)'
+      });
+      return;
+    }
+
+    this.fileUploadService.uploadLogo(file).subscribe({
+      next: (response) => {
+        const logoUrl = `https://localhost:7126${response.url}`;
+        this.uploadedLogo = logoUrl;
+        this.form.patchValue({ logoUrl: logoUrl });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Logo téléchargé avec succès'
+        });
+      },
+      error: () => {
+        // L'intercepteur gère l'affichage de l'erreur
+      }
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -174,7 +166,7 @@ onUpload(event: any): void {
         : this.organisationService.update(payload);
 
     operation.subscribe({
-      next: (response) => {
+      next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -184,15 +176,10 @@ onUpload(event: any): void {
         this.close();
         this.onSave.emit();
       },
-      error: (error) => {
-        console.error('Erreur', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Une erreur est survenue',
-        });
+      error: () => {
         this.loading = false;
-      },
+        // L'intercepteur affiche déjà l'erreur dans le toast
+      }
     });
   }
 

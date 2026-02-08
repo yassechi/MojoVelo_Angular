@@ -1,8 +1,9 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnChanges, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { UserService, User, UserRole } from '../../../core/services/user.service';
 import { OrganisationService, Organisation } from '../../../core/services/organisation.service';
+import { MessageService } from 'primeng/api';
 
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -10,7 +11,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { SelectModule } from 'primeng/select';
 import { PasswordModule } from 'primeng/password';
-import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-employe-form-dialog',
@@ -23,10 +23,9 @@ import { MessageService } from 'primeng/api';
     InputTextModule,
     CheckboxModule,
     SelectModule,
-    PasswordModule
+    PasswordModule,
   ],
   templateUrl: './employe-form-dialog.html',
-  styleUrls: ['./employe-form-dialog.scss']
 })
 export class EmployeFormDialogComponent implements OnInit, OnChanges {
   @Input() visible = false;
@@ -37,12 +36,11 @@ export class EmployeFormDialogComponent implements OnInit, OnChanges {
   form!: FormGroup;
   loading = false;
   organisations: Organisation[] = [];
-  loadingOrganisations = false;
 
   roleOptions = [
     { label: 'Administrateur', value: UserRole.Admin },
     { label: 'Manager', value: UserRole.Manager },
-    { label: 'Utilisateur', value: UserRole.User }
+    { label: 'Utilisateur', value: UserRole.User },
   ];
 
   constructor(
@@ -50,21 +48,21 @@ export class EmployeFormDialogComponent implements OnInit, OnChanges {
     private userService: UserService,
     private organisationService: OrganisationService,
     private messageService: MessageService
-  ) {}
+  ) {
+    this.initForm();
+  }
 
   ngOnInit(): void {
-    this.initForm();
     this.loadOrganisations();
   }
 
-  ngOnChanges(): void {
-    if (this.user) {
-      this.loadUser();
-    } else {
-      this.form?.reset({
-        isActif: true,
-        role: UserRole.User
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['user'] && this.visible) {
+      if (this.user) {
+        this.loadUser();
+      } else {
+        this.form.reset({ isActif: true, role: UserRole.User, tailleCm: 177 });
+      }
     }
   }
 
@@ -76,59 +74,68 @@ export class EmployeFormDialogComponent implements OnInit, OnChanges {
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
-      password: [''],  // Sera requis seulement en création
+      password: [''],
       role: [UserRole.User, [Validators.required]],
       isActif: [true],
-      organisationId: [null, [Validators.required]]
+      organisationId: [null, [Validators.required]],
+      tailleCm: [177]
     });
   }
 
   loadOrganisations(): void {
-    this.loadingOrganisations = true;
     this.organisationService.getAll().subscribe({
       next: (data) => {
         this.organisations = data;
-        this.loadingOrganisations = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des organisations', error);
-        this.loadingOrganisations = false;
+      error: () => {
+        // L'intercepteur gère l'affichage de l'erreur
       }
     });
   }
 
   loadUser(): void {
     if (this.user) {
-      this.form.patchValue(this.user);
-      // En modification, le mot de passe n'est pas requis
-      this.form.get('password')?.clearValidators();
-      this.form.get('password')?.updateValueAndValidity();
+      const u = this.user as any;
+      this.form.patchValue({
+        id: u.id,
+        userName: u.userName,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        email: u.email,
+        phoneNumber: u.phoneNumber,
+        role: u.role,
+        isActif: u.isActif,
+        organisationId: typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId,
+        tailleCm: u.tailleCm || 177
+      });
     }
   }
 
   onSubmit(): void {
-    // En création, le mot de passe est requis
-    if (!this.user) {
-      this.form.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
-      this.form.get('password')?.updateValueAndValidity();
-    }
-
     if (this.form.invalid) {
-      this.markFormGroupTouched(this.form);
+      this.form.markAllAsTouched();
       return;
     }
 
     this.loading = true;
-    const formValue = this.form.value;
+    const values = this.form.getRawValue();
 
-    const payload = {
-      ...formValue,
-      id: formValue.id || undefined
+    const payload: any = {
+      id: values.id,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      userName: values.userName,
+      email: values.email,
+      phoneNumber: values.phoneNumber,
+      role: Number(values.role),
+      tailleCm: Number(values.tailleCm),
+      isActif: Boolean(values.isActif),
+      organisationId: Number(values.organisationId)
     };
 
-    // En modification, ne pas envoyer le mot de passe s'il est vide
-    if (this.user && !payload.password) {
-      delete payload.password;
+    if (values.password && values.password.trim() !== '') {
+      payload.password = values.password;
+      payload.confirmPassword = values.password;
     }
 
     const operation = !this.user
@@ -136,24 +143,19 @@ export class EmployeFormDialogComponent implements OnInit, OnChanges {
       : this.userService.update(payload);
 
     operation.subscribe({
-      next: (response) => {
+      next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
-          detail: this.user ? 'Employé mis à jour' : 'Employé créé'
+          detail: this.user ? 'Employé modifié' : 'Employé créé'
         });
         this.loading = false;
-        this.close();
         this.onSave.emit();
+        this.close();
       },
-      error: (error) => {
-        console.error('Erreur', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Une erreur est survenue'
-        });
+      error: () => {
         this.loading = false;
+        // L'intercepteur affiche déjà l'erreur dans le toast
       }
     });
   }
@@ -161,25 +163,6 @@ export class EmployeFormDialogComponent implements OnInit, OnChanges {
   close(): void {
     this.visible = false;
     this.visibleChange.emit(false);
-    this.form.reset({
-      isActif: true,
-      role: UserRole.User
-    });
+    this.form.reset();
   }
-
-  private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-    });
-  }
-
-  get userName() { return this.form.get('userName'); }
-  get firstName() { return this.form.get('firstName'); }
-  get lastName() { return this.form.get('lastName'); }
-  get email() { return this.form.get('email'); }
-  get phoneNumber() { return this.form.get('phoneNumber'); }
-  get password() { return this.form.get('password'); }
-  get role() { return this.form.get('role'); }
-  get organisationId() { return this.form.get('organisationId'); }
 }

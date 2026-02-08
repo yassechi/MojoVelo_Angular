@@ -5,164 +5,88 @@
   [header]="user ? 'Modifier l\'employé' : 'Créer un employé'"
   (onHide)="close()"
 >
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <form [formGroup]="form">
     <div class="grid">
-      <!-- Nom d'utilisateur -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="userName" class="block mb-2 font-semibold">Nom d'utilisateur *</label>
-          <input
-            pInputText
-            id="userName"
-            formControlName="userName"
-            placeholder="john.doe"
-            class="w-full"
-          />
-          <small class="p-error" *ngIf="userName?.invalid && userName?.touched">
-            Le nom d'utilisateur est obligatoire
-          </small>
+          <label class="block mb-2 font-semibold">Nom d'utilisateur *</label>
+          <input pInputText formControlName="userName" class="w-full" />
         </div>
       </div>
 
-      <!-- Email -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="email" class="block mb-2 font-semibold">Email *</label>
-          <input
-            pInputText
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="john.doe@company.com"
-            class="w-full"
-          />
-          <small class="p-error" *ngIf="email?.invalid && email?.touched">
-            Un email valide est obligatoire
-          </small>
+          <label class="block mb-2 font-semibold">Email *</label>
+          <input pInputText type="email" formControlName="email" class="w-full" />
         </div>
       </div>
 
-      <!-- Prénom -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="firstName" class="block mb-2 font-semibold">Prénom *</label>
-          <input
-            pInputText
-            id="firstName"
-            formControlName="firstName"
-            placeholder="John"
-            class="w-full"
-          />
-          <small class="p-error" *ngIf="firstName?.invalid && firstName?.touched">
-            Le prénom est obligatoire
-          </small>
+          <label class="block mb-2 font-semibold">Prénom *</label>
+          <input pInputText formControlName="firstName" class="w-full" />
         </div>
       </div>
 
-      <!-- Nom -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="lastName" class="block mb-2 font-semibold">Nom *</label>
-          <input
-            pInputText
-            id="lastName"
-            formControlName="lastName"
-            placeholder="Doe"
-            class="w-full"
-          />
-          <small class="p-error" *ngIf="lastName?.invalid && lastName?.touched">
-            Le nom est obligatoire
-          </small>
+          <label class="block mb-2 font-semibold">Nom *</label>
+          <input pInputText formControlName="lastName" class="w-full" />
         </div>
       </div>
 
-      <!-- Téléphone -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="phoneNumber" class="block mb-2 font-semibold">Téléphone *</label>
-          <input
-            pInputText
-            id="phoneNumber"
-            formControlName="phoneNumber"
-            placeholder="+32 123 45 67 89"
-            class="w-full"
-          />
-          <small class="p-error" *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
-            Le téléphone est obligatoire
-          </small>
+          <label class="block mb-2 font-semibold">Téléphone *</label>
+          <input pInputText formControlName="phoneNumber" class="w-full" />
         </div>
       </div>
 
-      <!-- Mot de passe -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="password" class="block mb-2 font-semibold">
-            Mot de passe {{ user ? '(laisser vide pour ne pas changer)' : '*' }}
-          </label>
+          <label class="block mb-2 font-semibold">Mot de passe {{ user ? '(optionnel)' : '*' }}</label>
           <p-password
-            id="password"
             formControlName="password"
             [toggleMask]="true"
             [feedback]="false"
-            placeholder="********"
             styleClass="w-full"
             inputStyleClass="w-full"
           ></p-password>
-          <small class="p-error" *ngIf="password?.invalid && password?.touched">
-            Le mot de passe est obligatoire (min. 8 caractères)
-          </small>
         </div>
       </div>
 
-      <!-- Rôle -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="role" class="block mb-2 font-semibold">Rôle *</label>
+          <label class="block mb-2 font-semibold">Rôle *</label>
           <p-select
-            id="role"
             formControlName="role"
             [options]="roleOptions"
             optionLabel="label"
             optionValue="value"
-            placeholder="Sélectionnez un rôle"
             styleClass="w-full"
           ></p-select>
-          <small class="p-error" *ngIf="role?.invalid && role?.touched">
-            Le rôle est obligatoire
-          </small>
         </div>
       </div>
 
-      <!-- Organisation -->
       <div class="col-12 md:col-6">
         <div class="field mb-4">
-          <label for="organisation" class="block mb-2 font-semibold">Organisation *</label>
+          <label class="block mb-2 font-semibold">Organisation *</label>
           <p-select
-            id="organisation"
             formControlName="organisationId"
             [options]="organisations"
             optionLabel="name"
             optionValue="id"
-            placeholder="Sélectionnez une organisation"
-            [filter]="true"
-            filterBy="name"
-            [showClear]="true"
             styleClass="w-full"
-            [loading]="loadingOrganisations"
+            placeholder="Sélectionner"
           ></p-select>
-          <small class="p-error" *ngIf="organisationId?.invalid && organisationId?.touched">
-            L'organisation est obligatoire
-          </small>
         </div>
       </div>
 
-      <!-- Actif -->
       <div class="col-12">
         <div class="field mb-4">
           <p-checkbox
             formControlName="isActif"
             [binary]="true"
-            inputId="isActif"
             label="Compte actif"
           ></p-checkbox>
         </div>
@@ -171,18 +95,12 @@
   </form>
 
   <ng-template pTemplate="footer">
+    <p-button label="Annuler" (onClick)="close()" class="p-button-text"></p-button>
     <p-button
-      label="Annuler"
-      icon="pi pi-times"
-      (onClick)="close()"
-      [text]="true"
-    ></p-button>
-    <p-button
-      [label]="user ? 'Modifier' : 'Créer'"
+      [label]="user ? 'Sauvegarder' : 'Créer'"
       icon="pi pi-check"
       (onClick)="onSubmit()"
       [loading]="loading"
-      [disabled]="form.invalid"
     ></p-button>
   </ng-template>
 </p-dialog>

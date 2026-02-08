@@ -27,10 +27,10 @@ import { MessageService, ConfirmationService } from 'primeng/api';
     CompagnieFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './compagnies.component.html',
-  styleUrls: ['./compagnies.component.scss']
+  templateUrl: './admin-compagnies.component.html',
+  styleUrls: ['./admin-compagnies.component.scss']
 })
-export class CompagniesComponent implements OnInit {
+export class AdminCompagniesComponent implements OnInit {
   organisations: Organisation[] = [];
   loading = false;
   dialogVisible = false;

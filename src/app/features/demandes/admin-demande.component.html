@@ -1,13 +1,14 @@
 <div class="demandes-container">
   <p-toast></p-toast>
 
-  <div class="demandes-header mb-4">
-    <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a;">
-      Gestion des Demandes
-    </h1>
-    <p class="text-600">
-      Liste et gestion des demandes de vélos
-    </p>
+  <div class="demandes-header mb-4 flex justify-content-between align-items-center">
+    <div>
+      <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
+        Gestion des Demandes
+      </h1>
+      <p class="text-600">Liste et gestion des demandes de vélos</p>
+    </div>
+    <p-button label="Créer une demande" icon="pi pi-plus" (click)="openDialog()"></p-button>
   </div>
 
   <div class="grid">
@@ -25,11 +26,14 @@
         >
           <ng-template pTemplate="header">
             <tr>
-              <th>ID</th>
+              <th pSortableColumn="id">
+                ID
+                <p-sortIcon field="id"></p-sortIcon>
+              </th>
               <th>Utilisateur</th>
               <th>Vélo</th>
               <th>Statut</th>
-              <th style="width: 200px;">Actions</th>
+              <th style="width: 150px">Actions</th>
             </tr>
           </ng-template>
 
@@ -45,14 +49,13 @@
                 ></p-tag>
               </td>
               <td>
-                <div class="flex gap-2 align-items-center">
-                  <p-select
-                    [options]="statusOptions"
-                    [(ngModel)]="demande.status"
-                    (onChange)="onStatusChange(demande, $event.value)"
-                    placeholder="Changer statut"
-                    styleClass="w-full"
-                  ></p-select>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-pencil"
+                    styleClass="p-button-rounded p-button-text"
+                    (click)="openDialog(demande)"
+                    [pTooltip]="'Modifier'"
+                  ></p-button>
                   <p-button
                     icon="pi pi-trash"
                     styleClass="p-button-rounded p-button-text p-button-danger"
@@ -67,7 +70,7 @@
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="5" class="text-center py-5">
-                <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
                 <p class="mt-3 text-600">Aucune demande trouvée</p>
               </td>
             </tr>
@@ -77,6 +80,13 @@
     </div>
   </div>
 </div>
+
+<!-- Dialog de création/modification -->
+<app-demande-form-dialog
+  [(visible)]="dialogVisible"
+  [demande]="selectedDemande"
+  (onSave)="onDialogSave()"
+></app-demande-form-dialog>
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>

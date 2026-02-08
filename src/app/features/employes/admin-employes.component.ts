@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService, User, UserRole } from '../../core/services/user.service';
-
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
+import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MessageService, ConfirmationService } from 'primeng/api';
 import { EmployeFormDialogComponent } from './employe-form-dialog/employe-form-dialog';
 
 @Component({
@@ -17,24 +16,24 @@ import { EmployeFormDialogComponent } from './employe-form-dialog/employe-form-d
   standalone: true,
   imports: [
     CommonModule,
-    CardModule,
-    ButtonModule,
     TableModule,
+    ButtonModule,
     TagModule,
+    CardModule,
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
     EmployeFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './employes.component.html',
-  styleUrls: ['./employes.component.scss']
+  templateUrl: './admin-employes.component.html',
+  styleUrls: ['./admin-employes.component.scss']
 })
-export class EmployesComponent implements OnInit {
+export class AdminEmployesComponent implements OnInit {
   users: User[] = [];
   loading = false;
-  dialogVisible = false;  // ← Ajouté
-  selectedUser: User | null = null;  // ← Ajouté
+  dialogVisible = false;
+  selectedUser: User | null = null;
 
   constructor(
     private userService: UserService,
@@ -53,35 +52,24 @@ export class EmployesComponent implements OnInit {
         this.users = data;
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des employés', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les employés'
-        });
+      error: () => {
         this.loading = false;
       }
     });
   }
 
-  onCreate(): void {  // ← Modifié
-    this.selectedUser = null;
+  openDialog(user?: User): void {
+    this.selectedUser = user || null;
     this.dialogVisible = true;
   }
 
-  onEdit(user: User): void {  // ← Modifié
-    this.selectedUser = user;
-    this.dialogVisible = true;
-  }
-
-  onSave(): void {  // ← Ajouté
+  onDialogSave(): void {
     this.loadUsers();
   }
 
   onDelete(user: User): void {
     this.confirmationService.confirm({
-      message: `Êtes-vous sûr de vouloir supprimer "${user.userName}" ?`,
+      message: `Êtes-vous sûr de vouloir supprimer cet utilisateur ?`,
       header: 'Confirmation',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Oui',
@@ -92,17 +80,12 @@ export class EmployesComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Succès',
-              detail: 'Employé supprimé'
+              detail: 'Utilisateur supprimé avec succès'
             });
             this.loadUsers();
           },
-          error: (error) => {
-            console.error('Erreur lors de la suppression', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer l\'employé'
-            });
+          error: () => {
+            // L'intercepteur gère l'erreur
           }
         });
       }
@@ -113,16 +96,11 @@ export class EmployesComponent implements OnInit {
     return this.userService.getRoleLabel(role);
   }
 
-  getRoleSeverity(role: UserRole): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    switch (role) {
-      case UserRole.Admin:
-        return 'danger';
-      case UserRole.Manager:
-        return 'info';
-      case UserRole.User:
-        return 'success';
-      default:
-        return 'secondary';
-    }
+  getSeverity(isActif: boolean): 'success' | 'danger' {
+    return isActif ? 'success' : 'danger';
+  }
+
+  getStatusLabel(isActif: boolean): string {
+    return isActif ? 'Actif' : 'Inactif';
   }
 }
