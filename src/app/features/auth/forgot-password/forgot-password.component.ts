@@ -6,31 +6,30 @@ import { AuthService } from '../../../core/services/auth.service';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-forgot-password',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterModule,
     CardModule,
     InputTextModule,
-    PasswordModule,
     ButtonModule,
-    ToastModule,
-    RouterModule
+    ToastModule
   ],
   providers: [MessageService],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  templateUrl: './forgot-password.component.html',
+  styleUrls: ['./forgot-password.component.scss']
 })
-export class LoginComponent {
-  loginForm: FormGroup;
+export class ForgotPasswordComponent {
+  forgotForm: FormGroup;
   loading = false;
+  emailSent = false;
 
   constructor(
     private fb: FormBuilder,
@@ -38,53 +37,41 @@ export class LoginComponent {
     private router: Router,
     private messageService: MessageService
   ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]]
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
-      this.markFormGroupTouched(this.loginForm);
+    if (this.forgotForm.invalid) {
+      this.forgotForm.markAllAsTouched();
       return;
     }
 
     this.loading = true;
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
+    this.authService.forgotPassword(this.forgotForm.value).subscribe({
+      next: () => {
         this.loading = false;
+        this.emailSent = true;
         this.messageService.add({
           severity: 'success',
-          summary: 'Connexion réussie',
-          detail: `Bienvenue ${response.userName}!`
+          summary: 'Email envoyé',
+          detail: 'Si cet email existe, vous recevrez un lien de réinitialisation.'
         });
-        // ✅ PAS DE REDIRECTION ICI - Le AuthService s'en charge déjà !
       },
-      error: (error) => {
+      error: () => {
         this.loading = false;
         this.messageService.add({
           severity: 'error',
-          summary: 'Erreur de connexion',
-          detail: error.error?.message || 'Email ou mot de passe incorrect'
+          summary: 'Erreur',
+          detail: 'Une erreur est survenue. Veuillez réessayer.'
         });
       }
     });
   }
 
-  private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-    });
-  }
-
   get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
+    return this.forgotForm.get('email');
   }
 }

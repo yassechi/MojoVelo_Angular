@@ -6,20 +6,21 @@ import { User } from '../models/user.model';
 import { Router } from '@angular/router';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7126/api/Auth';
+  // private apiUrl = 'https://localhost:7126/api/Auth';
+  private apiUrl = 'http://localhost:5000/api/Auth';
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {
     const storedUser = localStorage.getItem('currentUser');
     this.currentUserSubject = new BehaviorSubject<User | null>(
-      storedUser ? JSON.parse(storedUser) : null
+      storedUser ? JSON.parse(storedUser) : null,
     );
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -34,43 +35,41 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
-      .pipe(
-        tap(response => {
-          if (response && response.token) {
-            // Récupérer les infos complètes de l'utilisateur
-            this.getUserInfo(response.id).subscribe(user => {
-              localStorage.setItem('token', response.token);
-              localStorage.setItem('currentUser', JSON.stringify(user));
-              this.currentUserSubject.next(user);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+      tap((response) => {
+        if (response && response.token) {
+          // Récupérer les infos complètes de l'utilisateur
+          this.getUserInfo(response.id).subscribe((user) => {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            this.currentUserSubject.next(user);
 
-              // ✅ REDIRECTION SELON LE RÔLE
-              this.redirectToRoleDashboard(user.role);
-            });
-          }
-        })
-      );
+            // ✅ REDIRECTION SELON LE RÔLE
+            this.redirectToRoleDashboard(user.role);
+          });
+        }
+      }),
+    );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data)
-      .pipe(
-        tap(response => {
-          if (response && response.token) {
-            // Récupérer les infos complètes de l'utilisateur
-            this.getUserInfo(response.id).subscribe(user => {
-              localStorage.setItem('token', response.token);
-              localStorage.setItem('currentUser', JSON.stringify(user));
-              this.currentUserSubject.next(user);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
+      tap((response) => {
+        if (response && response.token) {
+          // Récupérer les infos complètes de l'utilisateur
+          this.getUserInfo(response.id).subscribe((user) => {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            this.currentUserSubject.next(user);
 
-              setTimeout(() => {
-                // ✅ REDIRECTION SELON LE RÔLE
-                this.redirectToRoleDashboard(user.role);
-              }, 1000);
-            });
-          }
-        })
-      );
+            setTimeout(() => {
+              // ✅ REDIRECTION SELON LE RÔLE
+              this.redirectToRoleDashboard(user.role);
+            }, 1000);
+          });
+        }
+      }),
+    );
   }
 
   getUserInfo(userId: string): Observable<User> {
@@ -110,23 +109,31 @@ export class AuthService {
   // }
 
   private redirectToRoleDashboard(role: number): void {
-  console.log('🔍 REDIRECTION - Role:', role);
-  switch (role) {
-    case 1: // Admin
-      console.log('➡️ Redirection vers /admin/dashboard');
-      this.router.navigate(['/admin/dashboard']);
-      break;
-    case 2: // Manager
-      console.log('➡️ Redirection vers /manager/dashboard');
-      this.router.navigate(['/manager/dashboard']);
-      break;
-    case 3: // User
-      console.log('➡️ Redirection vers /user/dashboard');
-      this.router.navigate(['/user/dashboard']);
-      break;
-    default:
-      console.log('➡️ Redirection vers /login');
-      this.router.navigate(['/login']);
+    console.log('🔍 REDIRECTION - Role:', role);
+    switch (role) {
+      case 1: // Admin
+        console.log('➡️ Redirection vers /admin/dashboard');
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 2: // Manager
+        console.log('➡️ Redirection vers /manager/dashboard');
+        this.router.navigate(['/manager/dashboard']);
+        break;
+      case 3: // User
+        console.log('➡️ Redirection vers /user/dashboard');
+        this.router.navigate(['/user/dashboard']);
+        break;
+      default:
+        console.log('➡️ Redirection vers /login');
+        this.router.navigate(['/login']);
+    }
   }
-}
+
+  resetPassword(payload: { email: string; token: string; newPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, payload);
+  }
+
+  forgotPassword(payload: { email: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, payload);
+  }
 }

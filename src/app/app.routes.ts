@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -19,9 +20,19 @@ import { ContratsComponent as ManagerContratsComponent } from './features/Manage
 import { EmployesComponent as ManagerEmployesComponent } from './features/Manager/employes/employes.component';
 import { ParametresComponent as ManagerParametresComponent } from './features/Manager/parametres/parametres.component';
 
+// User Components
+import { DashboardComponent as UserDashboardComponent } from './features/User/dashboard/dashboard.component';
+import { ContratsComponent as UserContratsComponent } from './features/User/contrats/contrats.component';
+import { DemandesComponent as UserDemandesComponent } from './features/User/demandes/demandes.component';
+import { ParametresComponent as UserParametresComponent } from './features/User/parametres/parametres.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
 
   // Routes Admin
   {
@@ -35,8 +46,8 @@ export const routes: Routes = [
       { path: 'employes', component: AdminEmployesComponent },
       { path: 'demandes', component: AdminDemandesComponent },
       { path: 'contrats', component: AdminContratsComponent },
-      { path: 'parametres', component: AdminParametresComponent }
-    ]
+      { path: 'parametres', component: AdminParametresComponent },
+    ],
   },
 
   // Routes Manager
@@ -50,10 +61,24 @@ export const routes: Routes = [
       { path: 'employes', component: ManagerEmployesComponent },
       { path: 'demandes', component: ManagerDemandesComponent },
       { path: 'contrats', component: ManagerContratsComponent },
-      { path: 'parametres', component: ManagerParametresComponent }
-    ]
+      { path: 'parametres', component: ManagerParametresComponent },
+    ],
+  },
+
+  // Routes User
+  {
+    path: 'user',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: UserDashboardComponent },
+      { path: 'contrats', component: UserContratsComponent },
+      { path: 'demandes', component: UserDemandesComponent },
+      { path: 'parametres', component: UserParametresComponent },
+    ],
   },
 
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' },
 ];

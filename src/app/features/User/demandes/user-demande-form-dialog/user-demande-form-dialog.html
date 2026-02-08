@@ -1,0 +1,37 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [header]="demande ? 'Modifier ma demande' : 'Créer une demande'"
+  (onHide)="close()"
+>
+  <form [formGroup]="form">
+    <div class="grid">
+      <div class="col-12">
+        <div class="field mb-4">
+          <label class="block mb-2 font-semibold">Vélo *</label>
+          <input
+            pInputText
+            type="number"
+            formControlName="idVelo"
+            class="w-full"
+            placeholder="ID du vélo"
+          />
+          <small class="p-error" *ngIf="form.get('idVelo')?.invalid && form.get('idVelo')?.touched">
+            Le vélo est obligatoire
+          </small>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Annuler" (onClick)="close()" class="p-button-text"></p-button>
+    <p-button
+      [label]="demande ? 'Sauvegarder' : 'Créer'"
+      icon="pi pi-check"
+      (onClick)="onSubmit()"
+      [loading]="loading"
+    ></p-button>
+  </ng-template>
+</p-dialog>

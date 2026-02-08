@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClient } from '@angular/common/http';
 
@@ -31,7 +31,8 @@ interface Organisation {
     ButtonModule,
     ToastModule,
     SelectModule,
-    InputNumberModule
+    InputNumberModule,
+    RouterModule
   ],
   providers: [MessageService],
   templateUrl: './register.component.html',
