@@ -4,24 +4,26 @@ import { Observable } from 'rxjs';
 
 export enum StatutContrat {
   EnCours = 1,
-  Termine = 2
+  Termine = 2,
+  Resilie = 2,
 }
 
 export interface Contrat {
   id?: number;
-  dateDebut: string;  // ISO date string
-  dateFin: string;    // ISO date string
-  loyerMensuelHT: number;
-  statutContrat: StatutContrat;
-  duree: number;
-  veloId: number;
   ref: string;
+  veloId: number;
   beneficiaireId: string;
   userRhId: string;
+  dateDebut: string;
+  dateFin: string;
+  duree: number;
+  loyerMensuelHT: number;
+  statutContrat: StatutContrat;
+  isActif?: boolean;  
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ContratService {
   private apiUrl = 'https://localhost:7126/api/Contrat';

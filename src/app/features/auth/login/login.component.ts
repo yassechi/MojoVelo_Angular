@@ -60,7 +60,6 @@ export class LoginComponent {
           summary: 'Connexion réussie',
           detail: `Bienvenue ${response.userName}!`
         });
-        // ✅ PAS DE REDIRECTION ICI - Le AuthService s'en charge déjà !
       },
       error: (error) => {
         this.loading = false;

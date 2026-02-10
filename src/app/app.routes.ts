@@ -12,6 +12,7 @@ import { AdminEmployesComponent } from './features/Admin/employes/admin-employes
 import { AdminDemandesComponent } from './features/Admin/demandes/admin-demande.component';
 import { AdminContratsComponent } from './features/Admin/contrats/admin-contrats.component';
 import { AdminParametresComponent } from './features/Admin/parametres/admin-parametres.component';
+import { ContratDetailComponent } from './features/Admin/contrats/contrat-detail/contrat-detail.component';
 
 // Manager Components
 import { DashboardComponent as ManagerDashboardComponent } from './features/Manager/dashboard/dashboard.component';
@@ -26,6 +27,7 @@ import { ContratsComponent as UserContratsComponent } from './features/User/cont
 import { DemandesComponent as UserDemandesComponent } from './features/User/demandes/demandes.component';
 import { ParametresComponent as UserParametresComponent } from './features/User/parametres/parametres.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { ContratEditComponent } from './features/Admin/contrats/contrat-edit/contrat-edit.component';
 
 
 export const routes: Routes = [
@@ -46,6 +48,8 @@ export const routes: Routes = [
       { path: 'employes', component: AdminEmployesComponent },
       { path: 'demandes', component: AdminDemandesComponent },
       { path: 'contrats', component: AdminContratsComponent },
+      { path: 'contrats/:id', component: ContratDetailComponent },
+      { path: 'contrats/edit/:id', component: ContratEditComponent },
       { path: 'parametres', component: AdminParametresComponent },
     ],
   },

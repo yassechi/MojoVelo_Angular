@@ -12,6 +12,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { UserService, User } from '../../../core/services/user.service';
 import { ContratFormDialogComponent } from './contrat-form-dialog/contrat-form-dialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-contrats',
@@ -36,13 +37,18 @@ export class AdminContratsComponent implements OnInit {
   loading = false;
   dialogVisible = false;
   selectedContrat: Contrat | null = null;
-  users: User[] = [];  // ← Ajouté
+  users: User[] = [];
+
+  
+
 
   constructor(
     private contratService: ContratService,
     private userService: UserService,  // ← Ajouté
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
+    private router: Router
+
   ) {}
 
   ngOnInit(): void {
@@ -154,4 +160,8 @@ export class AdminContratsComponent implements OnInit {
     const user = this.users.find(u => u.id === userId);
     return user ? `${user.firstName} ${user.lastName}` : userId;
   }
+
+  onViewDetail(contrat: Contrat): void {
+  this.router.navigate(['/admin/contrats', contrat.id]);
+}
 }
