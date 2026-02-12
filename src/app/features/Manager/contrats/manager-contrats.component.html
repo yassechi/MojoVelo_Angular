@@ -6,8 +6,9 @@
       <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
         Gestion des Contrats
       </h1>
-      <p class="text-600">Liste et gestion des contrats de location</p>
+      <p class="text-600">Liste et gestion des contrats de location de votre organisation</p>
     </div>
+    
   </div>
 
   <div class="grid">
@@ -66,12 +67,6 @@
               <td>
                 <div class="flex gap-2">
                   <p-button
-                    icon="pi pi-eye"
-                    styleClass="p-button-rounded p-button-text"
-                    (click)="onViewDetail(contrat)"
-                    [pTooltip]="'Voir détails'"
-                  ></p-button>
-                  <p-button
                     icon="pi pi-trash"
                     styleClass="p-button-rounded p-button-text p-button-danger"
                     (click)="onDelete(contrat)"
@@ -86,7 +81,7 @@
             <tr>
               <td colspan="10" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
-                <p class="mt-3 text-600">Aucun contrat trouvé</p>
+                <p class="mt-3 text-600">Aucun contrat trouvé pour votre organisation</p>
               </td>
             </tr>
           </ng-template>

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
+import { UserService, User } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -10,11 +12,9 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { UserService, User } from '../../../core/services/user.service';
-import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-contrats',
+  selector: 'app-manager-contrats',
   standalone: true,
   imports: [
     CommonModule,
@@ -27,36 +27,53 @@ import { Router } from '@angular/router';
     ConfirmDialogModule,
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './admin-contrats.component.html',
-  styleUrls: ['./admin-contrats.component.scss'],
+  templateUrl: './manager-contrats.component.html',
+  styleUrls: ['./manager-contrats.component.scss'],
 })
-export class AdminContratsComponent implements OnInit {
+export class ContratsComponent implements OnInit {
   contrats: Contrat[] = [];
   loading = false;
   users: User[] = [];
-
-  
-
+  currentUserOrgId: number | null = null;
 
   constructor(
     private contratService: ContratService,
-    private userService: UserService,  // ← Ajouté
+    private userService: UserService,
+    private authService: AuthService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private router: Router
-
   ) {}
 
   ngOnInit(): void {
+    this.loadCurrentUserOrg();
     this.loadContrats();
-    this.loadUsers();  // ← Ajouté
+    this.loadUsers();
+  }
+
+  loadCurrentUserOrg(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    if (user.organisationId) {
+      this.currentUserOrgId = typeof user.organisationId === 'object'
+        ? (user.organisationId as any).id
+        : user.organisationId;
+    }
   }
 
   loadContrats(): void {
     this.loading = true;
     this.contratService.getAll().subscribe({
       next: (data) => {
-        this.contrats = data;
+        // ✅ Filtrer par organisation du Manager
+        if (this.currentUserOrgId) {
+          this.contrats = data.filter(c => {
+            // TODO: Adapter selon votre structure - vérifier si Contrat a organisationId
+            return (c as any).organisationId === this.currentUserOrgId;
+          });
+        } else {
+          this.contrats = data;
+        }
         this.loading = false;
       },
       error: (error) => {
@@ -71,10 +88,20 @@ export class AdminContratsComponent implements OnInit {
     });
   }
 
-  loadUsers(): void {  // ← Nouvelle méthode
+  loadUsers(): void {
     this.userService.getAll().subscribe({
       next: (data) => {
-        this.users = data;
+        // ✅ Filtrer users de la même organisation
+        if (this.currentUserOrgId) {
+          this.users = data.filter(u => {
+            const orgId = typeof u.organisationId === 'object'
+              ? (u.organisationId as any).id
+              : u.organisationId;
+            return orgId === this.currentUserOrgId;
+          });
+        } else {
+          this.users = data;
+        }
       },
       error: (error) => {
         console.error('Erreur lors du chargement des utilisateurs', error);
@@ -138,12 +165,8 @@ export class AdminContratsComponent implements OnInit {
     }).format(amount);
   }
 
-  getUserFullName(userId: string): string {  // ← Nouvelle méthode
+  getUserFullName(userId: string): string {
     const user = this.users.find(u => u.id === userId);
     return user ? `${user.firstName} ${user.lastName}` : userId;
   }
-
-  onViewDetail(contrat: Contrat): void {
-  this.router.navigate(['/admin/contrats', contrat.id]);
-}
 }

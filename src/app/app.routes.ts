@@ -12,22 +12,22 @@ import { AdminEmployesComponent } from './features/Admin/employes/admin-employes
 import { AdminDemandesComponent } from './features/Admin/demandes/admin-demande.component';
 import { AdminContratsComponent } from './features/Admin/contrats/admin-contrats.component';
 import { AdminParametresComponent } from './features/Admin/parametres/admin-parametres.component';
-import { ContratDetailComponent } from './features/Admin/contrats/contrat-detail/contrat-detail.component';
+import { ContratDetailComponent } from './features/Admin/contrats/contrat-detail/admin-contrat-detail.component';
 
 // Manager Components
-import { DashboardComponent as ManagerDashboardComponent } from './features/Manager/dashboard/dashboard.component';
-import { DemandesComponent as ManagerDemandesComponent } from './features/Manager/demandes/demandes.component';
-import { ContratsComponent as ManagerContratsComponent } from './features/Manager/contrats/contrats.component';
-import { EmployesComponent as ManagerEmployesComponent } from './features/Manager/employes/employes.component';
-import { ParametresComponent as ManagerParametresComponent } from './features/Manager/parametres/parametres.component';
+import { DashboardComponent as ManagerDashboardComponent } from './features/Manager/dashboard/manager-dashboard.component';
+import { DemandesComponent as ManagerDemandesComponent } from './features/Manager/demandes/manager-demandes.component';
+import { ContratsComponent as ManagerContratsComponent } from './features/Manager/contrats/manager-contrats.component';
+import { EmployesComponent as ManagerEmployesComponent } from './features/Manager/employes/manager-employes.component';
+import { ParametresComponent as ManagerParametresComponent } from './features/Manager/parametres/manager-parametres.component';
 
 // User Components
-import { DashboardComponent as UserDashboardComponent } from './features/User/dashboard/dashboard.component';
-import { ContratsComponent as UserContratsComponent } from './features/User/contrats/contrats.component';
-import { DemandesComponent as UserDemandesComponent } from './features/User/demandes/demandes.component';
-import { ParametresComponent as UserParametresComponent } from './features/User/parametres/parametres.component';
+import { DashboardComponent as UserDashboardComponent } from './features/User/dashboard/user-dashboard.component';
+import { ContratsComponent as UserContratsComponent } from './features/User/contrats/user-contrats.component';
+import { DemandesComponent as UserDemandesComponent } from './features/User/demandes/user-demandes.component';
+import { ParametresComponent as UserParametresComponent } from './features/User/parametres/user-parametres.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
-import { ContratEditComponent } from './features/Admin/contrats/contrat-edit/contrat-edit.component';
+import { ContratEditComponent } from './features/Admin/contrats/contrat-edit/admin-contrat-edit.component';
 
 
 export const routes: Routes = [

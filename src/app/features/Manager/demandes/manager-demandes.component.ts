@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// import { DemandeService, Demande, DemandeStatus } from '../../core/services/demande.service';
-import { DemandeFormDialogComponent } from './demande-form-dialog/admin-demande-form-dialog';
+import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
+import { DemandeFormDialogComponent } from '../../Admin/demandes/demande-form-dialog/admin-demande-form-dialog';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service'; // ✅ AJOUTÉ
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -13,10 +15,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
-import { Demande, DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 
 @Component({
-  selector: 'app-demandes',
+  selector: 'app-manager-demandes',
   standalone: true,
   imports: [
     CommonModule,
@@ -29,17 +30,18 @@ import { Demande, DemandeService, DemandeStatus } from '../../../core/services/d
     TooltipModule,
     ConfirmDialogModule,
     SelectModule,
-    DemandeFormDialogComponent
+    DemandeFormDialogComponent,
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './admin-demande.component.html',
-  styleUrls: ['./admin-demande.component.scss'],
+  templateUrl: './manager-demandes.component.html',
+  styleUrls: ['./manager-demandes.component.scss'],
 })
-export class AdminDemandesComponent implements OnInit {
+export class DemandesComponent implements OnInit {
   demandes: Demande[] = [];
   loading = false;
   dialogVisible = false;
   selectedDemande: Demande | null = null;
+  currentUserOrgId: number | null = null;
 
   statusOptions = [
     { label: 'En cours', value: DemandeStatus.Encours },
@@ -50,28 +52,66 @@ export class AdminDemandesComponent implements OnInit {
 
   constructor(
     private demandeService: DemandeService,
+    private userService: UserService, // ✅ AJOUTÉ
+    private authService: AuthService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
   ) {}
 
   ngOnInit(): void {
+    this.loadCurrentUserOrg();
     this.loadDemandes();
   }
 
+  loadCurrentUserOrg(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    if (user.organisationId) {
+      this.currentUserOrgId =
+        typeof user.organisationId === 'object'
+          ? (user.organisationId as any).id
+          : user.organisationId;
+    }
+  }
+  
   loadDemandes(): void {
     this.loading = true;
-    this.demandeService.getAll().subscribe({
-      next: (data) => {
-        this.demandes = data;
-        this.loading = false;
+
+    // D'abord, charger les users de l'organisation
+    this.userService.getAll().subscribe({
+      next: (users) => {
+        const orgUserIds = users
+          .filter((u) => {
+            const orgId =
+              typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId;
+            return orgId === this.currentUserOrgId;
+          })
+          .map((u) => u.id!); // ✅ AJOUTÉ '!' car id peut être undefined
+
+        // Ensuite, charger toutes les demandes et filtrer par userId
+        this.demandeService.getAll().subscribe({
+          next: (data) => {
+            this.demandes = data.filter((d) => orgUserIds.includes(d.idUser));
+            this.loading = false;
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: 'Impossible de charger les demandes',
+            });
+            this.loading = false;
+          },
+        });
       },
       error: () => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
-          detail: 'Impossible de charger les demandes',
+          detail: 'Impossible de charger les utilisateurs',
         });
-        this.loading = false;
       },
     });
   }

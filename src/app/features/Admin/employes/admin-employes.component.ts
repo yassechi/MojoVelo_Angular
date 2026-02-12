@@ -8,7 +8,7 @@ import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { EmployeFormDialogComponent } from './employe-form-dialog/employe-form-dialog';
+import { EmployeFormDialogComponent } from './employe-form-dialog/admin-employe-form-dialog';
 import { User, UserRole, UserService } from '../../../core/services/user.service';
 
 @Component({

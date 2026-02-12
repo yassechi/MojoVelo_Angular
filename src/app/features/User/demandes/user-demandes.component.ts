@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// import { DemandeService, Demande, DemandeStatus } from '../../core/services/demande.service';
-import { DemandeFormDialogComponent } from './demande-form-dialog/admin-demande-form-dialog';
+import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
+import { UserDemandeFormDialogComponent } from './user-demande-form-dialog/user-demande-form-dialog';
+import { AuthService } from '../../../core/services/auth.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -10,17 +11,13 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { SelectModule } from 'primeng/select';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { FormsModule } from '@angular/forms';
-import { Demande, DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 
 @Component({
-  selector: 'app-demandes',
+  selector: 'app-user-demandes',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     CardModule,
     ButtonModule,
     TableModule,
@@ -28,41 +25,48 @@ import { Demande, DemandeService, DemandeStatus } from '../../../core/services/d
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
-    SelectModule,
-    DemandeFormDialogComponent
+    UserDemandeFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './admin-demande.component.html',
-  styleUrls: ['./admin-demande.component.scss'],
+  templateUrl: './user-demandes.component.html',
+  styleUrls: ['./user-demandes.component.scss'],
 })
-export class AdminDemandesComponent implements OnInit {
+export class DemandesComponent implements OnInit {
   demandes: Demande[] = [];
   loading = false;
   dialogVisible = false;
   selectedDemande: Demande | null = null;
-
-  statusOptions = [
-    { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'En attente', value: DemandeStatus.Attente },
-    { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Validé', value: DemandeStatus.Valide },
-  ];
+  currentUserId: string | null = null;
 
   constructor(
     private demandeService: DemandeService,
+    private authService: AuthService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
   ) {}
 
   ngOnInit(): void {
+    this.loadCurrentUserId();
     this.loadDemandes();
+  }
+
+  loadCurrentUserId(): void {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.currentUserId = user.id || null;
+    }
   }
 
   loadDemandes(): void {
     this.loading = true;
     this.demandeService.getAll().subscribe({
       next: (data) => {
-        this.demandes = data;
+        // ✅ Filtrer uniquement les demandes de l'utilisateur connecté
+        if (this.currentUserId) {
+          this.demandes = data.filter(d => d.idUser === this.currentUserId);
+        } else {
+          this.demandes = [];
+        }
         this.loading = false;
       },
       error: () => {
@@ -83,26 +87,6 @@ export class AdminDemandesComponent implements OnInit {
 
   onDialogSave(): void {
     this.loadDemandes();
-  }
-
-  onStatusChange(demande: Demande, newStatus: DemandeStatus): void {
-    this.demandeService.updateStatus(demande.id!, newStatus).subscribe({
-      next: () => {
-        demande.status = newStatus;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Statut mis à jour',
-        });
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de mettre à jour le statut',
-        });
-      },
-    });
   }
 
   onDelete(demande: Demande): void {

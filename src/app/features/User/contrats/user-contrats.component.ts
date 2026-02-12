@@ -1,62 +1,65 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
+import { UserService, User } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MessageService, ConfirmationService } from 'primeng/api';
-import { UserService, User } from '../../../core/services/user.service';
-import { Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-contrats',
+  selector: 'app-user-contrats',
   standalone: true,
   imports: [
     CommonModule,
     CardModule,
-    ButtonModule,
     TableModule,
     TagModule,
-    ToastModule,
-    TooltipModule,
-    ConfirmDialogModule,
+    ToastModule
   ],
-  providers: [MessageService, ConfirmationService],
-  templateUrl: './admin-contrats.component.html',
-  styleUrls: ['./admin-contrats.component.scss'],
+  providers: [MessageService],
+  templateUrl: './user-contrats.component.html',
+  styleUrls: ['./user-contrats.component.scss'],
 })
-export class AdminContratsComponent implements OnInit {
+export class ContratsComponent implements OnInit {
   contrats: Contrat[] = [];
   loading = false;
   users: User[] = [];
-
-  
-
+  currentUserId: string | null = null;
 
   constructor(
     private contratService: ContratService,
-    private userService: UserService,  // ← Ajouté
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-    private router: Router
-
+    private userService: UserService,
+    private authService: AuthService,
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
+    this.loadCurrentUserId();
     this.loadContrats();
-    this.loadUsers();  // ← Ajouté
+    this.loadUsers();
+  }
+
+  loadCurrentUserId(): void {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.currentUserId = user.id || null;
+    }
   }
 
   loadContrats(): void {
     this.loading = true;
     this.contratService.getAll().subscribe({
       next: (data) => {
-        this.contrats = data;
+        // ✅ Filtrer uniquement les contrats de l'utilisateur connecté
+        if (this.currentUserId) {
+          this.contrats = data.filter(c => c.beneficiaireId === this.currentUserId);
+        } else {
+          this.contrats = [];
+        }
         this.loading = false;
       },
       error: (error) => {
@@ -71,7 +74,7 @@ export class AdminContratsComponent implements OnInit {
     });
   }
 
-  loadUsers(): void {  // ← Nouvelle méthode
+  loadUsers(): void {
     this.userService.getAll().subscribe({
       next: (data) => {
         this.users = data;
@@ -79,36 +82,6 @@ export class AdminContratsComponent implements OnInit {
       error: (error) => {
         console.error('Erreur lors du chargement des utilisateurs', error);
       }
-    });
-  }
-
-  onDelete(contrat: Contrat): void {
-    this.confirmationService.confirm({
-      message: `Êtes-vous sûr de vouloir supprimer le contrat "${contrat.ref}" ?`,
-      header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
-      accept: () => {
-        this.contratService.delete(contrat.id!).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Succès',
-              detail: 'Contrat supprimé',
-            });
-            this.loadContrats();
-          },
-          error: (error) => {
-            console.error('Erreur lors de la suppression', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer le contrat',
-            });
-          },
-        });
-      },
     });
   }
 
@@ -138,12 +111,8 @@ export class AdminContratsComponent implements OnInit {
     }).format(amount);
   }
 
-  getUserFullName(userId: string): string {  // ← Nouvelle méthode
+  getUserFullName(userId: string): string {
     const user = this.users.find(u => u.id === userId);
     return user ? `${user.firstName} ${user.lastName}` : userId;
   }
-
-  onViewDetail(contrat: Contrat): void {
-  this.router.navigate(['/admin/contrats', contrat.id]);
-}
 }
