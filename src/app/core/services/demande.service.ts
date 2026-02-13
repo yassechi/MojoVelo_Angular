@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export enum DemandeStatus {
   Encours = 1,
@@ -15,15 +16,16 @@ export interface Demande {
   idUser: string;
   idVelo: number;
   discussionId?: number;
+  isActif?: boolean;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class DemandeService {
-  private apiUrl = 'https://localhost:7126/api/Demande';
+  private apiUrl = `${environment.urls.coreApi}/Demande`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<Demande[]> {
     return this.http.get<Demande[]>(`${this.apiUrl}/get-all`);
@@ -64,14 +66,16 @@ export class DemandeService {
     }
   }
 
-  getStatusSeverity(status: DemandeStatus): string {
+  getStatusSeverity(
+    status: DemandeStatus,
+  ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case DemandeStatus.Encours:
         return 'info';
       case DemandeStatus.Attente:
-        return 'warning';
+        return 'warn';
       case DemandeStatus.AttenteComagnie:
-        return 'warning';
+        return 'warn';
       case DemandeStatus.Valide:
         return 'success';
       default:

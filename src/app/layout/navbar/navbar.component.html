@@ -14,9 +14,11 @@
 
   <ng-template pTemplate="end">
     <div class="flex align-items-center gap-3">
-      <span class="text-900 font-semibold" *ngIf="currentUser$ | async as user">
-        {{ user.userName }}
-      </span>
+      @if (currentUser$ | async; as user) {
+        <span class="text-900 font-semibold">
+          {{ user.userName }}
+        </span>
+      }
 
       <p-avatar
         icon="pi pi-user"

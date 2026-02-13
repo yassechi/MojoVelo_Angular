@@ -8,7 +8,7 @@
       </h1>
       <p class="text-600">Liste et gestion des demandes de vélos de votre organisation</p>
     </div>
-    <p-button label="Créer une demande" icon="pi pi-plus" (click)="openDialog()"></p-button>
+    <p-button label="Créer une demande" icon="pi pi-plus" (click)="onCreate()"></p-button>
   </div>
 
   <div class="grid">
@@ -51,9 +51,15 @@
               <td>
                 <div class="flex gap-2">
                   <p-button
+                    icon="pi pi-eye"
+                    styleClass="p-button-rounded p-button-text"
+                    (click)="onView(demande)"
+                    [pTooltip]="'Voir'"
+                  ></p-button>
+                  <p-button
                     icon="pi pi-pencil"
                     styleClass="p-button-rounded p-button-text"
-                    (click)="openDialog(demande)"
+                    (click)="onEdit(demande)"
                     [pTooltip]="'Modifier'"
                   ></p-button>
                   <p-button
@@ -80,13 +86,6 @@
     </div>
   </div>
 </div>
-
-<!-- Dialog de création/modification -->
-<app-demande-form-dialog
-  [(visible)]="dialogVisible"
-  [demande]="selectedDemande"
-  (onSave)="onDialogSave()"
-></app-demande-form-dialog>
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>

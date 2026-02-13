@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -39,7 +41,26 @@ interface Organisation {
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-  registerForm: FormGroup;
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+  private http = inject(HttpClient);
+  private errorService = inject(ErrorService);
+
+  registerForm: FormGroup = this.fb.group({
+    firstName: ['', [Validators.required]],
+    lastName: ['', [Validators.required]],
+    userName: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    phoneNumber: ['', [Validators.required]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ['', [Validators.required]],
+    role: [3, [Validators.required]], // Default: User
+    tailleCm: [null],
+    organisationId: [null, [Validators.required]]
+  }, { validators: this.passwordMatchValidator });
+
   loading = false;
   organisations: Organisation[] = [];
   roles = [
@@ -48,33 +69,12 @@ export class RegisterComponent implements OnInit {
     { label: 'Utilisateur', value: 3 }
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private messageService: MessageService,
-    private http: HttpClient
-  ) {
-    this.registerForm = this.fb.group({
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      userName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]],
-      role: [3, [Validators.required]], // Default: User
-      tailleCm: [null],
-      organisationId: [null, [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
-  }
-
   ngOnInit(): void {
     this.loadOrganisations();
   }
 
   loadOrganisations(): void {
-    this.http.get<any[]>('https://localhost:7126/api/Organisation/get-all').subscribe({
+    this.http.get<any[]>(`${environment.urls.coreApi}/Organisation/get-all`).subscribe({
       next: (data) => {
         this.organisations = data.map(org => ({
           id: org.id,
@@ -83,11 +83,7 @@ export class RegisterComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors du chargement des organisations', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les organisations'
-        });
+        this.errorService.showError('Impossible de charger les organisations');
       }
     });
   }
@@ -124,11 +120,10 @@ export class RegisterComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur d\'inscription',
-          detail: error.error?.message || 'Une erreur est survenue'
-        });
+        this.errorService.showError(
+          error.error?.message || 'Une erreur est survenue',
+          "Erreur d'inscription",
+        );
       }
     });
   }

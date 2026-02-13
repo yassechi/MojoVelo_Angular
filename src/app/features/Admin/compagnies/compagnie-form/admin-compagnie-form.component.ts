@@ -1,70 +1,78 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 // import { OrganisationService, Organisation } from '../../../core/services/organisation.service';
 // import { UserService, User } from '../../../core/services/user.service';
 // import { FileUploadService } from '../../../core/services/file-upload.service';
-import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule } from 'primeng/fileupload';
 import { SelectModule } from 'primeng/select';
+import { CardModule } from 'primeng/card';
 import { MessageService } from 'primeng/api';
 import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
 import { User, UserService } from '../../../../core/services/user.service';
 import { FileUploadService } from '../../../../core/services/file-upload.service';
+import { ErrorService } from '../../../../core/services/error.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
-  selector: 'app-compagnie-form-dialog',
+  selector: 'app-compagnie-form',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    DialogModule,
+    CardModule,
     ButtonModule,
     InputTextModule,
     CheckboxModule,
     FileUploadModule,
     SelectModule,
   ],
-  templateUrl: './admin-compagnie-form-dialog.html',
-  styleUrls: ['./admin-compagnie-form-dialog.scss'],
+  templateUrl: './admin-compagnie-form.component.html',
+  styleUrls: ['./admin-compagnie-form.component.scss'],
 })
-export class CompagnieFormDialogComponent implements OnInit, OnChanges {
-  @Input() visible = false;
-  @Input() organisation: Organisation | null = null;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<void>();
-
+export class CompagnieFormComponent implements OnInit {
   form!: FormGroup;
   loading = false;
   uploadedLogo: string | null = null;
   users: User[] = [];
   loadingUsers = false;
+  organisation: Organisation | null = null;
+  organisationId: number | null = null;
+  isEdit = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private organisationService: OrganisationService,
-    private userService: UserService,
-    private messageService: MessageService,
-    private fileUploadService: FileUploadService,
-  ) {}
+  private fb = inject(FormBuilder);
+  private organisationService = inject(OrganisationService);
+  private userService = inject(UserService);
+  private messageService = inject(MessageService);
+  private fileUploadService = inject(FileUploadService);
+  private errorService = inject(ErrorService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.initForm();
     this.loadUsers();
-  }
-
-  ngOnChanges(): void {
-    if (this.organisation) {
-      this.loadOrganisation();
-    } else {
-      this.form?.reset({
-        id: 0,
-        isActif: true,
-      });
-    }
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.isEdit = true;
+        this.organisationId = Number(id);
+        this.loadOrganisationById(this.organisationId);
+      } else {
+        this.isEdit = false;
+        this.organisationId = null;
+        this.organisation = null;
+        this.form?.reset({
+          id: 0,
+          isActif: true,
+        });
+        this.uploadedLogo = null;
+      }
+    });
   }
 
   initForm(): void {
@@ -97,11 +105,21 @@ export class CompagnieFormDialogComponent implements OnInit, OnChanges {
     });
   }
 
-  loadOrganisation(): void {
-    if (this.organisation) {
-      this.form.patchValue(this.organisation);
-      this.uploadedLogo = this.organisation.logoUrl || null;
-    }
+  loadOrganisationById(id: number): void {
+    this.loading = true;
+    this.organisationService.getOne(id).subscribe({
+      next: (organisation) => {
+        this.organisation = organisation;
+        this.form.patchValue(organisation);
+        this.uploadedLogo = organisation.logoUrl || null;
+        this.loading = false;
+      },
+      error: () => {
+        this.errorService.showError('Impossible de charger la compagnie');
+        this.loading = false;
+        this.goBack();
+      },
+    });
   }
 
   onUpload(event: any): void {
@@ -115,36 +133,27 @@ export class CompagnieFormDialogComponent implements OnInit, OnChanges {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
     if (file.size > maxSize) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Le fichier est trop volumineux (max 5 MB)'
-      });
+      this.errorService.showError('Le fichier est trop volumineux (max 5 MB)');
       return;
     }
 
     if (!allowedTypes.includes(file.type)) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Format non autorisé (jpg, png, gif uniquement)'
-      });
+      this.errorService.showError('Format non autorisé (jpg, png, gif uniquement)');
       return;
     }
-
     this.fileUploadService.uploadLogo(file).subscribe({
       next: (response) => {
-        const logoUrl = `https://localhost:7126${response.url}`;
+        const logoUrl = `${environment.urls.coreBase}${response.url}`;
         this.uploadedLogo = logoUrl;
         this.form.patchValue({ logoUrl: logoUrl });
         this.messageService.add({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Logo téléchargé avec succès'
+          summary: 'SuccÃ¨s',
+          detail: 'Logo tÃ©lÃ©chargÃ© avec succÃ¨s'
         });
       },
       error: () => {
-        // L'intercepteur gère l'affichage de l'erreur
+        // L'intercepteur gÃ¨re l'affichage de l'erreur
       }
     });
   }
@@ -172,28 +181,21 @@ export class CompagnieFormDialogComponent implements OnInit, OnChanges {
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Succès',
-          detail: payload.id ? 'Compagnie mise à jour' : 'Compagnie créée',
+          summary: 'SuccÃ¨s',
+          detail: payload.id ? 'Compagnie mise Ã  jour' : 'Compagnie crÃ©Ã©e',
         });
         this.loading = false;
-        this.close();
-        this.onSave.emit();
+        this.goBack();
       },
       error: () => {
         this.loading = false;
-        // L'intercepteur affiche déjà l'erreur dans le toast
+        // L'intercepteur affiche dÃ©jÃ  l'erreur dans le toast
       }
     });
   }
 
-  close(): void {
-    this.visible = false;
-    this.visibleChange.emit(false);
-    this.form.reset({
-      id: 0,
-      isActif: true,
-    });
-    this.uploadedLogo = null;
+  goBack(): void {
+    this.router.navigate(['/admin/compagnies']);
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -222,3 +224,5 @@ export class CompagnieFormDialogComponent implements OnInit, OnChanges {
     return this.form.get('idContact');
   }
 }
+
+

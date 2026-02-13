@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { DemandeService } from '../../../core/services/demande.service';
@@ -33,11 +33,9 @@ export class DashboardComponent implements OnInit {
   contratsChartData: any;
   chartOptions: any;
 
-  constructor(
-    private authService: AuthService,
-    private demandeService: DemandeService,
-    private contratService: ContratService
-  ) {}
+  private authService = inject(AuthService);
+  private demandeService = inject(DemandeService);
+  private contratService = inject(ContratService);
 
   ngOnInit(): void {
     this.loadCurrentUser();

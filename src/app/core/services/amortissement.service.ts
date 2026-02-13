@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, Injector, inject, runInInjectionContext } from '@angular/core';
+import { HttpClient, httpResource } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Amortissement {
   id: number;
@@ -16,9 +17,31 @@ export interface Amortissement {
   providedIn: 'root'
 })
 export class AmortissementService {
-  private apiUrl = 'http://localhost:5000/api/Amortissement';
+  private apiUrl = `${environment.urls.legacyApi}/Amortissement`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly injector = inject(Injector);
+
+  getAllResource() {
+    return runInInjectionContext(this.injector, () =>
+      httpResource<Amortissement[]>(
+        () => `${this.apiUrl}/get-all`,
+        { defaultValue: [] },
+      ),
+    );
+  }
+
+  getOneResource(id: () => number | null) {
+    return runInInjectionContext(this.injector, () =>
+      httpResource<Amortissement | null>(
+        () => {
+          const resolvedId = id();
+          return resolvedId ? `${this.apiUrl}/${resolvedId}` : undefined;
+        },
+        { defaultValue: null },
+      ),
+    );
+  }
 
   getAll(): Observable<Amortissement[]> {
     return this.http.get<Amortissement[]>(`${this.apiUrl}/get-all`);

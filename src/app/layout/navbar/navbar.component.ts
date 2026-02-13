@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -30,10 +30,8 @@ export class NavbarComponent implements OnInit {
   userMenuItems: MenuItem[] = [];
   currentUser$!: Observable<User | null>;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.currentUser$ = this.authService.currentUser;

@@ -1,16 +1,14 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { DemandeService, Demande, DemandeStatus } from '../../../../core/services/demande.service';
-import { DiscussionService } from '../../../../core/services/discussion.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { MessageService } from 'primeng/api';
-import { switchMap } from 'rxjs/operators';
-
-import { DialogModule } from 'primeng/dialog';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { CheckboxModule } from 'primeng/checkbox';
+import { MessageService } from 'primeng/api';
+import { Demande, DemandeService, DemandeStatus } from '../../../../core/services/demande.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ErrorService } from '../../../../core/services/error.service';
+import { CardModule } from 'primeng/card';
 
 @Component({
   selector: 'app-user-demande-form-dialog',
@@ -18,172 +16,114 @@ import { CheckboxModule } from 'primeng/checkbox';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    DialogModule,
+    CardModule,
     ButtonModule,
     InputTextModule,
-    CheckboxModule
   ],
   templateUrl: './user-demande-form-dialog.html',
-  styleUrls: ['./user-demande-form-dialog.scss']
+  styleUrls: ['./user-demande-form-dialog.scss'],
 })
-export class UserDemandeFormDialogComponent implements OnChanges {
-  @Input() visible = false;
-  @Input() demande: Demande | null = null;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<void>();
-
-  form!: FormGroup;
+export class UserDemandeFormDialogComponent implements OnInit {
   loading = false;
-  currentUserId: string | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private demandeService: DemandeService,
-    private discussionService: DiscussionService,
-    private authService: AuthService,
-    private messageService: MessageService
-  ) {
-    this.initForm();
-    this.loadCurrentUserId();
-  }
+  private readonly fb = inject(FormBuilder);
+  private readonly demandeService = inject(DemandeService);
+  private readonly authService = inject(AuthService);
+  private readonly messageService = inject(MessageService);
+  private readonly errorService = inject(ErrorService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['demande'] && this.visible) {
-      if (this.demande) {
-        this.loadDemande();
+  form = this.fb.group({
+    idVelo: this.fb.control<number | null>(null, Validators.required),
+  });
+
+  demande: Demande | null = null;
+  demandeId: number | null = null;
+  isEdit = false;
+
+  ngOnInit(): void {
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.isEdit = true;
+        this.demandeId = Number(id);
+        this.loadDemandeById(this.demandeId);
       } else {
+        this.isEdit = false;
+        this.demandeId = null;
+        this.demande = null;
         this.form.reset({
-          status: DemandeStatus.Encours
+          idVelo: null,
         });
       }
-    }
+    });
   }
-
-  initForm(): void {
-    this.form = this.fb.group({
-      id: [null],
-      idVelo: ['', [Validators.required]],
-      status: [DemandeStatus.Encours]
+  private loadDemandeById(id: number): void {
+    this.loading = true;
+    this.demandeService.getOne(id).subscribe({
+      next: (demande) => {
+        this.demande = demande;
+        this.form.patchValue({
+          idVelo: demande.idVelo,
+        });
+        this.loading = false;
+      },
+      error: () => {
+        this.errorService.showError('Impossible de charger la demande');
+        this.loading = false;
+        this.goBack();
+      },
     });
   }
 
-  loadCurrentUserId(): void {
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.currentUserId = user.id || null;
-    }
-  }
-
-  loadDemande(): void {
-    if (this.demande) {
-      this.form.patchValue({
-        id: this.demande.id,
-        idVelo: this.demande.idVelo,
-        status: this.demande.status
-      });
-    }
-  }
-
   onSubmit(): void {
-    if (this.form.invalid || !this.currentUserId) {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      return;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      this.errorService.showError('Utilisateur non authentifie');
       return;
     }
 
     this.loading = true;
     const values = this.form.getRawValue();
 
-    // ✅ Si c'est une MODIFICATION, pas besoin de créer une discussion
-    if (this.demande) {
-      this.updateDemande(values);
-      return;
-    }
-
-    // ✅ Si c'est une CRÉATION, créer d'abord la discussion
-    this.createDiscussionThenDemande(values);
-  }
-
-  createDiscussionThenDemande(values: any): void {
-    // Créer la discussion
-    const discussionPayload = {
-      id: 0,
-      objet: `Demande vélo ${values.idVelo}`,
-      status: true,
-      isActif: true,
-      clientId: this.currentUserId!,
-      mojoId: this.currentUserId!,  // ✅ CORRIGÉ - Utiliser le même user
-      dateCreation: new Date().toISOString(),
-      createdBy: this.currentUserId!
-    };
-
-    this.discussionService.create(discussionPayload).pipe(
-      switchMap((discussionResponse) => {
-        // Récupérer l'ID de la discussion créée
-        const discussionId = discussionResponse.id || discussionResponse.data?.id || 0;
-
-        // Créer la demande avec l'ID de la discussion
-        const demandePayload: any = {
-          id: 0,
-          idUser: this.currentUserId,
-          idVelo: Number(values.idVelo),
-          status: values.status || DemandeStatus.Encours,
-          discussionId: discussionId
-        };
-
-        return this.demandeService.create(demandePayload);
-      })
-    ).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Demande créée avec succès'
-        });
-        this.loading = false;
-        this.onSave.emit();
-        this.close();
-      },
-      error: (err) => {
-        console.error('Erreur création:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de créer la demande'
-        });
-        this.loading = false;
-      }
-    });
-  }
-
-  updateDemande(values: any): void {
-    const payload: any = {
-      id: values.id,
-      idUser: this.currentUserId,
+    const payload: Demande = {
+      id: this.demandeId ?? this.demande?.id,
+      idUser: currentUser.id,
       idVelo: Number(values.idVelo),
-      status: values.status,
-      discussionId: this.demande?.discussionId || 0
+      status: this.demande?.status ?? DemandeStatus.Encours,
+      discussionId: this.demande?.discussionId,
     };
 
-    this.demandeService.update(payload).subscribe({
+    const operation = this.isEdit
+      ? this.demandeService.update(payload)
+      : this.demandeService.create(payload);
+
+    operation.subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Demande modifiée'
+          summary: 'Succes',
+          detail: this.isEdit ? 'Demande modifiee' : 'Demande creee',
         });
         this.loading = false;
-        this.onSave.emit();
-        this.close();
+        this.goBack();
       },
       error: () => {
         this.loading = false;
-      }
+        this.errorService.showError(
+          this.isEdit ? 'Impossible de modifier la demande' : 'Impossible de creer la demande',
+        );
+      },
     });
   }
 
-  close(): void {
-    this.visible = false;
-    this.visibleChange.emit(false);
-    this.form.reset();
+  goBack(): void {
+    this.router.navigate(['/user/demandes']);
   }
 }

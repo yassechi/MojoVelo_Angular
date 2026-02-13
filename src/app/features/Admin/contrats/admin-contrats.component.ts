@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
 
@@ -12,6 +12,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { UserService, User } from '../../../core/services/user.service';
 import { Router } from '@angular/router';
+import { ErrorService } from '../../../core/services/error.service';
 
 @Component({
   selector: 'app-contrats',
@@ -35,21 +36,16 @@ export class AdminContratsComponent implements OnInit {
   loading = false;
   users: User[] = [];
 
-  
-
-
-  constructor(
-    private contratService: ContratService,
-    private userService: UserService,  // ← Ajouté
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-    private router: Router
-
-  ) {}
+  private contratService = inject(ContratService);
+  private userService = inject(UserService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
+  private router = inject(Router);
+  private errorService = inject(ErrorService);
 
   ngOnInit(): void {
     this.loadContrats();
-    this.loadUsers();  // ← Ajouté
+    this.loadUsers();
   }
 
   loadContrats(): void {
@@ -61,17 +57,13 @@ export class AdminContratsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors du chargement des contrats', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les contrats',
-        });
+        this.errorService.showError('Impossible de charger les contrats');
         this.loading = false;
       },
     });
   }
 
-  loadUsers(): void {  // ← Nouvelle méthode
+  loadUsers(): void {
     this.userService.getAll().subscribe({
       next: (data) => {
         this.users = data;
@@ -80,6 +72,14 @@ export class AdminContratsComponent implements OnInit {
         console.error('Erreur lors du chargement des utilisateurs', error);
       }
     });
+  }
+
+  onViewDetail(contrat: Contrat): void {
+    if (!contrat.id) {
+      this.errorService.showError('ID contrat manquant');
+      return;
+    }
+    this.router.navigate(['/admin/contrats', contrat.id]);
   }
 
   onDelete(contrat: Contrat): void {
@@ -101,11 +101,7 @@ export class AdminContratsComponent implements OnInit {
           },
           error: (error) => {
             console.error('Erreur lors de la suppression', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer le contrat',
-            });
+            this.errorService.showError('Impossible de supprimer le contrat');
           },
         });
       },
@@ -122,6 +118,8 @@ export class AdminContratsComponent implements OnInit {
         return 'success';
       case StatutContrat.Termine:
         return 'secondary';
+      case StatutContrat.Resilie:
+        return 'danger';
       default:
         return 'secondary';
     }
@@ -138,12 +136,8 @@ export class AdminContratsComponent implements OnInit {
     }).format(amount);
   }
 
-  getUserFullName(userId: string): string {  // ← Nouvelle méthode
-    const user = this.users.find(u => u.id === userId);
+  getUserFullName(userId: string): string {
+    const user = this.users.find((item) => item.id === userId);
     return user ? `${user.firstName} ${user.lastName}` : userId;
   }
-
-  onViewDetail(contrat: Contrat): void {
-  this.router.navigate(['/admin/contrats', contrat.id]);
-}
 }

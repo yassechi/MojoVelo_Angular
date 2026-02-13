@@ -6,7 +6,7 @@
       <ng-template pTemplate="header">
         <div class="text-center pt-4">
           <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 3rem; margin: 0; color: #333;">mojo</h1>
-          <p class="text-600 mt-2">Connectez-vous à votre compte</p>
+          <p class="text-600 mt-2">Connectez-vous &agrave; votre compte</p>
         </div>
       </ng-template>
 
@@ -23,13 +23,16 @@
             class="w-full"
             [class.ng-invalid]="email?.invalid && email?.touched"
           />
-          <small
-            *ngIf="email?.invalid && email?.touched"
-            class="text-red-500"
-          >
-            <span *ngIf="email?.errors?.['required']">L'email est requis.</span>
-            <span *ngIf="email?.errors?.['email']">Format d'email invalide.</span>
-          </small>
+          @if (email?.invalid && email?.touched) {
+            <small class="text-red-500">
+              @if (email?.errors?.['required']) {
+                <span>L'email est requis.</span>
+              }
+              @if (email?.errors?.['email']) {
+                <span>Format d'email invalide.</span>
+              }
+            </small>
+          }
         </div>
 
         <!-- Password -->
@@ -45,19 +48,22 @@
             [inputStyleClass]="'w-full'"
             [class.ng-invalid]="password?.invalid && password?.touched"
           ></p-password>
-          <small
-            *ngIf="password?.invalid && password?.touched"
-            class="text-red-500"
-          >
-            <span *ngIf="password?.errors?.['required']">Le mot de passe est requis.</span>
-            <span *ngIf="password?.errors?.['minlength']">Minimum 8 caractères.</span>
-          </small>
+          @if (password?.invalid && password?.touched) {
+            <small class="text-red-500">
+              @if (password?.errors?.['required']) {
+                <span>Le mot de passe est requis.</span>
+              }
+              @if (password?.errors?.['minlength']) {
+                <span>Minimum 8 caract&egrave;res.</span>
+              }
+            </small>
+          }
         </div>
 
         <!-- Forgot password link -->
         <div class="flex justify-content-end mb-4">
           <a routerLink="/forgot-password" class="text-blue font-semibold cursor-pointer hover:underline">
-            Mot de passe oublié ?
+            Mot de passe oubli&eacute; ?
           </a>
         </div>
 

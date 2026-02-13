@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-// import { UserService, User } from '../../core/services/user.service';
+import { UserService, User } from '../../../core/services/user.service';
 import { MessageService } from 'primeng/api';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -10,10 +11,9 @@ import { ButtonModule } from 'primeng/button';
 import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
 import { SelectModule } from 'primeng/select';
-import { User, UserService } from '../../../core/services/user.service';
 
 @Component({
-  selector: 'app-parametres',
+  selector: 'app-admin-parametres',
   standalone: true,
   imports: [
     CommonModule,
@@ -30,9 +30,34 @@ import { User, UserService } from '../../../core/services/user.service';
   styleUrls: ['./admin-parametres.component.scss']
 })
 export class AdminParametresComponent implements OnInit {
-  profileForm!: FormGroup;
-  passwordForm!: FormGroup;
-  preferencesForm!: FormGroup;
+  private fb = inject(FormBuilder);
+  private userService = inject(UserService);
+  private messageService = inject(MessageService);
+  private errorService = inject(ErrorService);
+
+  profileForm: FormGroup = this.fb.group({
+    userName: ['', [Validators.required]],
+    firstName: ['', [Validators.required]],
+    lastName: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    phoneNumber: ['', [Validators.required]],
+    tailleCm: [177]
+  });
+
+  passwordForm: FormGroup = this.fb.group({
+    currentPassword: ['', [Validators.required]],
+    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required]]
+  }, {
+    validators: this.passwordMatchValidator
+  });
+
+  preferencesForm: FormGroup = this.fb.group({
+    language: ['fr'],
+    emailNotifications: [true],
+    smsNotifications: [false],
+    newsletterSubscription: [true]
+  });
 
   loading = false;
   currentUser: User | null = null;
@@ -44,42 +69,8 @@ export class AdminParametresComponent implements OnInit {
     { label: 'Nederlands', value: 'nl' }
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private userService: UserService,
-    private messageService: MessageService
-  ) {
-    this.initForms();
-  }
-
   ngOnInit(): void {
     this.loadCurrentUser();
-  }
-
-  initForms(): void {
-    this.profileForm = this.fb.group({
-      userName: ['', [Validators.required]],
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required]],
-      tailleCm: [177]
-    });
-
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, {
-      validators: this.passwordMatchValidator
-    });
-
-    this.preferencesForm = this.fb.group({
-      language: ['fr'],
-      emailNotifications: [true],
-      smsNotifications: [false],
-      newsletterSubscription: [true]
-    });
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -121,11 +112,7 @@ export class AdminParametresComponent implements OnInit {
           },
           error: (err) => {
             console.error('Erreur chargement utilisateur:', err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de charger vos informations'
-            });
+            this.errorService.showError('Impossible de charger vos informations');
           }
         });
       }
@@ -147,11 +134,7 @@ export class AdminParametresComponent implements OnInit {
     }
 
     if (!this.currentUser) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Utilisateur non identifié'
-      });
+      this.errorService.showError('Utilisateur non identifié');
       return;
     }
 
@@ -184,11 +167,7 @@ export class AdminParametresComponent implements OnInit {
       error: (err) => {
         this.loading = false;
         console.error('Erreur mise à jour profil:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de mettre à jour vos informations'
-        });
+        this.errorService.showError('Impossible de mettre à jour vos informations');
       }
     });
   }
@@ -200,11 +179,7 @@ export class AdminParametresComponent implements OnInit {
     }
 
     if (!this.currentUser) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Utilisateur non identifié'
-      });
+      this.errorService.showError('Utilisateur non identifié');
       return;
     }
 
@@ -239,11 +214,7 @@ export class AdminParametresComponent implements OnInit {
       error: (err) => {
         this.loading = false;
         console.error('Erreur changement mot de passe:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de modifier votre mot de passe'
-        });
+        this.errorService.showError('Impossible de modifier votre mot de passe');
       }
     });
   }

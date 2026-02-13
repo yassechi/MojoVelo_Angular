@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
-import { DemandeFormDialogComponent } from '../../Admin/demandes/demande-form-dialog/admin-demande-form-dialog';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service'; // ✅ AJOUTÉ
+import { UserService } from '../../../core/services/user.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -30,7 +31,6 @@ import { FormsModule } from '@angular/forms';
     TooltipModule,
     ConfirmDialogModule,
     SelectModule,
-    DemandeFormDialogComponent,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './manager-demandes.component.html',
@@ -39,24 +39,22 @@ import { FormsModule } from '@angular/forms';
 export class DemandesComponent implements OnInit {
   demandes: Demande[] = [];
   loading = false;
-  dialogVisible = false;
-  selectedDemande: Demande | null = null;
   currentUserOrgId: number | null = null;
 
   statusOptions = [
     { label: 'En cours', value: DemandeStatus.Encours },
     { label: 'En attente', value: DemandeStatus.Attente },
     { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Validé', value: DemandeStatus.Valide },
+    { label: 'Valide', value: DemandeStatus.Valide },
   ];
 
-  constructor(
-    private demandeService: DemandeService,
-    private userService: UserService, // ✅ AJOUTÉ
-    private authService: AuthService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-  ) {}
+  private readonly demandeService = inject(DemandeService);
+  private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
 
   ngOnInit(): void {
     this.loadCurrentUserOrg();
@@ -65,7 +63,9 @@ export class DemandesComponent implements OnInit {
 
   loadCurrentUserOrg(): void {
     const user = this.authService.getCurrentUser();
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     if (user.organisationId) {
       this.currentUserOrgId =
@@ -74,11 +74,11 @@ export class DemandesComponent implements OnInit {
           : user.organisationId;
     }
   }
-  
+
   loadDemandes(): void {
     this.loading = true;
 
-    // D'abord, charger les users de l'organisation
+    // First, load users in the organization.
     this.userService.getAll().subscribe({
       next: (users) => {
         const orgUserIds = users
@@ -87,42 +87,45 @@ export class DemandesComponent implements OnInit {
               typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId;
             return orgId === this.currentUserOrgId;
           })
-          .map((u) => u.id!); // ✅ AJOUTÉ '!' car id peut être undefined
+          .map((u) => u.id!);
 
-        // Ensuite, charger toutes les demandes et filtrer par userId
+        // Then load demandes and filter by userId.
         this.demandeService.getAll().subscribe({
           next: (data) => {
             this.demandes = data.filter((d) => orgUserIds.includes(d.idUser));
             this.loading = false;
           },
           error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de charger les demandes',
-            });
+            this.errorService.showError('Impossible de charger les demandes');
             this.loading = false;
           },
         });
       },
       error: () => {
         this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les utilisateurs',
-        });
+        this.errorService.showError('Impossible de charger les utilisateurs');
       },
     });
   }
 
-  openDialog(demande?: Demande): void {
-    this.selectedDemande = demande || null;
-    this.dialogVisible = true;
+  onCreate(): void {
+    this.router.navigate(['/manager/demandes/new']);
   }
 
-  onDialogSave(): void {
-    this.loadDemandes();
+  onView(demande: Demande): void {
+    if (!demande.id) {
+      this.errorService.showError('ID demande manquant');
+      return;
+    }
+    this.router.navigate(['/manager/demandes', demande.id]);
+  }
+
+  onEdit(demande: Demande): void {
+    if (!demande.id) {
+      this.errorService.showError('ID demande manquant');
+      return;
+    }
+    this.router.navigate(['/manager/demandes', demande.id, 'edit']);
   }
 
   onStatusChange(demande: Demande, newStatus: DemandeStatus): void {
@@ -131,23 +134,19 @@ export class DemandesComponent implements OnInit {
         demande.status = newStatus;
         this.messageService.add({
           severity: 'success',
-          summary: 'Succès',
-          detail: 'Statut mis à jour',
+          summary: 'Succes',
+          detail: 'Statut mis a jour',
         });
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de mettre à jour le statut',
-        });
+        this.errorService.showError('Impossible de mettre a jour le statut');
       },
     });
   }
 
   onDelete(demande: Demande): void {
     this.confirmationService.confirm({
-      message: `Êtes-vous sûr de vouloir supprimer cette demande ?`,
+      message: 'Etes-vous sur de vouloir supprimer cette demande ?',
       header: 'Confirmation',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Oui',
@@ -157,17 +156,13 @@ export class DemandesComponent implements OnInit {
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Succès',
-              detail: 'Demande supprimée',
+              summary: 'Succes',
+              detail: 'Demande supprimee',
             });
             this.loadDemandes();
           },
           error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer la demande',
-            });
+            this.errorService.showError('Impossible de supprimer la demande');
           },
         });
       },

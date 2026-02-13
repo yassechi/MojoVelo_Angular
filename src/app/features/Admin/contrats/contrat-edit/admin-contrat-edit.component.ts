@@ -1,10 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { httpResource } from '@angular/common/http';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { ContratService, Contrat, StatutContrat } from '../../../../core/services/contrat.service';
-import { UserService, User } from '../../../../core/services/user.service';
-import { VeloService, Velo } from '../../../../core/services/velo.service';
+import { User } from '../../../../core/services/user.service';
+import { Velo } from '../../../../core/services/velo.service';
+import { ErrorService } from '../../../../core/services/error.service';
+import { environment } from '../../../../../environments/environment';
 
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -29,150 +34,167 @@ import { MessageService } from 'primeng/api';
     InputNumber,
     Toast
   ],
-  providers: [MessageService, VeloService],
+  providers: [MessageService],
   templateUrl: './admin-contrat-edit.component.html',
-  styleUrls: ['./admin-contrat-edit.component.scss']
+  styleUrls: ['./admin-contrat-edit.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContratEditComponent implements OnInit {
-  contratForm!: FormGroup;
-  contratId: number | null = null;
-  loading = false;
+export class ContratEditComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly contratService = inject(ContratService);
+  private readonly messageService = inject(MessageService);
+  private readonly errorService = inject(ErrorService);
 
-  users: User[] = [];
-  velos: Velo[] = [];
+  private readonly coreApi = environment.urls.coreApi;
+  private readonly legacyApi = environment.urls.legacyApi;
 
-  statutOptions = [
+  readonly contratForm = this.fb.group({
+    ref: this.fb.nonNullable.control('', Validators.required),
+    veloId: this.fb.control<number | null>(null, Validators.required),
+    beneficiaireId: this.fb.nonNullable.control('', Validators.required),
+    userRhId: this.fb.nonNullable.control('', Validators.required),
+    dateDebut: this.fb.control<Date | null>(null, Validators.required),
+    dateFin: this.fb.control<Date | null>(null, Validators.required),
+    duree: this.fb.control<number | null>(null, Validators.required),
+    loyerMensuelHT: this.fb.control<number | null>(null, Validators.required),
+    statutContrat: this.fb.nonNullable.control(StatutContrat.EnCours, Validators.required),
+  });
+
+  readonly contratId = toSignal(
+    this.route.paramMap.pipe(
+      map((params) => {
+        const id = params.get('id');
+        return id ? Number(id) : null;
+      }),
+    ),
+    { initialValue: null },
+  );
+
+  readonly contratResource = httpResource<Contrat | null>(
+    () => {
+      const id = this.contratId();
+      return id ? `${this.coreApi}/Contrat/get-one/${id}` : undefined;
+    },
+    { defaultValue: null },
+  );
+
+  readonly usersResource = httpResource<User[]>(
+    () => `${this.coreApi}/User/get-all`,
+    { defaultValue: [] },
+  );
+  readonly velosResource = httpResource<Velo[]>(
+    () => `${this.legacyApi}/Velo/get-all`,
+    { defaultValue: [] },
+  );
+
+  readonly users = computed(() => this.usersResource.value() ?? []);
+  readonly velos = computed(() => this.velosResource.value() ?? []);
+
+  readonly loading = computed(
+    () =>
+      this.contratResource.isLoading() ||
+      this.usersResource.isLoading() ||
+      this.velosResource.isLoading(),
+  );
+
+  readonly statutOptions = [
     { label: 'En cours', value: StatutContrat.EnCours },
     { label: 'Terminé', value: StatutContrat.Termine },
-    { label: 'Résilié', value: StatutContrat.Resilie }
+    { label: 'Résilié', value: StatutContrat.Resilie },
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private contratService: ContratService,
-    private userService: UserService,
-    private veloService: VeloService,
-    private messageService: MessageService
-  ) {}
-
-  ngOnInit(): void {
-    this.initForm();
-    this.loadUsers();
-    this.loadVelos();
-
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.contratId = Number(id);
-      this.loadContrat(this.contratId);
+  private readonly contratErrorShown = signal(false);
+  private readonly contratFormEffect = effect(() => {
+    const contrat = this.contratResource.value();
+    if (!contrat) {
+      return;
     }
-  }
-
-  initForm(): void {
-    this.contratForm = this.fb.group({
-      ref: ['', Validators.required],
-      veloId: [null, Validators.required],
-      beneficiaireId: ['', Validators.required],
-      userRhId: ['', Validators.required],
-      dateDebut: [null, Validators.required],
-      dateFin: [null, Validators.required],
-      duree: [null, Validators.required],
-      loyerMensuelHT: [null, Validators.required],
-      statutContrat: [StatutContrat.EnCours, Validators.required]
+    this.contratForm.patchValue({
+      ref: contrat.ref,
+      veloId: contrat.veloId,
+      beneficiaireId: contrat.beneficiaireId,
+      userRhId: contrat.userRhId,
+      dateDebut: new Date(contrat.dateDebut),
+      dateFin: new Date(contrat.dateFin),
+      duree: contrat.duree,
+      loyerMensuelHT: contrat.loyerMensuelHT,
+      statutContrat: contrat.statutContrat,
     });
-  }
+  });
 
-  loadContrat(id: number): void {
-    this.loading = true;
-    this.contratService.getOne(id).subscribe({
-      next: (contrat) => {
-        this.contratForm.patchValue({
-          ref: contrat.ref,
-          veloId: contrat.veloId,
-          beneficiaireId: contrat.beneficiaireId,
-          userRhId: contrat.userRhId,
-          dateDebut: new Date(contrat.dateDebut),
-          dateFin: new Date(contrat.dateFin),
-          duree: contrat.duree,
-          loyerMensuelHT: contrat.loyerMensuelHT,
-          statutContrat: contrat.statutContrat
-        });
-        this.loading = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger le contrat'
-        });
-        this.loading = false;
-      }
-    });
-  }
-
-  loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (users) => this.users = users,
-      error: () => console.error('Erreur chargement users')
-    });
-  }
-
-  loadVelos(): void {
-    this.veloService.getAll().subscribe({
-      next: (velos) => this.velos = velos,
-      error: () => console.error('Erreur chargement vélos')
-    });
-  }
-
- onSubmit(): void {
-  if (this.contratForm.invalid) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Attention',
-      detail: 'Veuillez remplir tous les champs obligatoires'
-    });
-    return;
-  }
-
-  const formValue = this.contratForm.value;
-  const contrat: Contrat = {
-    id: this.contratId ?? undefined,
-    ref: formValue.ref,
-    veloId: formValue.veloId,
-    beneficiaireId: formValue.beneficiaireId,
-    userRhId: formValue.userRhId,
-    dateDebut: formValue.dateDebut.toISOString().split('T')[0],
-    dateFin: formValue.dateFin.toISOString().split('T')[0],
-    duree: formValue.duree,
-    loyerMensuelHT: formValue.loyerMensuelHT,
-    statutContrat: formValue.statutContrat,
-    isActif: true
-  };
-
-  this.contratService.update(contrat).subscribe({
-    next: () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Succès',
-        detail: 'Contrat modifié avec succès'
-      });
-
-      // ✅ SOLUTION : Recharger la page directement après navigation
-      setTimeout(() => {
-        window.location.href = `/admin/contrats/${this.contratId}`;
-      }, 1000);
-    },
-    error: () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de modifier le contrat'
-      });
+  private readonly contratErrorEffect = effect(() => {
+    const error = this.contratResource.error();
+    if (error && !this.contratErrorShown()) {
+      this.errorService.showError('Impossible de charger le contrat');
+      this.contratErrorShown.set(true);
+    }
+    if (!error && this.contratErrorShown()) {
+      this.contratErrorShown.set(false);
     }
   });
-}
+
+  onSubmit(): void {
+    if (this.contratForm.invalid) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attention',
+        detail: 'Veuillez remplir tous les champs obligatoires',
+      });
+      return;
+    }
+
+    const formValue = this.contratForm.getRawValue();
+    const {
+      dateDebut,
+      dateFin,
+      veloId,
+      duree,
+      loyerMensuelHT,
+    } = formValue;
+    if (!dateDebut || !dateFin || veloId === null || duree === null || loyerMensuelHT === null) {
+      this.errorService.showError('Formulaire incomplet');
+      return;
+    }
+    const contrat: Contrat = {
+      id: this.contratId() ?? undefined,
+      ref: formValue.ref,
+      veloId,
+      beneficiaireId: formValue.beneficiaireId,
+      userRhId: formValue.userRhId,
+      dateDebut: dateDebut.toISOString().split('T')[0],
+      dateFin: dateFin.toISOString().split('T')[0],
+      duree,
+      loyerMensuelHT,
+      statutContrat: formValue.statutContrat,
+      isActif: true,
+    };
+
+    this.contratService.update(contrat).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Contrat modifié avec succès',
+        });
+
+        const contratId = this.contratId();
+        if (contratId) {
+          // Recharger la page directement après navigation
+          setTimeout(() => {
+            window.location.href = `/admin/contrats/${contratId}`;
+          }, 1000);
+        }
+      },
+      error: () => {
+        this.errorService.showError('Impossible de modifier le contrat');
+      },
+    });
+  }
+
   goBack(): void {
-    this.router.navigate(['/admin/contrats', this.contratId]);
+    const contratId = this.contratId();
+    this.router.navigate(['/admin/contrats', contratId]);
   }
 }

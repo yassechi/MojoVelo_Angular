@@ -10,6 +10,8 @@ import { AdminDashboardComponent } from './features/Admin/dashboard/admin-dashbo
 import { AdminCompagniesComponent } from './features/Admin/compagnies/admin-compagnies.component';
 import { AdminEmployesComponent } from './features/Admin/employes/admin-employes.component';
 import { AdminDemandesComponent } from './features/Admin/demandes/admin-demande.component';
+import { DemandeFormDialogComponent } from './shared/components/demande-form/admin-demande-form-dialog';
+import { DemandeDetailComponent } from './shared/components/demande-detail/admin-demande-detail.component';
 import { AdminContratsComponent } from './features/Admin/contrats/admin-contrats.component';
 import { AdminParametresComponent } from './features/Admin/parametres/admin-parametres.component';
 import { ContratDetailComponent } from './features/Admin/contrats/contrat-detail/admin-contrat-detail.component';
@@ -28,6 +30,11 @@ import { DemandesComponent as UserDemandesComponent } from './features/User/dema
 import { ParametresComponent as UserParametresComponent } from './features/User/parametres/user-parametres.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { ContratEditComponent } from './features/Admin/contrats/contrat-edit/admin-contrat-edit.component';
+import { CompagnieFormComponent } from './features/Admin/compagnies/compagnie-form/admin-compagnie-form.component';
+import { EmployeFormDialogComponent } from './shared/components/employe-form/admin-employe-form-dialog';
+import { UserDemandeFormDialogComponent } from './features/User/demandes/user-demande-form-dialog/user-demande-form-dialog';
+import { EmployeDetailComponent } from './shared/components/employe-detail/admin-employe-detail.component';
+import { CompagnieDetailComponent } from './features/Admin/compagnies/compagnie-detail/admin-compagnie-detail.component';
 
 
 export const routes: Routes = [
@@ -45,8 +52,17 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'compagnies', component: AdminCompagniesComponent },
+      { path: 'compagnies/new', component: CompagnieFormComponent },
+      { path: 'compagnies/:id/edit', component: CompagnieFormComponent },
+      { path: 'compagnies/:id', component: CompagnieDetailComponent },
       { path: 'employes', component: AdminEmployesComponent },
+      { path: 'employes/new', component: EmployeFormDialogComponent },
+      { path: 'employes/:id/edit', component: EmployeFormDialogComponent },
+      { path: 'employes/:id', component: EmployeDetailComponent },
       { path: 'demandes', component: AdminDemandesComponent },
+      { path: 'demandes/new', component: DemandeFormDialogComponent },
+      { path: 'demandes/:id/edit', component: DemandeFormDialogComponent },
+      { path: 'demandes/:id', component: DemandeDetailComponent },
       { path: 'contrats', component: AdminContratsComponent },
       { path: 'contrats/:id', component: ContratDetailComponent },
       { path: 'contrats/edit/:id', component: ContratEditComponent },
@@ -63,7 +79,13 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: ManagerDashboardComponent },
       { path: 'employes', component: ManagerEmployesComponent },
+      { path: 'employes/new', component: EmployeFormDialogComponent },
+      { path: 'employes/:id/edit', component: EmployeFormDialogComponent },
+      { path: 'employes/:id', component: EmployeDetailComponent },
       { path: 'demandes', component: ManagerDemandesComponent },
+      { path: 'demandes/new', component: DemandeFormDialogComponent },
+      { path: 'demandes/:id/edit', component: DemandeFormDialogComponent },
+      { path: 'demandes/:id', component: DemandeDetailComponent },
       { path: 'contrats', component: ManagerContratsComponent },
       { path: 'parametres', component: ManagerParametresComponent },
     ],
@@ -79,6 +101,9 @@ export const routes: Routes = [
       { path: 'dashboard', component: UserDashboardComponent },
       { path: 'contrats', component: UserContratsComponent },
       { path: 'demandes', component: UserDemandesComponent },
+      { path: 'demandes/new', component: UserDemandeFormDialogComponent },
+      { path: 'demandes/:id/edit', component: UserDemandeFormDialogComponent },
+      { path: 'demandes/:id', component: DemandeDetailComponent },
       { path: 'parametres', component: UserParametresComponent },
     ],
   },

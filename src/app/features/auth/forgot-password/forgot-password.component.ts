@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -27,20 +28,17 @@ import { MessageService } from 'primeng/api';
   styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent {
-  forgotForm: FormGroup;
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+  private errorService = inject(ErrorService);
+
+  forgotForm: FormGroup = this.fb.group({
+    email: ['', [Validators.required, Validators.email]]
+  });
   loading = false;
   emailSent = false;
-
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private messageService: MessageService
-  ) {
-    this.forgotForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
-    });
-  }
 
   onSubmit(): void {
     if (this.forgotForm.invalid) {
@@ -62,11 +60,7 @@ export class ForgotPasswordComponent {
       },
       error: () => {
         this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Une erreur est survenue. Veuillez réessayer.'
-        });
+        this.errorService.showError('Une erreur est survenue. Veuillez réessayer.');
       }
     });
   }

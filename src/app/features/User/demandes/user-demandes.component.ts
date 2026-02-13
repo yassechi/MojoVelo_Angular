@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
-import { UserDemandeFormDialogComponent } from './user-demande-form-dialog/user-demande-form-dialog';
 import { AuthService } from '../../../core/services/auth.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -25,7 +26,6 @@ import { MessageService, ConfirmationService } from 'primeng/api';
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
-    UserDemandeFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './user-demandes.component.html',
@@ -34,16 +34,14 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 export class DemandesComponent implements OnInit {
   demandes: Demande[] = [];
   loading = false;
-  dialogVisible = false;
-  selectedDemande: Demande | null = null;
   currentUserId: string | null = null;
 
-  constructor(
-    private demandeService: DemandeService,
-    private authService: AuthService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-  ) {}
+  private readonly demandeService = inject(DemandeService);
+  private readonly authService = inject(AuthService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
 
   ngOnInit(): void {
     this.loadCurrentUserId();
@@ -70,23 +68,30 @@ export class DemandesComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les demandes',
-        });
+        this.errorService.showError('Impossible de charger les demandes');
         this.loading = false;
       },
     });
   }
 
-  openDialog(demande?: Demande): void {
-    this.selectedDemande = demande || null;
-    this.dialogVisible = true;
+  onCreate(): void {
+    this.router.navigate(['/user/demandes/new']);
   }
 
-  onDialogSave(): void {
-    this.loadDemandes();
+  onView(demande: Demande): void {
+    if (!demande.id) {
+      this.errorService.showError('ID demande manquant');
+      return;
+    }
+    this.router.navigate(['/user/demandes', demande.id]);
+  }
+
+  onEdit(demande: Demande): void {
+    if (!demande.id) {
+      this.errorService.showError('ID demande manquant');
+      return;
+    }
+    this.router.navigate(['/user/demandes', demande.id, 'edit']);
   }
 
   onDelete(demande: Demande): void {
@@ -107,11 +112,7 @@ export class DemandesComponent implements OnInit {
             this.loadDemandes();
           },
           error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer la demande',
-            });
+            this.errorService.showError('Impossible de supprimer la demande');
           },
         });
       },

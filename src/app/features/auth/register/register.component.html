@@ -1,4 +1,3 @@
-
 <div class="flex align-items-center justify-content-center" style="min-height: 100vh; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 2rem 0;">
   <p-toast></p-toast>
 
@@ -7,27 +6,29 @@
       <ng-template pTemplate="header">
         <div class="text-center pt-4">
           <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 3rem; margin: 0; color: #333;">mojo</h1>
-          <p class="text-600 mt-2">Créer votre compte</p>
+          <p class="text-600 mt-2">Cr&eacute;er votre compte</p>
         </div>
       </ng-template>
 
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-        <!-- Prénom et Nom -->
+        <!-- Pr&eacute;nom et Nom -->
         <div class="grid">
           <div class="col-6">
             <div class="field mb-4">
-              <label for="firstName" class="block mb-2 font-semibold">Prénom</label>
+              <label for="firstName" class="block mb-2 font-semibold">Pr&eacute;nom</label>
               <input
                 pInputText
                 id="firstName"
                 formControlName="firstName"
-                placeholder="Votre prénom"
+                placeholder="Votre pr&eacute;nom"
                 class="w-full"
                 [class.ng-invalid]="firstName?.invalid && firstName?.touched"
               />
-              <small *ngIf="firstName?.invalid && firstName?.touched" class="text-red-500">
-                Prénom requis
-              </small>
+              @if (firstName?.invalid && firstName?.touched) {
+                <small class="text-red-500">
+                  Pr&eacute;nom requis
+                </small>
+              }
             </div>
           </div>
 
@@ -42,9 +43,11 @@
                 class="w-full"
                 [class.ng-invalid]="lastName?.invalid && lastName?.touched"
               />
-              <small *ngIf="lastName?.invalid && lastName?.touched" class="text-red-500">
-                Nom requis
-              </small>
+              @if (lastName?.invalid && lastName?.touched) {
+                <small class="text-red-500">
+                  Nom requis
+                </small>
+              }
             </div>
           </div>
         </div>
@@ -60,9 +63,11 @@
             class="w-full"
             [class.ng-invalid]="userName?.invalid && userName?.touched"
           />
-          <small *ngIf="userName?.invalid && userName?.touched" class="text-red-500">
-            Nom d'utilisateur requis
-          </small>
+          @if (userName?.invalid && userName?.touched) {
+            <small class="text-red-500">
+              Nom d'utilisateur requis
+            </small>
+          }
         </div>
 
         <!-- Email -->
@@ -77,15 +82,21 @@
             class="w-full"
             [class.ng-invalid]="email?.invalid && email?.touched"
           />
-          <small *ngIf="email?.invalid && email?.touched" class="text-red-500">
-            <span *ngIf="email?.errors?.['required']">Email requis</span>
-            <span *ngIf="email?.errors?.['email']">Format email invalide</span>
-          </small>
+          @if (email?.invalid && email?.touched) {
+            <small class="text-red-500">
+              @if (email?.errors?.['required']) {
+                <span>Email requis</span>
+              }
+              @if (email?.errors?.['email']) {
+                <span>Format email invalide</span>
+              }
+            </small>
+          }
         </div>
 
-        <!-- Téléphone -->
+        <!-- T&eacute;l&eacute;phone -->
         <div class="field mb-4">
-          <label for="phoneNumber" class="block mb-2 font-semibold">Téléphone</label>
+          <label for="phoneNumber" class="block mb-2 font-semibold">T&eacute;l&eacute;phone</label>
           <input
             pInputText
             id="phoneNumber"
@@ -94,9 +105,11 @@
             class="w-full"
             [class.ng-invalid]="phoneNumber?.invalid && phoneNumber?.touched"
           />
-          <small *ngIf="phoneNumber?.invalid && phoneNumber?.touched" class="text-red-500">
-            Téléphone requis
-          </small>
+          @if (phoneNumber?.invalid && phoneNumber?.touched) {
+            <small class="text-red-500">
+              T&eacute;l&eacute;phone requis
+            </small>
+          }
         </div>
 
         <!-- Mot de passe -->
@@ -115,12 +128,18 @@
                 [class.ng-invalid]="password?.invalid && password?.touched"
               ></p-password>
               <small class="text-600 block mt-1" style="font-size: 0.75rem;">
-                Doit contenir : 8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
+                Doit contenir : 8+ caract&egrave;res, 1 majuscule, 1 minuscule, 1 chiffre, 1 caract&egrave;re sp&eacute;cial
               </small>
-              <small *ngIf="password?.invalid && password?.touched" class="text-red-500 block mt-1">
-                <span *ngIf="password?.errors?.['required']">Mot de passe requis</span>
-                <span *ngIf="password?.errors?.['minlength']">Minimum 8 caractères</span>
-              </small>
+              @if (password?.invalid && password?.touched) {
+                <small class="text-red-500 block mt-1">
+                  @if (password?.errors?.['required']) {
+                    <span>Mot de passe requis</span>
+                  }
+                  @if (password?.errors?.['minlength']) {
+                    <span>Minimum 8 caract&egrave;res</span>
+                  }
+                </small>
+              }
             </div>
           </div>
 
@@ -137,32 +156,40 @@
                 [inputStyleClass]="'w-full'"
                 [class.ng-invalid]="confirmPassword?.invalid && confirmPassword?.touched"
               ></p-password>
-              <small *ngIf="confirmPassword?.invalid && confirmPassword?.touched" class="text-red-500 block mt-1">
-                <span *ngIf="confirmPassword?.errors?.['required']">Confirmation requise</span>
-                <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Mots de passe différents</span>
-              </small>
+              @if (confirmPassword?.invalid && confirmPassword?.touched) {
+                <small class="text-red-500 block mt-1">
+                  @if (confirmPassword?.errors?.['required']) {
+                    <span>Confirmation requise</span>
+                  }
+                  @if (confirmPassword?.errors?.['passwordMismatch']) {
+                    <span>Mots de passe diff&eacute;rents</span>
+                  }
+                </small>
+              }
             </div>
           </div>
         </div>
 
-        <!-- Rôle et Organisation -->
+        <!-- R&ocirc;le et Organisation -->
         <div class="grid">
           <div class="col-6">
             <div class="field mb-4">
-              <label for="role" class="block mb-2 font-semibold">Rôle</label>
+              <label for="role" class="block mb-2 font-semibold">R&ocirc;le</label>
               <p-select
                 id="role"
                 formControlName="role"
                 [options]="roles"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Sélectionnez un rôle"
+                placeholder="S&eacute;lectionnez un r&ocirc;le"
                 styleClass="w-full"
                 [class.ng-invalid]="role?.invalid && role?.touched"
               ></p-select>
-              <small *ngIf="role?.invalid && role?.touched" class="text-red-500">
-                Rôle requis
-              </small>
+              @if (role?.invalid && role?.touched) {
+                <small class="text-red-500">
+                  R&ocirc;le requis
+                </small>
+              }
             </div>
           </div>
 
@@ -175,13 +202,15 @@
                 [options]="organisations"
                 optionLabel="nom"
                 optionValue="id"
-                placeholder="Sélectionnez une organisation"
+                placeholder="S&eacute;lectionnez une organisation"
                 styleClass="w-full"
                 [class.ng-invalid]="organisationId?.invalid && organisationId?.touched"
               ></p-select>
-              <small *ngIf="organisationId?.invalid && organisationId?.touched" class="text-red-500">
-                Organisation requise
-              </small>
+              @if (organisationId?.invalid && organisationId?.touched) {
+                <small class="text-red-500">
+                  Organisation requise
+                </small>
+              }
             </div>
           </div>
         </div>
@@ -213,7 +242,7 @@
       <ng-template pTemplate="footer">
         <div class="text-center pt-3">
           <p class="text-600">
-            Vous avez déjà un compte ?
+            Vous avez d&eacute;j&agrave; un compte ?
             <a routerLink="/login" class="font-semibold cursor-pointer hover:underline" style="color: #1e3a8a;">
               Se connecter
             </a>

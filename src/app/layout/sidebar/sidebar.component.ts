@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -23,10 +23,8 @@ export class SidebarComponent implements OnInit {
   menuItems: MenuItem[] = [];
   userRole: number = 3;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.authService.currentUser.subscribe(user => {

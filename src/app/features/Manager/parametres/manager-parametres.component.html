@@ -1,5 +1,5 @@
 <div class="card">
-  <h2 class="mb-4">Paramètres du profil</h2>
+  <h2 class="mb-4">Param&egrave;tres du profil</h2>
 
   <!-- Navigation par boutons -->
   <div class="flex gap-2 mb-4">
@@ -16,7 +16,7 @@
       (onClick)="setActiveTab('password')"
     ></p-button>
     <p-button
-      label="Préférences"
+      label="Pr&eacute;f&eacute;rences"
       icon="pi pi-cog"
       [outlined]="activeTab !== 'preferences'"
       (onClick)="setActiveTab('preferences')"
@@ -26,7 +26,7 @@
   <!-- Contenu des onglets -->
   <div class="mt-4">
     <!-- Onglet Informations personnelles -->
-    <div *ngIf="activeTab === 'profile'">
+    @if (activeTab === 'profile') {
       <p-card>
         <ng-template pTemplate="header">
           <div class="p-3">
@@ -40,9 +40,11 @@
               <div class="field mb-4">
                 <label class="block mb-2 font-semibold">Nom d'utilisateur *</label>
                 <input pInputText formControlName="userName" class="w-full" />
-                <small class="p-error" *ngIf="profileForm.get('userName')?.invalid && profileForm.get('userName')?.touched">
-                  Le nom d'utilisateur est obligatoire
-                </small>
+                @if (profileForm.get('userName')?.invalid && profileForm.get('userName')?.touched) {
+                  <small class="p-error">
+                    Le nom d'utilisateur est obligatoire
+                  </small>
+                }
               </div>
             </div>
 
@@ -50,15 +52,17 @@
               <div class="field mb-4">
                 <label class="block mb-2 font-semibold">Email *</label>
                 <input pInputText type="email" formControlName="email" class="w-full" />
-                <small class="p-error" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
-                  Email invalide
-                </small>
+                @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+                  <small class="p-error">
+                    Email invalide
+                  </small>
+                }
               </div>
             </div>
 
             <div class="col-12 md:col-6">
               <div class="field mb-4">
-                <label class="block mb-2 font-semibold">Prénom *</label>
+                <label class="block mb-2 font-semibold">Pr&eacute;nom *</label>
                 <input pInputText formControlName="firstName" class="w-full" />
               </div>
             </div>
@@ -72,7 +76,7 @@
 
             <div class="col-12 md:col-6">
               <div class="field mb-4">
-                <label class="block mb-2 font-semibold">Téléphone *</label>
+                <label class="block mb-2 font-semibold">T&eacute;l&eacute;phone *</label>
                 <input pInputText formControlName="phoneNumber" class="w-full" />
               </div>
             </div>
@@ -95,10 +99,10 @@
           </div>
         </form>
       </p-card>
-    </div>
+    }
 
     <!-- Onglet Mot de passe -->
-    <div *ngIf="activeTab === 'password'">
+    @if (activeTab === 'password') {
       <p-card>
         <ng-template pTemplate="header">
           <div class="p-3">
@@ -147,9 +151,11 @@
                   inputStyleClass="w-full"
                   autocomplete="new-password"
                 ></p-password>
-                <small class="p-error" *ngIf="passwordForm.get('confirmPassword')?.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched">
-                  Les mots de passe ne correspondent pas
-                </small>
+                @if (passwordForm.get('confirmPassword')?.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
+                  <small class="p-error">
+                    Les mots de passe ne correspondent pas
+                  </small>
+                }
               </div>
             </div>
           </div>
@@ -164,14 +170,14 @@
           </div>
         </form>
       </p-card>
-    </div>
+    }
 
-    <!-- Onglet Préférences -->
-    <div *ngIf="activeTab === 'preferences'">
+    <!-- Onglet Pr&eacute;f&eacute;rences -->
+    @if (activeTab === 'preferences') {
       <p-card>
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0">Préférences</h3>
+            <h3 class="m-0">Pr&eacute;f&eacute;rences</h3>
           </div>
         </ng-template>
 
@@ -223,20 +229,20 @@
                   [binary]="true"
                   inputId="newsletter"
                 ></p-checkbox>
-                <label for="newsletter" class="ml-2 cursor-pointer">S'abonner à la newsletter</label>
+                <label for="newsletter" class="ml-2 cursor-pointer">S'abonner &agrave; la newsletter</label>
               </div>
             </div>
           </div>
 
           <div class="flex justify-content-end mt-4">
             <p-button
-              label="Enregistrer les préférences"
+              label="Enregistrer les pr&eacute;f&eacute;rences"
               icon="pi pi-check"
               type="submit"
             ></p-button>
           </div>
         </form>
       </p-card>
-    </div>
+    }
   </div>
 </div>

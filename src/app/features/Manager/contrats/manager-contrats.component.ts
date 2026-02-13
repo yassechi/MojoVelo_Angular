@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
 import { UserService, User } from '../../../core/services/user.service';
-import { AuthService } from '../../../core/services/auth.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -12,9 +11,10 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { ErrorService } from '../../../core/services/error.service';
 
 @Component({
-  selector: 'app-manager-contrats',
+  selector: 'app-contrats',
   standalone: true,
   imports: [
     CommonModule,
@@ -34,55 +34,28 @@ export class ContratsComponent implements OnInit {
   contrats: Contrat[] = [];
   loading = false;
   users: User[] = [];
-  currentUserOrgId: number | null = null;
 
-  constructor(
-    private contratService: ContratService,
-    private userService: UserService,
-    private authService: AuthService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-  ) {}
+  private contratService = inject(ContratService);
+  private userService = inject(UserService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
+  private errorService = inject(ErrorService);
 
   ngOnInit(): void {
-    this.loadCurrentUserOrg();
     this.loadContrats();
     this.loadUsers();
-  }
-
-  loadCurrentUserOrg(): void {
-    const user = this.authService.getCurrentUser();
-    if (!user) return;
-
-    if (user.organisationId) {
-      this.currentUserOrgId = typeof user.organisationId === 'object'
-        ? (user.organisationId as any).id
-        : user.organisationId;
-    }
   }
 
   loadContrats(): void {
     this.loading = true;
     this.contratService.getAll().subscribe({
       next: (data) => {
-        // ✅ Filtrer par organisation du Manager
-        if (this.currentUserOrgId) {
-          this.contrats = data.filter(c => {
-            // TODO: Adapter selon votre structure - vérifier si Contrat a organisationId
-            return (c as any).organisationId === this.currentUserOrgId;
-          });
-        } else {
-          this.contrats = data;
-        }
+        this.contrats = data;
         this.loading = false;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des contrats', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les contrats',
-        });
+        this.errorService.showError('Impossible de charger les contrats');
         this.loading = false;
       },
     });
@@ -91,17 +64,7 @@ export class ContratsComponent implements OnInit {
   loadUsers(): void {
     this.userService.getAll().subscribe({
       next: (data) => {
-        // ✅ Filtrer users de la même organisation
-        if (this.currentUserOrgId) {
-          this.users = data.filter(u => {
-            const orgId = typeof u.organisationId === 'object'
-              ? (u.organisationId as any).id
-              : u.organisationId;
-            return orgId === this.currentUserOrgId;
-          });
-        } else {
-          this.users = data;
-        }
+        this.users = data;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des utilisateurs', error);
@@ -128,11 +91,7 @@ export class ContratsComponent implements OnInit {
           },
           error: (error) => {
             console.error('Erreur lors de la suppression', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer le contrat',
-            });
+            this.errorService.showError('Impossible de supprimer le contrat');
           },
         });
       },
@@ -149,6 +108,8 @@ export class ContratsComponent implements OnInit {
         return 'success';
       case StatutContrat.Termine:
         return 'secondary';
+      case StatutContrat.Resilie:
+        return 'danger';
       default:
         return 'secondary';
     }
@@ -166,7 +127,7 @@ export class ContratsComponent implements OnInit {
   }
 
   getUserFullName(userId: string): string {
-    const user = this.users.find(u => u.id === userId);
+    const user = this.users.find((item) => item.id === userId);
     return user ? `${user.firstName} ${user.lastName}` : userId;
   }
 }

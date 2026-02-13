@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Organisation {
   id: number;
@@ -18,9 +19,9 @@ export interface Organisation {
   providedIn: 'root'
 })
 export class OrganisationService {
-  private apiUrl = 'https://localhost:7126/api/Organisation';
+  private apiUrl = `${environment.urls.coreApi}/Organisation`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<Organisation[]> {
     return this.http.get<Organisation[]>(`${this.apiUrl}/get-all`);

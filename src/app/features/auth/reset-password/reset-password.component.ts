@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -28,25 +29,22 @@ import { MessageService } from 'primeng/api';
   styleUrls: ['./reset-password.component.scss']
 })
 export class ResetPasswordComponent implements OnInit {
-  resetForm: FormGroup;
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private messageService = inject(MessageService);
+  private errorService = inject(ErrorService);
+
+  resetForm: FormGroup = this.fb.group({
+    newPassword: ['', [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ['', [Validators.required]]
+  }, {
+    validators: this.passwordMatchValidator
+  });
   loading = false;
   token: string = '';
   email: string = '';
-
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: AuthService,
-    private messageService: MessageService
-  ) {
-    this.resetForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]]
-    }, {
-      validators: this.passwordMatchValidator
-    });
-  }
 
   ngOnInit(): void {
     // Récupérer token et email depuis l'URL
@@ -55,11 +53,7 @@ export class ResetPasswordComponent implements OnInit {
       this.email = params['email'] || '';
 
       if (!this.token || !this.email) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Lien invalide ou expiré'
-        });
+        this.errorService.showError('Lien invalide ou expiré');
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
@@ -106,11 +100,9 @@ export class ResetPasswordComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: error.error?.message || 'Impossible de réinitialiser le mot de passe'
-        });
+        this.errorService.showError(
+          error.error?.message || 'Impossible de réinitialiser le mot de passe',
+        );
       }
     });
   }

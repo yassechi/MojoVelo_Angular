@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { httpResource } from '@angular/common/http';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { ContratService, Contrat, StatutContrat } from '../../../../core/services/contrat.service';
-import { UserService, User } from '../../../../core/services/user.service';
+import { User } from '../../../../core/services/user.service';
 import { InterventionService, Intervention } from '../../../../core/services/intervention.service';
-import {
-  AmortissementService,
-  Amortissement,
-} from '../../../../core/services/amortissement.service';
+import { AmortissementService, Amortissement } from '../../../../core/services/amortissement.service';
 import { DocumentService, Document } from '../../../../core/services/document.service';
+import { ErrorService } from '../../../../core/services/error.service';
+import { environment } from '../../../../../environments/environment';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -43,117 +45,149 @@ import { InputNumber } from 'primeng/inputnumber';
   providers: [MessageService],
   templateUrl: './admin-contrat-detail.component.html',
   styleUrls: ['./admin-contrat-detail.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContratDetailComponent implements OnInit {
-  contrat: Contrat | null = null;
-  loading = false;
-  beneficiaire: User | null = null;
-  responsableRH: User | null = null;
+export class ContratDetailComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly contratService = inject(ContratService);
+  private readonly interventionService = inject(InterventionService);
+  private readonly amortissementService = inject(AmortissementService);
+  private readonly documentService = inject(DocumentService);
+  private readonly messageService = inject(MessageService);
+  private readonly errorService = inject(ErrorService);
 
-  interventions: Intervention[] = [];
-  amortissements: Amortissement[] = [];
-  documents: Document[] = [];
+  private readonly coreApi = environment.urls.coreApi;
+  private readonly legacyApi = environment.urls.legacyApi;
 
-  // Mode édition amortissement
+  readonly contratId = toSignal(
+    this.route.paramMap.pipe(
+      map((params) => {
+        const id = params.get('id');
+        return id ? Number(id) : null;
+      }),
+    ),
+    { initialValue: null },
+  );
+
+  readonly contratResource = httpResource<Contrat | null>(
+    () => {
+      const id = this.contratId();
+      return id ? `${this.coreApi}/Contrat/get-one/${id}` : undefined;
+    },
+    { defaultValue: null },
+  );
+  readonly contrat = computed(() => this.contratResource.value());
+
+  readonly beneficiaireResource = httpResource<User | null>(
+    () => {
+      const contrat = this.contrat();
+      return contrat ? `${this.coreApi}/User/get-one/${contrat.beneficiaireId}` : undefined;
+    },
+    { defaultValue: null },
+  );
+  readonly beneficiaire = computed(() => this.beneficiaireResource.value());
+
+  readonly responsableRhResource = httpResource<User | null>(
+    () => {
+      const contrat = this.contrat();
+      return contrat ? `${this.coreApi}/User/get-one/${contrat.userRhId}` : undefined;
+    },
+    { defaultValue: null },
+  );
+  readonly responsableRH = computed(() => this.responsableRhResource.value());
+
+  readonly interventionsResource = httpResource<Intervention[]>(
+    () => `${this.legacyApi}/Intervention/get-all`,
+    { defaultValue: [] },
+  );
+  readonly interventions = computed(() => {
+    const contrat = this.contrat();
+    if (!contrat) {
+      return [];
+    }
+    return (this.interventionsResource.value() ?? []).filter(
+      (intervention) => intervention.veloId === contrat.veloId && intervention.isActif,
+    );
+  });
+
+  readonly amortissementsResource = httpResource<Amortissement[]>(
+    () => `${this.legacyApi}/Amortissement/get-all`,
+    { defaultValue: [] },
+  );
+  readonly amortissements = computed(() => {
+    const contrat = this.contrat();
+    if (!contrat) {
+      return [];
+    }
+    return (this.amortissementsResource.value() ?? []).filter(
+      (amortissement) => amortissement.veloId === contrat.veloId && amortissement.isActif,
+    );
+  });
+
+  readonly documentsResource = httpResource<Document[]>(
+    () => {
+      const contrat = this.contrat();
+      return contrat?.id ? `${this.legacyApi}/Document/get-by-contrat/${contrat.id}` : undefined;
+    },
+    { defaultValue: [] },
+  );
+  readonly documents = computed(() => this.documentsResource.value() ?? []);
+
+  readonly loading = computed(
+    () =>
+      this.contratResource.isLoading() ||
+      this.beneficiaireResource.isLoading() ||
+      this.responsableRhResource.isLoading() ||
+      this.interventionsResource.isLoading() ||
+      this.amortissementsResource.isLoading() ||
+      this.documentsResource.isLoading(),
+  );
+
+  // Mode edition amortissement
   editingAmortissement = false;
   amortissementValues: number[] = [];
   currentAmortissement: Amortissement | null = null;
 
-  // ✅ NOUVEAU : Mode édition intervention
+  // Mode edition intervention
   editingIntervention = false;
   interventionFormMode: 'create' | 'edit' = 'create';
   currentIntervention: Partial<Intervention> = {};
   interventionDate: Date | null = null;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private contratService: ContratService,
-    private userService: UserService,
-    private interventionService: InterventionService,
-    private amortissementService: AmortissementService,
-    private documentService: DocumentService,
-    private messageService: MessageService,
-  ) {}
+  private readonly contratErrorShown = signal(false);
+  private readonly contratErrorEffect = effect(() => {
+    const error = this.contratResource.error();
+    if (error && !this.contratErrorShown()) {
+      this.errorService.showError('Impossible de charger le contrat');
+      this.contratErrorShown.set(true);
+      this.router.navigate(['/admin/contrats']);
+    }
+    if (!error && this.contratErrorShown()) {
+      this.contratErrorShown.set(false);
+    }
+  });
 
-  ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.loadContrat(Number(id));
-      }
-    });
-  }
+  private readonly interventionsErrorEffect = effect(() => {
+    const error = this.interventionsResource.error();
+    if (error) {
+      this.errorService.showError('Impossible de charger les interventions');
+    }
+  });
 
-  loadContrat(id: number): void {
-    this.loading = true;
-    this.contratService.getOne(id).subscribe({
-      next: (data) => {
-        this.contrat = data;
-        this.loadUsers();
-        this.loadInterventions();
-        this.loadAmortissements();
-        this.loadDocuments();
-        this.loading = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger le contrat',
-        });
-        this.loading = false;
-        this.router.navigate(['/admin/contrats']);
-      },
-    });
-  }
+  private readonly amortissementsErrorEffect = effect(() => {
+    const error = this.amortissementsResource.error();
+    if (error) {
+      this.errorService.showError('Impossible de charger les amortissements');
+    }
+  });
 
-  loadUsers(): void {
-    if (!this.contrat) return;
-
-    this.userService.getOne(this.contrat.beneficiaireId).subscribe({
-      next: (user) => (this.beneficiaire = user),
-      error: () => console.error('Erreur chargement bénéficiaire'),
-    });
-
-    this.userService.getOne(this.contrat.userRhId).subscribe({
-      next: (user) => (this.responsableRH = user),
-      error: () => console.error('Erreur chargement responsable RH'),
-    });
-  }
-
-  loadInterventions(): void {
-    if (!this.contrat) return;
-
-    this.interventionService.getAll().subscribe({
-      next: (data) => {
-        this.interventions = data.filter((i) => i.veloId === this.contrat!.veloId && i.isActif);
-      },
-      error: () => console.error('Erreur chargement interventions'),
-    });
-  }
-
-  loadAmortissements(): void {
-    if (!this.contrat) return;
-
-    this.amortissementService.getAll().subscribe({
-      next: (data) => {
-        this.amortissements = data.filter((a) => a.veloId === this.contrat!.veloId && a.isActif);
-      },
-      error: () => console.error('Erreur chargement amortissements'),
-    });
-  }
-
-  loadDocuments(): void {
-    if (!this.contrat) return;
-
-    this.documentService.getByContrat(this.contrat.id!).subscribe({
-      next: (data) => {
-        this.documents = data;
-      },
-      error: () => console.error('Erreur chargement documents'),
-    });
-  }
+  private readonly documentsErrorEffect = effect(() => {
+    const error = this.documentsResource.error();
+    if (error) {
+      this.errorService.showError('Impossible de charger les documents');
+    }
+  });
 
   goBack(): void {
     this.router.navigate(['/admin/contrats']);
@@ -163,8 +197,15 @@ export class ContratDetailComponent implements OnInit {
     return this.contratService.getStatutLabel(statut);
   }
 
-  getStatutSeverity(statut: StatutContrat): 'success' | 'secondary' {
-    return statut === StatutContrat.EnCours ? 'success' : 'secondary';
+  getStatutSeverity(statut: StatutContrat): 'success' | 'secondary' | 'danger' {
+    switch (statut) {
+      case StatutContrat.EnCours:
+        return 'success';
+      case StatutContrat.Resilie:
+        return 'danger';
+      default:
+        return 'secondary';
+    }
   }
 
   formatDate(date: string): string {
@@ -192,67 +233,67 @@ export class ContratDetailComponent implements OnInit {
             summary: 'Succès',
             detail: 'Document supprimé',
           });
-          this.loadDocuments();
+          this.documentsResource.reload();
         },
         error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erreur',
-            detail: 'Impossible de supprimer le document',
-          });
+          this.errorService.showError('Impossible de supprimer le document');
         },
       });
     }
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file && this.contrat) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(',')[1];
-
-        const newDoc: Document = {
-          id: 0,
-          contratId: this.contrat!.id!,
-          fichier: base64,
-          nomFichier: file.name,
-          typeFichier: file.name.split('.').pop() || 'pdf',
-          isActif: true,
-        };
-
-        this.documentService.create(newDoc).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Succès',
-              detail: 'Document ajouté',
-            });
-            this.loadDocuments();
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: "Impossible d'ajouter le document",
-            });
-          },
-        });
-      };
-      /// Ca ne marche pas avec un fichier trop grand 
-      reader.readAsDataURL(file);
+  onFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    const file = target?.files?.[0];
+    const contrat = this.contrat();
+    if (!file || !contrat) {
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+
+      const newDoc: Document = {
+        id: 0,
+        contratId: contrat.id!,
+        fichier: base64,
+        nomFichier: file.name,
+        typeFichier: file.name.split('.').pop() || 'pdf',
+        isActif: true,
+      };
+
+      this.documentService.create(newDoc).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Document ajouté',
+          });
+          this.documentsResource.reload();
+        },
+        error: () => {
+          this.errorService.showError("Impossible d'ajouter le document");
+        },
+      });
+    };
+    // Ne marche pas avec un fichier trop grand
+    reader.readAsDataURL(file);
   }
 
-  // ========== INTERVENTIONS (NOUVEAU) ==========
+  // ========== INTERVENTIONS ==========
   onAddIntervention(): void {
+    const contrat = this.contrat();
+    if (!contrat) {
+      return;
+    }
     this.interventionFormMode = 'create';
     this.editingIntervention = true;
     this.currentIntervention = {
       typeIntervention: '',
       description: '',
       cout: 0,
-      veloId: this.contrat?.veloId,
+      veloId: contrat.veloId,
       isActif: true,
     };
     this.interventionDate = new Date();
@@ -272,7 +313,13 @@ export class ContratDetailComponent implements OnInit {
   }
 
   onSaveIntervention(): void {
-    if (!this.interventionDate || !this.currentIntervention.typeIntervention || !this.currentIntervention.description) {
+    const contrat = this.contrat();
+    if (
+      !contrat ||
+      !this.interventionDate ||
+      !this.currentIntervention.typeIntervention ||
+      !this.currentIntervention.description
+    ) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
@@ -283,34 +330,34 @@ export class ContratDetailComponent implements OnInit {
 
     const intervention: Intervention = {
       id: this.currentIntervention.id || 0,
-      typeIntervention: this.currentIntervention.typeIntervention!,
-      description: this.currentIntervention.description!,
+      typeIntervention: this.currentIntervention.typeIntervention,
+      description: this.currentIntervention.description,
       dateIntervention: this.interventionDate.toISOString().split('T')[0],
       cout: this.currentIntervention.cout || 0,
-      veloId: this.contrat!.veloId,
+      veloId: contrat.veloId,
       isActif: true,
     };
 
-    const saveOperation = this.interventionFormMode === 'create'
-      ? this.interventionService.create(intervention)
-      : this.interventionService.update(intervention);
+    const saveOperation =
+      this.interventionFormMode === 'create'
+        ? this.interventionService.create(intervention)
+        : this.interventionService.update(intervention);
 
     saveOperation.subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
-          detail: this.interventionFormMode === 'create' ? 'Intervention créée' : 'Intervention modifiée',
+          detail:
+            this.interventionFormMode === 'create'
+              ? 'Intervention créée'
+              : 'Intervention modifiée',
         });
         this.editingIntervention = false;
-        this.loadInterventions();
+        this.interventionsResource.reload();
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de sauvegarder l\'intervention',
-        });
+        this.errorService.showError("Impossible de sauvegarder l'intervention");
       },
     });
   }
@@ -324,14 +371,10 @@ export class ContratDetailComponent implements OnInit {
             summary: 'Succès',
             detail: 'Intervention supprimée',
           });
-          this.loadInterventions();
+          this.interventionsResource.reload();
         },
         error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erreur',
-            detail: 'Impossible de supprimer l\'intervention',
-          });
+          this.errorService.showError("Impossible de supprimer l'intervention");
         },
       });
     }
@@ -339,8 +382,9 @@ export class ContratDetailComponent implements OnInit {
 
   // ========== CONTRAT ==========
   onEditContrat(): void {
-    if (this.contrat) {
-      this.router.navigate(['/admin/contrats/edit', this.contrat.id]);
+    const contrat = this.contrat();
+    if (contrat) {
+      this.router.navigate(['/admin/contrats/edit', contrat.id]);
     }
   }
 
@@ -359,7 +403,9 @@ export class ContratDetailComponent implements OnInit {
   }
 
   onSaveAmortissement(): void {
-    if (!this.currentAmortissement) return;
+    if (!this.currentAmortissement) {
+      return;
+    }
 
     const totalAmortissement = this.amortissementValues.reduce((sum, val) => sum + val, 0);
     const newValeurResiduelle = this.currentAmortissement.valeurInit - totalAmortissement;
@@ -377,14 +423,10 @@ export class ContratDetailComponent implements OnInit {
           detail: 'Amortissement mis à jour',
         });
         this.editingAmortissement = false;
-        this.loadAmortissements();
+        this.amortissementsResource.reload();
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: "Impossible de mettre à jour l'amortissement",
-        });
+        this.errorService.showError("Impossible de mettre à jour l'amortissement");
       },
     });
   }

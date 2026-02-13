@@ -14,32 +14,32 @@
     <div class="col-12">
       <p-card>
         <p-table
-          [value]="contrats"
-          [loading]="loading"
+          [value]="userContrats()"
+          [loading]="loading()"
           [paginator]="true"
           [rows]="10"
           [showCurrentPageReport]="true"
-          currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} contrats"
+          currentPageReportTemplate="Affichage de {first} &agrave; {last} sur {totalRecords} contrats"
           [rowsPerPageOptions]="[10, 25, 50]"
           styleClass="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
               <th pSortableColumn="ref">
-                Référence
+                R&eacute;f&eacute;rence
                 <p-sortIcon field="ref"></p-sortIcon>
               </th>
               <th>Responsable RH</th>
-              <th>Vélo</th>
+              <th>V&eacute;lo</th>
               <th pSortableColumn="dateDebut">
-                Date début
+                Date d&eacute;but
                 <p-sortIcon field="dateDebut"></p-sortIcon>
               </th>
               <th pSortableColumn="dateFin">
                 Date fin
                 <p-sortIcon field="dateFin"></p-sortIcon>
               </th>
-              <th>Durée (mois)</th>
+              <th>Dur&eacute;e (mois)</th>
               <th>Loyer HT</th>
               <th>Statut</th>
             </tr>

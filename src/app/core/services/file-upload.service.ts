@@ -1,14 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FileUploadService {
-  private apiUrl = 'https://localhost:7126/api/File';
+  private apiUrl = `${environment.urls.coreApi}/File`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   uploadLogo(file: File): Observable<{ url: string }> {
     const formData = new FormData();

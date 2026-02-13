@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -8,7 +9,6 @@ import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { EmployeFormDialogComponent } from './employe-form-dialog/admin-employe-form-dialog';
 import { User, UserRole, UserService } from '../../../core/services/user.service';
 
 @Component({
@@ -23,7 +23,6 @@ import { User, UserRole, UserService } from '../../../core/services/user.service
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
-    EmployeFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './admin-employes.component.html',
@@ -32,14 +31,11 @@ import { User, UserRole, UserService } from '../../../core/services/user.service
 export class AdminEmployesComponent implements OnInit {
   users: User[] = [];
   loading = false;
-  dialogVisible = false;
-  selectedUser: User | null = null;
 
-  constructor(
-    private userService: UserService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
-  ) {}
+  private userService = inject(UserService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.loadUsers();
@@ -58,13 +54,22 @@ export class AdminEmployesComponent implements OnInit {
     });
   }
 
-  openDialog(user?: User): void {
-    this.selectedUser = user || null;
-    this.dialogVisible = true;
+  onCreate(): void {
+    this.router.navigate(['/admin/employes/new']);
   }
 
-  onDialogSave(): void {
-    this.loadUsers();
+  onView(user: User): void {
+    if (!user.id) {
+      return;
+    }
+    this.router.navigate(['/admin/employes', user.id]);
+  }
+
+  onEdit(user: User): void {
+    if (!user.id) {
+      return;
+    }
+    this.router.navigate(['/admin/employes', user.id, 'edit']);
   }
 
   onDelete(user: User): void {

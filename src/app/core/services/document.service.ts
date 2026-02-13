@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Document {
   id: number;
@@ -15,9 +16,9 @@ export interface Document {
   providedIn: 'root'
 })
 export class DocumentService {
-  private apiUrl = 'http://localhost:5000/api/Document';
+  private apiUrl = `${environment.urls.legacyApi}/Document`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<Document[]> {
     return this.http.get<Document[]>(`${this.apiUrl}/get-all`);

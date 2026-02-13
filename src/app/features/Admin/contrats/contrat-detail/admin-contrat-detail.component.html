@@ -9,380 +9,394 @@
         [text]="true"
         [rounded]="true"
         (onClick)="goBack()"
-        [pTooltip]="'Retour à la liste'"
+        [pTooltip]="'Retour &agrave; la liste'"
       ></p-button>
       <div>
         <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a; margin: 0;">
-          Contrat {{ contrat?.ref }}
+          Contrat {{ contrat()?.ref }}
         </h1>
-        <p class="text-600 m-0">Détails du contrat de location</p>
+        <p class="text-600 m-0">D&eacute;tails du contrat de location</p>
       </div>
     </div>
     <div class="flex gap-2 align-items-center">
-      <p-tag
-        *ngIf="contrat"
-        [value]="getStatutLabel(contrat.statutContrat)"
-        [severity]="getStatutSeverity(contrat.statutContrat)"
-        styleClass="text-lg"
-      ></p-tag>
+      @if (contrat(); as currentContrat) {
+        <p-tag
+          [value]="getStatutLabel(currentContrat.statutContrat)"
+          [severity]="getStatutSeverity(currentContrat.statutContrat)"
+          styleClass="text-lg"
+        ></p-tag>
+      }
     </div>
   </div>
 
-  <div class="grid" *ngIf="contrat && !loading">
-    <!-- COLONNE GAUCHE : Données du contrat + Entretien -->
-    <div class="col-12 lg:col-6">
-      <!-- Données du contrat -->
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-3 flex justify-content-between align-items-center">
-            <h3 class="m-0">📋 Données du contrat</h3>
-            <p-button
-              icon="pi pi-pencil"
-              label="Modifier"
-              size="small"
-              severity="success"
-              (onClick)="onEditContrat()"
-            ></p-button>
-          </div>
-        </ng-template>
-
-        <div class="grid">
-          <div class="col-6">
-            <p class="text-600 mb-1">Référence</p>
-            <p class="font-semibold">{{ contrat.ref }}</p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">ID Vélo</p>
-            <p class="font-semibold">{{ contrat.veloId }}</p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">Date début</p>
-            <p class="font-semibold">{{ formatDate(contrat.dateDebut) }}</p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">Date fin</p>
-            <p class="font-semibold">{{ formatDate(contrat.dateFin) }}</p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">Durée</p>
-            <p class="font-semibold">{{ contrat.duree }} mois</p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">Loyer mensuel HT</p>
-            <p class="font-semibold">{{ formatCurrency(contrat.loyerMensuelHT) }}</p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">Bénéficiaire</p>
-            <p class="font-semibold">
-              {{ beneficiaire ? beneficiaire.firstName + ' ' + beneficiaire.lastName : 'Chargement...' }}
-            </p>
-          </div>
-
-          <div class="col-6">
-            <p class="text-600 mb-1">Responsable RH</p>
-            <p class="font-semibold">
-              {{ responsableRH ? responsableRH.firstName + ' ' + responsableRH.lastName : 'Chargement...' }}
-            </p>
-          </div>
-        </div>
-      </p-card>
-
-      <!-- Entretien (Interventions) -->
-      <p-card class="mt-3">
-        <ng-template pTemplate="header">
-          <div class="p-3 flex justify-content-between align-items-center">
-            <h3 class="m-0">🔧 Entretien</h3>
-            <p-button
-              icon="pi pi-plus"
-              label="Ajouter"
-              size="small"
-              severity="success"
-              (onClick)="onAddIntervention()"
-            ></p-button>
-          </div>
-        </ng-template>
-
-        <!-- MODE EDITION/CREATION -->
-        <div *ngIf="editingIntervention" class="mb-3 p-3 surface-50 border-round">
-          <h4 class="mt-0">{{ interventionFormMode === 'create' ? 'Nouvelle intervention' : 'Modifier l\'intervention' }}</h4>
+  @if (contrat() && !loading()) {
+    <div class="grid">
+      <!-- COLONNE GAUCHE : Donn&eacute;es du contrat + Entretien -->
+      <div class="col-12 lg:col-6">
+        <!-- Donn&eacute;es du contrat -->
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="p-3 flex justify-content-between align-items-center">
+              <h3 class="m-0">Donn&eacute;es du contrat</h3>
+              <p-button
+                icon="pi pi-pencil"
+                label="Modifier"
+                size="small"
+                severity="success"
+                (onClick)="onEditContrat()"
+              ></p-button>
+            </div>
+          </ng-template>
 
           <div class="grid">
-            <div class="col-12 md:col-6">
-              <label class="block text-600 mb-2">Type d'intervention *</label>
+            <div class="col-6">
+              <p class="text-600 mb-1">R&eacute;f&eacute;rence</p>
+              <p class="font-semibold">{{ contrat()?.ref }}</p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">ID V&eacute;lo</p>
+              <p class="font-semibold">{{ contrat()?.veloId }}</p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">Date d&eacute;but</p>
+              <p class="font-semibold">{{ formatDate(contrat()?.dateDebut ?? '') }}</p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">Date fin</p>
+              <p class="font-semibold">{{ formatDate(contrat()?.dateFin ?? '') }}</p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">Dur&eacute;e</p>
+              <p class="font-semibold">{{ contrat()?.duree }} mois</p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">Loyer mensuel HT</p>
+              <p class="font-semibold">{{ formatCurrency(contrat()?.loyerMensuelHT ?? 0) }}</p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">B&eacute;n&eacute;ficiaire</p>
+              <p class="font-semibold">
+                {{ beneficiaire() ? beneficiaire()!.firstName + ' ' + beneficiaire()!.lastName : 'Chargement...' }}
+              </p>
+            </div>
+
+            <div class="col-6">
+              <p class="text-600 mb-1">Responsable RH</p>
+              <p class="font-semibold">
+                {{ responsableRH() ? responsableRH()!.firstName + ' ' + responsableRH()!.lastName : 'Chargement...' }}
+              </p>
+            </div>
+          </div>
+        </p-card>
+
+        <!-- Entretien (Interventions) -->
+        <p-card class="mt-3">
+          <ng-template pTemplate="header">
+            <div class="p-3 flex justify-content-between align-items-center">
+              <h3 class="m-0">Entretien</h3>
+              <p-button
+                icon="pi pi-plus"
+                label="Ajouter"
+                size="small"
+                severity="success"
+                (onClick)="onAddIntervention()"
+              ></p-button>
+            </div>
+          </ng-template>
+
+          <!-- MODE EDITION/CREATION -->
+          @if (editingIntervention) {
+            <div class="mb-3 p-3 surface-50 border-round">
+              <h4 class="mt-0">
+                {{ interventionFormMode === 'create' ? 'Nouvelle intervention' : 'Modifier l\'intervention' }}
+              </h4>
+
+              <div class="grid">
+                <div class="col-12 md:col-6">
+                  <label class="block text-600 mb-2">Type d'intervention *</label>
+                  <input
+                    type="text"
+                    pInputText
+                    [(ngModel)]="currentIntervention.typeIntervention"
+                    class="w-full"
+                    placeholder="Ex: Batterie, Look, R&eacute;vision..."
+                  />
+                </div>
+
+                <div class="col-12 md:col-6">
+                  <label class="block text-600 mb-2">Date *</label>
+                  <p-datepicker
+                    [(ngModel)]="interventionDate"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="true"
+                    class="w-full"
+                    [style]="{ 'width': '100%' }"
+                  ></p-datepicker>
+                </div>
+
+                <div class="col-12">
+                  <label class="block text-600 mb-2">Description *</label>
+                  <textarea
+                    pInputText
+                    [(ngModel)]="currentIntervention.description"
+                    class="w-full"
+                    rows="3"
+                    placeholder="D&eacute;crivez l'intervention..."
+                  ></textarea>
+                </div>
+
+                <div class="col-12 md:col-6">
+                  <label class="block text-600 mb-2">Co&ucirc;t (&euro;) *</label>
+                  <p-inputnumber
+                    [(ngModel)]="currentIntervention.cout"
+                    mode="decimal"
+                    [minFractionDigits]="2"
+                    class="w-full"
+                    [style]="{ 'width': '100%' }"
+                  ></p-inputnumber>
+                </div>
+              </div>
+
+              <div class="flex gap-2 justify-content-end mt-3">
+                <p-button
+                  label="Annuler"
+                  severity="secondary"
+                  (onClick)="onCancelInterventionEdit()"
+                ></p-button>
+                <p-button
+                  label="Enregistrer"
+                  icon="pi pi-check"
+                  (onClick)="onSaveIntervention()"
+                ></p-button>
+              </div>
+            </div>
+          }
+
+          <!-- MODE LECTURE (TABLE) -->
+          @if (interventions().length > 0 && !editingIntervention) {
+            <p-table
+              [value]="interventions()"
+              styleClass="p-datatable-sm"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th>Co&ucirc;t</th>
+                  <th style="width: 120px;">Actions</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-intervention>
+                <tr>
+                  <td>{{ intervention.typeIntervention }}</td>
+                  <td>{{ intervention.description }}</td>
+                  <td>{{ formatDate(intervention.dateIntervention) }}</td>
+                  <td>{{ formatCurrency(intervention.cout) }}</td>
+                  <td>
+                    <div class="flex gap-1">
+                      <p-button
+                        icon="pi pi-pencil"
+                        [text]="true"
+                        [rounded]="true"
+                        severity="secondary"
+                        (onClick)="onEditIntervention(intervention)"
+                        [pTooltip]="'Modifier'"
+                      ></p-button>
+                      <p-button
+                        icon="pi pi-trash"
+                        [text]="true"
+                        [rounded]="true"
+                        severity="danger"
+                        (onClick)="onDeleteIntervention(intervention)"
+                        [pTooltip]="'Supprimer'"
+                      ></p-button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          } @else {
+            @if (!editingIntervention) {
+              <p class="text-600">Aucun entretien enregistr&eacute; pour ce v&eacute;lo.</p>
+            }
+          }
+        </p-card>
+      </div>
+
+      <!-- COLONNE DROITE : Documents + Amortissement -->
+      <div class="col-12 lg:col-6">
+        <!-- Documents -->
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="p-3 flex justify-content-between align-items-center">
+              <h3 class="m-0">Documents</h3>
+              <p-button
+                icon="pi pi-plus"
+                label="Ajouter"
+                size="small"
+                (onClick)="fileInput.click()"
+              ></p-button>
               <input
-                type="text"
-                pInputText
-                [(ngModel)]="currentIntervention.typeIntervention"
-                class="w-full"
-                placeholder="Ex: Batterie, Look, Révision..."
+                #fileInput
+                type="file"
+                accept="application/pdf,.pdf"
+                (change)="onFileSelected($event)"
+                style="display: none;"
               />
             </div>
-
-            <div class="col-12 md:col-6">
-              <label class="block text-600 mb-2">Date *</label>
-              <p-datepicker
-                [(ngModel)]="interventionDate"
-                dateFormat="dd/mm/yy"
-                [showIcon]="true"
-                class="w-full"
-                [style]="{'width': '100%'}"
-              ></p-datepicker>
-            </div>
-
-            <div class="col-12">
-              <label class="block text-600 mb-2">Description *</label>
-              <textarea
-                pInputText
-                [(ngModel)]="currentIntervention.description"
-                class="w-full"
-                rows="3"
-                placeholder="Décrivez l'intervention..."
-              ></textarea>
-            </div>
-
-            <div class="col-12 md:col-6">
-              <label class="block text-600 mb-2">Coût (€) *</label>
-              <p-inputnumber
-                [(ngModel)]="currentIntervention.cout"
-                mode="decimal"
-                [minFractionDigits]="2"
-                class="w-full"
-                [style]="{'width': '100%'}"
-              ></p-inputnumber>
-            </div>
-          </div>
-
-          <div class="flex gap-2 justify-content-end mt-3">
-            <p-button
-              label="Annuler"
-              severity="secondary"
-              (onClick)="onCancelInterventionEdit()"
-            ></p-button>
-            <p-button
-              label="Enregistrer"
-              icon="pi pi-check"
-              (onClick)="onSaveIntervention()"
-            ></p-button>
-          </div>
-        </div>
-
-        <!-- MODE LECTURE (TABLE) -->
-        <p-table
-          *ngIf="interventions.length > 0 && !editingIntervention; else noInterventions"
-          [value]="interventions"
-          styleClass="p-datatable-sm"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Type</th>
-              <th>Description</th>
-              <th>Date</th>
-              <th>Coût</th>
-              <th style="width: 120px;">Actions</th>
-            </tr>
           </ng-template>
-          <ng-template pTemplate="body" let-intervention>
-            <tr>
-              <td>{{ intervention.typeIntervention }}</td>
-              <td>{{ intervention.description }}</td>
-              <td>{{ formatDate(intervention.dateIntervention) }}</td>
-              <td>{{ formatCurrency(intervention.cout) }}</td>
-              <td>
-                <div class="flex gap-1">
+
+          @if (documents().length > 0) {
+            @for (doc of documents(); track doc.id) {
+              <div class="flex align-items-center justify-content-between p-2 border-bottom-1 surface-border">
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-file-pdf text-red-500" style="font-size: 1.5rem;"></i>
+                  <div>
+                    <p class="m-0 font-semibold">{{ doc.nomFichier }}</p>
+                    <small class="text-600">{{ doc.typeFichier.toUpperCase() }}</small>
+                  </div>
+                </div>
+                <div class="flex gap-2">
                   <p-button
-                    icon="pi pi-pencil"
+                    icon="pi pi-download"
                     [text]="true"
                     [rounded]="true"
                     severity="secondary"
-                    (onClick)="onEditIntervention(intervention)"
-                    [pTooltip]="'Modifier'"
+                    (onClick)="downloadDocument(doc)"
+                    [pTooltip]="'T&eacute;l&eacute;charger'"
                   ></p-button>
                   <p-button
                     icon="pi pi-trash"
                     [text]="true"
                     [rounded]="true"
                     severity="danger"
-                    (onClick)="onDeleteIntervention(intervention)"
+                    (onClick)="deleteDocument(doc)"
                     [pTooltip]="'Supprimer'"
                   ></p-button>
                 </div>
-              </td>
-            </tr>
+              </div>
+            }
+          } @else {
+            <p class="text-600">Aucun document disponible.</p>
+          }
+        </p-card>
+
+        <!-- Amortissement -->
+        <p-card class="mt-3">
+          <ng-template pTemplate="header">
+            <div class="p-3 flex justify-content-between align-items-center">
+              <h3 class="m-0">Amortissement</h3>
+              @if (amortissements().length > 0 && !editingAmortissement) {
+                <p-button
+                  icon="pi pi-pencil"
+                  label="Modifier"
+                  size="small"
+                  (onClick)="onEditAmortissement(amortissements()[0])"
+                ></p-button>
+              }
+            </div>
           </ng-template>
-        </p-table>
 
-        <ng-template #noInterventions>
-          <p class="text-600" *ngIf="!editingIntervention">Aucun entretien enregistré pour ce vélo.</p>
-        </ng-template>
-      </p-card>
-    </div>
-
-    <!-- COLONNE DROITE : Documents + Amortissement -->
-    <div class="col-12 lg:col-6">
-      <!-- Documents -->
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-3 flex justify-content-between align-items-center">
-            <h3 class="m-0">📄 Documents</h3>
-            <p-button
-              icon="pi pi-plus"
-              label="Ajouter"
-              size="small"
-              (onClick)="fileInput.click()"
-            ></p-button>
-            <input
-              #fileInput
-              type="file"
-              accept="application/pdf,.pdf"
-              (change)="onFileSelected($event)"
-              style="display: none;"
-            />
-          </div>
-        </ng-template>
-
-        <div *ngIf="documents.length > 0; else noDocuments">
-          <div *ngFor="let doc of documents" class="flex align-items-center justify-content-between p-2 border-bottom-1 surface-border">
-            <div class="flex align-items-center gap-2">
-              <i class="pi pi-file-pdf text-red-500" style="font-size: 1.5rem;"></i>
-              <div>
-                <p class="m-0 font-semibold">{{ doc.nomFichier }}</p>
-                <small class="text-600">{{ doc.typeFichier.toUpperCase() }}</small>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <p-button
-                icon="pi pi-download"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                (onClick)="downloadDocument(doc)"
-                [pTooltip]="'Télécharger'"
-              ></p-button>
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                [rounded]="true"
-                severity="danger"
-                (onClick)="deleteDocument(doc)"
-                [pTooltip]="'Supprimer'"
-              ></p-button>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noDocuments>
-          <p class="text-600">Aucun document disponible.</p>
-        </ng-template>
-      </p-card>
-
-      <!-- Amortissement -->
-      <p-card class="mt-3">
-        <ng-template pTemplate="header">
-          <div class="p-3 flex justify-content-between align-items-center">
-            <h3 class="m-0">📊 Amortissement</h3>
-            <p-button
-              *ngIf="amortissements.length > 0 && !editingAmortissement"
-              icon="pi pi-pencil"
-              label="Modifier"
-              size="small"
-              (onClick)="onEditAmortissement(amortissements[0])"
-            ></p-button>
-          </div>
-        </ng-template>
-
-        <div *ngIf="amortissements.length > 0; else noAmortissement">
-          <div *ngFor="let amort of amortissements" class="mb-3">
-
-            <!-- MODE LECTURE -->
-            <div *ngIf="!editingAmortissement" class="grid">
-              <div class="col-6">
-                <p class="text-600 mb-1">Date début</p>
-                <p class="font-semibold">{{ formatDate(amort.dateDebut) }}</p>
-              </div>
-              <div class="col-6">
-                <p class="text-600 mb-1">Durée</p>
-                <p class="font-semibold">{{ amort.dureeMois }} mois</p>
-              </div>
-              <div class="col-6">
-                <p class="text-600 mb-1">Valeur initiale</p>
-                <p class="font-semibold">{{ formatCurrency(amort.valeurInit) }}</p>
-              </div>
-              <div class="col-6">
-                <p class="text-600 mb-1">Valeur résiduelle</p>
-                <p class="font-semibold">{{ formatCurrency(amort.valeurResiduelleFinale) }}</p>
-              </div>
-              <div class="col-12">
-                <p class="text-600 mb-1">Amortissement mensuel</p>
-                <p class="font-semibold text-primary-500">
-                  {{ formatCurrency((amort.valeurInit - amort.valeurResiduelleFinale) / amort.dureeMois) }}
-                </p>
-              </div>
-            </div>
-
-            <!-- MODE ÉDITION -->
-            <div *ngIf="editingAmortissement && currentAmortissement?.id === amort.id">
+          @if (amortissements().length > 0) {
+            @for (amort of amortissements(); track amort.id) {
               <div class="mb-3">
-                <p class="text-600 mb-2">Valeur initiale: <strong>{{ formatCurrency(amort.valeurInit) }}</strong></p>
-                <p class="text-600 mb-2">Durée: <strong>{{ amort.dureeMois }} mois</strong></p>
+                <!-- MODE LECTURE -->
+                @if (!editingAmortissement) {
+                  <div class="grid">
+                    <div class="col-6">
+                      <p class="text-600 mb-1">Date d&eacute;but</p>
+                      <p class="font-semibold">{{ formatDate(amort.dateDebut) }}</p>
+                    </div>
+                    <div class="col-6">
+                      <p class="text-600 mb-1">Dur&eacute;e</p>
+                      <p class="font-semibold">{{ amort.dureeMois }} mois</p>
+                    </div>
+                    <div class="col-6">
+                      <p class="text-600 mb-1">Valeur initiale</p>
+                      <p class="font-semibold">{{ formatCurrency(amort.valeurInit) }}</p>
+                    </div>
+                    <div class="col-6">
+                      <p class="text-600 mb-1">Valeur r&eacute;siduelle</p>
+                      <p class="font-semibold">{{ formatCurrency(amort.valeurResiduelleFinale) }}</p>
+                    </div>
+                    <div class="col-12">
+                      <p class="text-600 mb-1">Amortissement mensuel</p>
+                      <p class="font-semibold text-primary-500">
+                        {{ formatCurrency((amort.valeurInit - amort.valeurResiduelleFinale) / amort.dureeMois) }}
+                      </p>
+                    </div>
+                  </div>
+                }
+
+                <!-- MODE &Eacute;DITION -->
+                @if (editingAmortissement && currentAmortissement?.id === amort.id) {
+                  <div class="mb-3">
+                    <p class="text-600 mb-2">Valeur initiale: <strong>{{ formatCurrency(amort.valeurInit) }}</strong></p>
+                    <p class="text-600 mb-2">Dur&eacute;e: <strong>{{ amort.dureeMois }} mois</strong></p>
+                  </div>
+
+                  <p-divider></p-divider>
+
+                  <div class="grid mt-3">
+                    @for (value of amortissementValues; track $index; let i = $index) {
+                      <div class="col-6 md:col-4 lg:col-3">
+                        <label class="block text-600 mb-1">Mois {{ i + 1 }}</label>
+                        <input
+                          type="number"
+                          pInputText
+                          [(ngModel)]="amortissementValues[i]"
+                          class="w-full"
+                          [style.text-align]="'right'"
+                        />
+                      </div>
+                    }
+                  </div>
+
+                  <p-divider></p-divider>
+
+                  <div class="mt-3 flex justify-content-between align-items-center">
+                    <div>
+                      <p class="text-600 m-0">Total amortissement:</p>
+                      <p class="font-bold text-xl m-0">
+                        {{ formatCurrency(getTotalAmortissement()) }}
+                      </p>
+                    </div>
+                    <div class="flex gap-2">
+                      <p-button
+                        label="Annuler"
+                        severity="secondary"
+                        (onClick)="onCancelEditAmortissement()"
+                      ></p-button>
+                      <p-button
+                        label="Enregistrer"
+                        icon="pi pi-check"
+                        (onClick)="onSaveAmortissement()"
+                      ></p-button>
+                    </div>
+                  </div>
+                }
               </div>
-
-              <p-divider></p-divider>
-
-              <div class="grid mt-3">
-                <div class="col-6 md:col-4 lg:col-3" *ngFor="let value of amortissementValues; let i = index">
-                  <label class="block text-600 mb-1">Mois {{ i + 1 }}</label>
-                  <input
-                    type="number"
-                    pInputText
-                    [(ngModel)]="amortissementValues[i]"
-                    class="w-full"
-                    [style.text-align]="'right'"
-                  />
-                </div>
-              </div>
-
-              <p-divider></p-divider>
-
-              <div class="mt-3 flex justify-content-between align-items-center">
-                <div>
-                  <p class="text-600 m-0">Total amortissement:</p>
-                  <p class="font-bold text-xl m-0">
-                    {{ formatCurrency(getTotalAmortissement()) }}
-                  </p>
-                </div>
-                <div class="flex gap-2">
-                  <p-button
-                    label="Annuler"
-                    severity="secondary"
-                    (onClick)="onCancelEditAmortissement()"
-                  ></p-button>
-                  <p-button
-                    label="Enregistrer"
-                    icon="pi pi-check"
-                    (onClick)="onSaveAmortissement()"
-                  ></p-button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noAmortissement>
-          <p class="text-600">Calcul d'amortissement non disponible.</p>
-        </ng-template>
-      </p-card>
+            }
+          } @else {
+            <p class="text-600">Calcul d'amortissement non disponible.</p>
+          }
+        </p-card>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Loading state -->
-  <div *ngIf="loading" class="text-center py-8">
-    <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #1e3a8a;"></i>
-    <p class="mt-3 text-600">Chargement...</p>
-  </div>
+  @if (loading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #1e3a8a;"></i>
+      <p class="mt-3 text-600">Chargement...</p>
+    </div>
+  }
 </div>

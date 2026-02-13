@@ -1,37 +1,50 @@
-<p-dialog
-  [(visible)]="visible"
-  [modal]="true"
-  [style]="{ width: '500px' }"
-  [header]="demande ? 'Modifier ma demande' : 'Créer une demande'"
-  (onHide)="close()"
->
-  <form [formGroup]="form">
-    <div class="grid">
-      <div class="col-12">
-        <div class="field mb-4">
-          <label class="block mb-2 font-semibold">Vélo *</label>
-          <input
-            pInputText
-            type="number"
-            formControlName="idVelo"
-            class="w-full"
-            placeholder="ID du vélo"
-          />
-          <small class="p-error" *ngIf="form.get('idVelo')?.invalid && form.get('idVelo')?.touched">
-            Le vélo est obligatoire
-          </small>
+<div class="user-demande-form-page">
+  <div class="mb-4 flex justify-content-between align-items-center">
+    <div>
+      <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
+        {{ isEdit ? 'Modifier ma demande' : 'Créer une demande' }}
+      </h1>
+      <p class="text-600">Gestion de votre demande</p>
+    </div>
+    <p-button
+      label="Retour"
+      icon="pi pi-arrow-left"
+      styleClass="p-button-text"
+      (click)="goBack()"
+    ></p-button>
+  </div>
+
+  <p-card>
+    <form [formGroup]="form">
+      <div class="grid">
+        <div class="col-12">
+          <div class="field mb-4">
+            <label class="block mb-2 font-semibold">Vélo *</label>
+            <input
+              pInputText
+              type="number"
+              formControlName="idVelo"
+              class="w-full"
+              placeholder="ID du vélo"
+            />
+            @if (form.get('idVelo')?.invalid && form.get('idVelo')?.touched) {
+              <small class="p-error">
+                Le vélo est obligatoire
+              </small>
+            }
+          </div>
         </div>
       </div>
-    </div>
-  </form>
 
-  <ng-template pTemplate="footer">
-    <p-button label="Annuler" (onClick)="close()" class="p-button-text"></p-button>
-    <p-button
-      [label]="demande ? 'Sauvegarder' : 'Créer'"
-      icon="pi pi-check"
-      (onClick)="onSubmit()"
-      [loading]="loading"
-    ></p-button>
-  </ng-template>
-</p-dialog>
+      <div class="flex justify-content-end gap-2 mt-4">
+        <p-button label="Annuler" (onClick)="goBack()" class="p-button-text"></p-button>
+        <p-button
+          [label]="isEdit ? 'Sauvegarder' : 'Créer'"
+          icon="pi pi-check"
+          (onClick)="onSubmit()"
+          [loading]="loading"
+        ></p-button>
+      </div>
+    </form>
+  </p-card>
+</div>

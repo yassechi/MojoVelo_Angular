@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { UserService, User, UserRole } from '../../../core/services/user.service';
-import { EmployeFormDialogComponent } from '../../Admin/employes/employe-form-dialog/admin-employe-form-dialog';
 import { AuthService } from '../../../core/services/auth.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -25,7 +26,6 @@ import { MessageService, ConfirmationService } from 'primeng/api';
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
-    EmployeFormDialogComponent,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './manager-employes.component.html',
@@ -34,106 +34,103 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 export class EmployesComponent implements OnInit {
   employes: User[] = [];
   loading = false;
-  dialogVisible = false;
-  selectedUser: User | null = null;
   currentUserOrgId: number | null = null;
 
-  constructor(
-    private userService: UserService,
-    private authService: AuthService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
-  ) {}
+  private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
 
   ngOnInit(): void {
     this.loadCurrentUserOrg();
     this.loadEmployes();
   }
 
-loadCurrentUserOrg(): void {
-  const user = this.authService.getCurrentUser();
-  if (!user) return;
+  loadCurrentUserOrg(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      return;
+    }
 
-  if (user.organisationId) {
-    this.currentUserOrgId = typeof user.organisationId === 'object'
-      ? (user.organisationId as any).id
-      : user.organisationId;
+    if (user.organisationId) {
+      this.currentUserOrgId =
+        typeof user.organisationId === 'object'
+          ? (user.organisationId as any).id
+          : user.organisationId;
+    }
   }
-}
 
   loadEmployes(): void {
     this.loading = true;
     this.userService.getAll().subscribe({
       next: (data) => {
-        // ✅ Filtrer: seulement les User (pas Manager/Admin) de la même organisation
-        this.employes = data.filter(u => {
-          const orgId = typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId;
+        // Filter: only users (not Manager/Admin) from the same organization.
+        this.employes = data.filter((u) => {
+          const orgId =
+            typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId;
           return u.role === UserRole.User && orgId === this.currentUserOrgId;
         });
         this.loading = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les employés',
-        });
+        this.errorService.showError('Impossible de charger les employes');
         this.loading = false;
       },
     });
   }
 
   onCreate(): void {
-    this.selectedUser = null;
-    this.dialogVisible = true;
+    this.router.navigate(['/manager/employes/new']);
+  }
+
+  onView(user: User): void {
+    if (!user.id) {
+      this.errorService.showError('ID utilisateur manquant');
+      return;
+    }
+    this.router.navigate(['/manager/employes', user.id]);
   }
 
   onEdit(user: User): void {
-    this.selectedUser = user;
-    this.dialogVisible = true;
+    if (!user.id) {
+      this.errorService.showError('ID utilisateur manquant');
+      return;
+    }
+    this.router.navigate(['/manager/employes', user.id, 'edit']);
   }
 
-  onSave(): void {
-    this.loadEmployes();
-  }
+  onDelete(user: User): void {
+    if (!user.id) {
+      this.errorService.showError('ID utilisateur manquant');
+      return;
+    }
+    const userId = user.id;
 
- onDelete(user: User): void {
-  if (!user.id) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: 'ID utilisateur manquant',
+    this.confirmationService.confirm({
+      message: `Etes-vous sur de vouloir supprimer l'employe "${user.firstName} ${user.lastName}" ?`,
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Oui',
+      rejectLabel: 'Non',
+      accept: () => {
+        this.userService.delete(userId).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succes',
+              detail: 'Employe supprime',
+            });
+            this.loadEmployes();
+          },
+          error: () => {
+            this.errorService.showError('Impossible de supprimer l\'employe');
+          },
+        });
+      },
     });
-    return;
   }
-
-  this.confirmationService.confirm({
-    message: `Êtes-vous sûr de vouloir supprimer l'employé "${user.firstName} ${user.lastName}" ?`,
-    header: 'Confirmation',
-    icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Oui',
-    rejectLabel: 'Non',
-    accept: () => {
-      this.userService.delete(user.id!).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Succès',
-            detail: 'Employé supprimé',
-          });
-          this.loadEmployes();
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erreur',
-            detail: 'Impossible de supprimer l\'employé',
-          });
-        },
-      });
-    },
-  });
-}
 
   getRoleLabel(role: UserRole): string {
     switch (role) {

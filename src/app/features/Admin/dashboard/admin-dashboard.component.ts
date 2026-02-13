@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
@@ -46,13 +46,11 @@ export class AdminDashboardComponent implements OnInit {
   organisationsChartData: any;
   chartOptions: any;
 
-  constructor(
-    private authService: AuthService,
-    private userService: UserService,
-    private demandeService: DemandeService,
-    private contratService: ContratService,
-    private organisationService: OrganisationService
-  ) {}
+  private authService = inject(AuthService);
+  private userService = inject(UserService);
+  private demandeService = inject(DemandeService);
+  private contratService = inject(ContratService);
+  private organisationService = inject(OrganisationService);
 
   ngOnInit(): void {
     this.authService.currentUser.subscribe(user => {

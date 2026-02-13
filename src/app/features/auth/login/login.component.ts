@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -29,20 +30,17 @@ import { MessageService } from 'primeng/api';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  loginForm: FormGroup;
-  loading = false;
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+  private errorService = inject(ErrorService);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private messageService: MessageService
-  ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]]
-    });
-  }
+  loginForm: FormGroup = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]]
+  });
+  loading = false;
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
@@ -63,11 +61,10 @@ export class LoginComponent {
       },
       error: (error) => {
         this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur de connexion',
-          detail: error.error?.message || 'Email ou mot de passe incorrect'
-        });
+        this.errorService.showError(
+          error.error?.message || 'Email ou mot de passe incorrect',
+          'Erreur de connexion',
+        );
       }
     });
   }

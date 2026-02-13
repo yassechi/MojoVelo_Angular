@@ -1,35 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// import { DemandeService, Demande, DemandeStatus } from '../../core/services/demande.service';
-import { DemandeFormDialogComponent } from './demande-form-dialog/admin-demande-form-dialog';
+import { Router } from '@angular/router';
+import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TableModule } from 'primeng/table';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { SelectModule } from 'primeng/select';
-import { MessageService, ConfirmationService } from 'primeng/api';
-import { FormsModule } from '@angular/forms';
-import { Demande, DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 
 @Component({
-  selector: 'app-demandes',
+  selector: 'app-admin-demandes',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     CardModule,
     ButtonModule,
-    TableModule,
     TagModule,
+    TableModule,
+    ConfirmDialogModule,
     ToastModule,
     TooltipModule,
-    ConfirmDialogModule,
-    SelectModule,
-    DemandeFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './admin-demande.component.html',
@@ -38,21 +33,12 @@ import { Demande, DemandeService, DemandeStatus } from '../../../core/services/d
 export class AdminDemandesComponent implements OnInit {
   demandes: Demande[] = [];
   loading = false;
-  dialogVisible = false;
-  selectedDemande: Demande | null = null;
 
-  statusOptions = [
-    { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'En attente', value: DemandeStatus.Attente },
-    { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Validé', value: DemandeStatus.Valide },
-  ];
-
-  constructor(
-    private demandeService: DemandeService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-  ) {}
+  private demandeService = inject(DemandeService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
+  private errorService = inject(ErrorService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.loadDemandes();
@@ -66,23 +52,30 @@ export class AdminDemandesComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les demandes',
-        });
+        this.errorService.showError('Impossible de charger les demandes');
         this.loading = false;
       },
     });
   }
 
-  openDialog(demande?: Demande): void {
-    this.selectedDemande = demande || null;
-    this.dialogVisible = true;
+  onCreate(): void {
+    this.router.navigate(['/admin/demandes/new']);
   }
 
-  onDialogSave(): void {
-    this.loadDemandes();
+  onView(demande: Demande): void {
+    if (!demande.id) {
+      this.errorService.showError('ID demande manquant');
+      return;
+    }
+    this.router.navigate(['/admin/demandes', demande.id]);
+  }
+
+  onEdit(demande: Demande): void {
+    if (!demande.id) {
+      this.errorService.showError('ID demande manquant');
+      return;
+    }
+    this.router.navigate(['/admin/demandes', demande.id, 'edit']);
   }
 
   onStatusChange(demande: Demande, newStatus: DemandeStatus): void {
@@ -96,18 +89,14 @@ export class AdminDemandesComponent implements OnInit {
         });
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de mettre à jour le statut',
-        });
+        this.errorService.showError('Impossible de mettre à jour le statut');
       },
     });
   }
 
   onDelete(demande: Demande): void {
     this.confirmationService.confirm({
-      message: `Êtes-vous sûr de vouloir supprimer cette demande ?`,
+      message: 'Êtes-vous sûr de vouloir supprimer cette demande ?',
       header: 'Confirmation',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Oui',
@@ -123,11 +112,7 @@ export class AdminDemandesComponent implements OnInit {
             this.loadDemandes();
           },
           error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer la demande',
-            });
+            this.errorService.showError('Impossible de supprimer la demande');
           },
         });
       },
@@ -138,18 +123,9 @@ export class AdminDemandesComponent implements OnInit {
     return this.demandeService.getStatusLabel(status);
   }
 
-  getStatusSeverity(status: DemandeStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    switch (status) {
-      case DemandeStatus.Encours:
-        return 'info';
-      case DemandeStatus.Attente:
-        return 'warn';
-      case DemandeStatus.AttenteComagnie:
-        return 'warn';
-      case DemandeStatus.Valide:
-        return 'success';
-      default:
-        return 'secondary';
-    }
+  getStatusSeverity(
+    status: DemandeStatus,
+  ): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
+    return this.demandeService.getStatusSeverity(status);
   }
 }

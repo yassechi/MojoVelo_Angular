@@ -1,10 +1,10 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { MessageService, PrimeIcons } from 'primeng/api';
+import { ErrorService } from '../services/error.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const messageService = inject(MessageService);
+  const errorService = inject(ErrorService);
 
   return next(req).pipe(
     catchError((xhr: HttpErrorResponse) => {
@@ -16,8 +16,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (shouldSkipToast) {
         return throwError(() => xhr);
       }
-
-      const icon = PrimeIcons.EXCLAMATION_TRIANGLE;
 
       const extractErrorMessage = (error: any): string | null => {
         if (!error) return null;
@@ -56,7 +54,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
       }
 
-      messageService.add({ severity: 'error', icon, detail });
+      errorService.showError(detail);
 
       return throwError(() => xhr);
     })

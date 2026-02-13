@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Intervention {
   id: number;
@@ -16,9 +17,9 @@ export interface Intervention {
   providedIn: 'root'
 })
 export class InterventionService {
-  private apiUrl = 'http://localhost:5000/api/Intervention';
+  private apiUrl = `${environment.urls.legacyApi}/Intervention`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<Intervention[]> {
     return this.http.get<Intervention[]>(`${this.apiUrl}/get-all`);

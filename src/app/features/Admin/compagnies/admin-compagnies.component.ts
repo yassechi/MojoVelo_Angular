@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CompagnieFormDialogComponent } from './compagnie-form-dialog/admin-compagnie-form-dialog';
+import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -10,6 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Organisation, OrganisationService } from '../../../core/services/organisation.service';
+import { ErrorService } from '../../../core/services/error.service';
 
 @Component({
   selector: 'app-compagnies',
@@ -23,7 +24,6 @@ import { Organisation, OrganisationService } from '../../../core/services/organi
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
-    CompagnieFormDialogComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './admin-compagnies.component.html',
@@ -32,14 +32,12 @@ import { Organisation, OrganisationService } from '../../../core/services/organi
 export class AdminCompagniesComponent implements OnInit {
   organisations: Organisation[] = [];
   loading = false;
-  dialogVisible = false;
-  selectedOrganisation: Organisation | null = null;
 
-  constructor(
-    private organisationService: OrganisationService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
-  ) {}
+  private readonly organisationService = inject(OrganisationService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
 
   ngOnInit(): void {
     this.loadOrganisations();
@@ -54,24 +52,22 @@ export class AdminCompagniesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors du chargement des organisations', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les organisations'
-        });
+        this.errorService.showError('Impossible de charger les organisations');
         this.loading = false;
       }
     });
   }
 
   onCreate(): void {
-    this.selectedOrganisation = null;
-    this.dialogVisible = true;
+    this.router.navigate(['/admin/compagnies/new']);
+  }
+
+  onView(organisation: Organisation): void {
+    this.router.navigate(['/admin/compagnies', organisation.id]);
   }
 
   onEdit(organisation: Organisation): void {
-    this.selectedOrganisation = organisation;
-    this.dialogVisible = true;
+    this.router.navigate(['/admin/compagnies', organisation.id, 'edit']);
   }
 
   onDelete(organisation: Organisation): void {
@@ -93,18 +89,11 @@ export class AdminCompagniesComponent implements OnInit {
           },
           error: (error) => {
             console.error('Erreur lors de la suppression', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: 'Impossible de supprimer la compagnie'
-            });
+            this.errorService.showError('Impossible de supprimer la compagnie');
           }
         });
       }
     });
   }
 
-  onSave(): void {
-    this.loadOrganisations();
-  }
 }

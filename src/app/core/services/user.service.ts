@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export enum UserRole {
   Admin = 1,
@@ -27,17 +28,17 @@ export interface User {
   providedIn: 'root'
 })
 export class UserService {
-  private authUrl = 'https://localhost:7126/api/Auth';
-  private apiUrl = 'https://localhost:7126/api/User';
+  private authUrl = `${environment.urls.coreApi}/Auth`;
+  private apiUrl = `${environment.urls.coreApi}/User`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/get-all`);
+    return this.http.request<User[]>('GET', `${this.apiUrl}/get-all`);
   }
 
   getOne(id: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/get-one/${id}`);
+    return this.http.request<User>('GET', `${this.apiUrl}/get-one/${id}`);
   }
 
   create(user: any): Observable<any> {
@@ -58,7 +59,7 @@ export class UserService {
     console.log('URL appelée :', `${this.authUrl}/register`);
     console.log('Payload :', payload);
 
-    return this.http.post(`${this.authUrl}/register`, payload);
+    return this.http.request('POST', `${this.authUrl}/register`, { body: payload });
   }
 
   update(user: any): Observable<any> {
@@ -80,11 +81,11 @@ export class UserService {
       (payload as any).confirmPassword = user.password;
     }
 
-    return this.http.put(`${this.apiUrl}/update`, payload);
+    return this.http.request('PUT', `${this.apiUrl}/update`, { body: payload });
   }
 
   delete(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/delete/${id}`);
+    return this.http.request('DELETE', `${this.apiUrl}/delete/${id}`);
   }
 
   getRoleLabel(role: UserRole): string {

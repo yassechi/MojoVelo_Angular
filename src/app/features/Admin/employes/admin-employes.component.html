@@ -8,7 +8,7 @@
       </h1>
       <p class="text-600">Liste et gestion des employés</p>
     </div>
-    <p-button label="Créer un employé" icon="pi pi-plus" (click)="openDialog()"></p-button>
+    <p-button label="Créer un employé" icon="pi pi-plus" (click)="onCreate()"></p-button>
   </div>
 
   <div class="grid">
@@ -62,9 +62,15 @@
               <td>
                 <div class="flex gap-2">
                   <p-button
+                    icon="pi pi-eye"
+                    styleClass="p-button-rounded p-button-text"
+                    (click)="onView(user)"
+                    [pTooltip]="'Voir'"
+                  ></p-button>
+                  <p-button
                     icon="pi pi-pencil"
                     styleClass="p-button-rounded p-button-text"
-                    (click)="openDialog(user)"
+                    (click)="onEdit(user)"
                     [pTooltip]="'Modifier'"
                   ></p-button>
                   <p-button
@@ -91,13 +97,6 @@
     </div>
   </div>
 </div>
-
-<!-- Dialog de création/modification -->
-<app-employe-form-dialog
-  [(visible)]="dialogVisible"
-  [user]="selectedUser"
-  (onSave)="onDialogSave()"
-></app-employe-form-dialog>
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>

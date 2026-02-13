@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export enum StatutContrat {
   EnCours = 1,
   Termine = 2,
-  Resilie = 2,
+  Resilie = 3,
 }
 
 export interface Contrat {
@@ -26,28 +27,28 @@ export interface Contrat {
   providedIn: 'root',
 })
 export class ContratService {
-  private apiUrl = 'https://localhost:7126/api/Contrat';
+  private apiUrl = `${environment.urls.coreApi}/Contrat`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<Contrat[]> {
-    return this.http.get<Contrat[]>(`${this.apiUrl}/get-all`);
+    return this.http.request<Contrat[]>('GET', `${this.apiUrl}/get-all`);
   }
 
   getOne(id: number): Observable<Contrat> {
-    return this.http.get<Contrat>(`${this.apiUrl}/get-one/${id}`);
+    return this.http.request<Contrat>('GET', `${this.apiUrl}/get-one/${id}`);
   }
 
   create(contrat: Contrat): Observable<any> {
-    return this.http.post(`${this.apiUrl}/add`, contrat);
+    return this.http.request('POST', `${this.apiUrl}/add`, { body: contrat });
   }
 
   update(contrat: Contrat): Observable<any> {
-    return this.http.put(`${this.apiUrl}/update`, contrat);
+    return this.http.request('PUT', `${this.apiUrl}/update`, { body: contrat });
   }
 
   delete(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/delete/${id}`);
+    return this.http.request('DELETE', `${this.apiUrl}/delete/${id}`);
   }
 
   getStatutLabel(statut: StatutContrat): string {
@@ -56,6 +57,8 @@ export class ContratService {
         return 'En cours';
       case StatutContrat.Termine:
         return 'Terminé';
+      case StatutContrat.Resilie:
+        return 'Résilié';
       default:
         return 'Inconnu';
     }
