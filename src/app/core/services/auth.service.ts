@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = `${environment.urls.legacyApi}/Auth`;
+  private apiUrl = `${environment.urls.coreApi}/Auth`;
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly currentUserSubject = new BehaviorSubject<User | null>(
@@ -42,9 +42,9 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
         if (response && response.token) {
-          // RÃ©cupÃ©rer les infos complÃ¨tes de l'utilisateur
+          localStorage.setItem('token', response.token);
+          // Récupérer les infos complètes de l'utilisateur
           this.getUserInfo(response.id).subscribe((user) => {
-            localStorage.setItem('token', response.token);
             localStorage.setItem('currentUser', JSON.stringify(user));
             this.currentUserSubject.next(user);
 
@@ -60,9 +60,9 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
       tap((response) => {
         if (response && response.token) {
-          // RÃ©cupÃ©rer les infos complÃ¨tes de l'utilisateur
+          localStorage.setItem('token', response.token);
+          // Récupérer les infos complètes de l'utilisateur
           this.getUserInfo(response.id).subscribe((user) => {
-            localStorage.setItem('token', response.token);
             localStorage.setItem('currentUser', JSON.stringify(user));
             this.currentUserSubject.next(user);
 
@@ -141,3 +141,6 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/forgot-password`, payload);
   }
 }
+
+
+

@@ -8,15 +8,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((xhr: HttpErrorResponse) => {
-      console.error('Erreur HTTP:', xhr);
-
-      // Ne pas afficher de toast pour /login (le composant gère déjà l'erreur)
-      const skipToastUrls = ['/login'];
+      // Ne pas afficher de toast pour /login ou certains appels legacy non critiques
+      const skipToastUrls = ['/login', '/Amortissement/get-all'];
       const shouldSkipToast = skipToastUrls.some((url) => req.url.includes(url));
       if (shouldSkipToast) {
         return throwError(() => xhr);
       }
 
+      console.error('Erreur HTTP:', xhr);
       const extractErrorMessage = (error: any): string | null => {
         if (!error) return null;
         if (typeof error === 'string') return error;
@@ -60,3 +59,4 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+

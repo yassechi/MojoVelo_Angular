@@ -1,15 +1,16 @@
 .sidebar {
   width: 250px;
   height: 100%;
-  background-color: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.92);
+  border-right: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 6px 0 20px rgba(15, 23, 42, 0.08);
   position: fixed;
   left: 0;
   top: 60px;
   z-index: 1000;
   transition: transform 0.3s ease;
   overflow-y: auto;
+  backdrop-filter: blur(12px);
 
   &:not(.sidebar-visible) {
     transform: translateX(-100%);
@@ -26,17 +27,18 @@
 
     .p-panelmenu-header-link {
       border: none !important;
-      border-radius: 0 !important;
-      padding: 1rem 1.5rem !important;
+      border-radius: 0.75rem !important;
+      margin: 0.35rem 0.75rem;
+      padding: 0.85rem 1rem !important;
       transition: all 0.3s ease;
 
       &:hover {
-        background-color: #f3f4f6 !important;
+        background-color: rgba(15, 118, 110, 0.08) !important;
       }
 
       &.router-link-active,
       &:focus {
-        background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important;
+        background: linear-gradient(135deg, rgba(15, 118, 110, 0.95) 0%, rgba(12, 74, 110, 0.95) 100%) !important;
         color: white !important;
 
         .p-menuitem-icon {
@@ -50,13 +52,13 @@
     }
 
     .p-menuitem-icon {
-      color: #6b7280;
+      color: #4b5563;
       margin-right: 0.75rem;
     }
 
     .p-menuitem-text {
-      color: #374151;
-      font-weight: 500;
+      color: #1f2937;
+      font-weight: 600;
     }
   }
 }

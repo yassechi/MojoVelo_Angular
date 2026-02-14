@@ -43,9 +43,10 @@ export class DemandesComponent implements OnInit {
 
   statusOptions = [
     { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'En attente', value: DemandeStatus.Attente },
     { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
+    { label: 'Finalisation', value: DemandeStatus.Finalisation },
     { label: 'Valide', value: DemandeStatus.Valide },
+    { label: 'Refuse', value: DemandeStatus.Refuse },
   ];
 
   private readonly demandeService = inject(DemandeService);
@@ -174,17 +175,10 @@ export class DemandesComponent implements OnInit {
   }
 
   getStatusSeverity(status: DemandeStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    switch (status) {
-      case DemandeStatus.Encours:
-        return 'info';
-      case DemandeStatus.Attente:
-        return 'warn';
-      case DemandeStatus.AttenteComagnie:
-        return 'warn';
-      case DemandeStatus.Valide:
-        return 'success';
-      default:
-        return 'secondary';
-    }
+    return this.demandeService.getStatusSeverity(status);
+  }
+
+  getStatusClass(status: DemandeStatus): string {
+    return this.demandeService.getStatusClass(status);
   }
 }

@@ -15,6 +15,10 @@ import { DemandeDetailComponent } from './shared/components/demande-detail/admin
 import { AdminContratsComponent } from './features/Admin/contrats/admin-contrats.component';
 import { AdminParametresComponent } from './features/Admin/parametres/admin-parametres.component';
 import { ContratDetailComponent } from './features/Admin/contrats/contrat-detail/admin-contrat-detail.component';
+import { ContratDetailInfoComponent } from './features/Admin/contrats/contrat-detail/contrat-detail-info.component';
+import { ContratDocumentsComponent } from './features/Admin/contrats/contrat-detail/contrat-documents.component';
+import { ContratEntretienComponent } from './features/Admin/contrats/contrat-detail/contrat-entretien.component';
+import { ContratAmortissementComponent } from './features/Admin/contrats/contrat-detail/contrat-amortissement.component';
 
 // Manager Components
 import { DashboardComponent as ManagerDashboardComponent } from './features/Manager/dashboard/manager-dashboard.component';
@@ -64,8 +68,18 @@ export const routes: Routes = [
       { path: 'demandes/:id/edit', component: DemandeFormDialogComponent },
       { path: 'demandes/:id', component: DemandeDetailComponent },
       { path: 'contrats', component: AdminContratsComponent },
-      { path: 'contrats/:id', component: ContratDetailComponent },
       { path: 'contrats/edit/:id', component: ContratEditComponent },
+      {
+        path: 'contrats/:id',
+        component: ContratDetailComponent,
+        children: [
+          { path: '', redirectTo: 'detail', pathMatch: 'full' },
+          { path: 'detail', component: ContratDetailInfoComponent },
+          { path: 'documents', component: ContratDocumentsComponent },
+          { path: 'entretien', component: ContratEntretienComponent },
+          { path: 'amortissement', component: ContratAmortissementComponent },
+        ],
+      },
       { path: 'parametres', component: AdminParametresComponent },
     ],
   },

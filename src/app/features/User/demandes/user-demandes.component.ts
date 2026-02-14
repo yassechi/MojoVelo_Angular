@@ -124,17 +124,10 @@ export class DemandesComponent implements OnInit {
   }
 
   getStatusSeverity(status: DemandeStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    switch (status) {
-      case DemandeStatus.Encours:
-        return 'info';
-      case DemandeStatus.Attente:
-        return 'warn';
-      case DemandeStatus.AttenteComagnie:
-        return 'warn';
-      case DemandeStatus.Valide:
-        return 'success';
-      default:
-        return 'secondary';
-    }
+    return this.demandeService.getStatusSeverity(status);
+  }
+
+  getStatusClass(status: DemandeStatus): string {
+    return this.demandeService.getStatusClass(status);
   }
 }

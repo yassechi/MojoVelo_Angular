@@ -1,9 +1,7 @@
-<div class="dashboard-container">
+<div class="dashboard-container page-shell">
   <div class="mb-4">
-    <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
-      Tableau de bord Manager
-    </h1>
-    <p class="text-600">Bienvenue {{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+    <h1 class="page-title">Tableau de bord manager</h1>
+    <p class="page-subtitle">Bienvenue {{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
   </div>
 
   <!-- Cartes de statistiques -->
@@ -68,25 +66,26 @@
   <!-- Graphiques -->
   <div class="grid mt-4">
     <div class="col-12 lg:col-6">
-      <p-card>
+      <p-card styleClass="chart-card">
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0">Répartition des demandes</h3>
+            <h3 class="m-0 chart-title">Repartition des demandes</h3>
           </div>
         </ng-template>
-        <p-chart type="doughnut" [data]="demandesChartData" [options]="chartOptions"></p-chart>
+        <p-chart type="doughnut" class="mojo-chart" [data]="demandesChartData" [options]="chartOptions" style="height: 280px"></p-chart>
       </p-card>
     </div>
 
     <div class="col-12 lg:col-6">
-      <p-card>
+      <p-card styleClass="chart-card">
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0">Répartition des contrats</h3>
+            <h3 class="m-0 chart-title">Repartition des contrats</h3>
           </div>
         </ng-template>
-        <p-chart type="doughnut" [data]="contratsChartData" [options]="chartOptions"></p-chart>
+        <p-chart type="doughnut" class="mojo-chart" [data]="contratsChartData" [options]="chartOptions" style="height: 280px"></p-chart>
       </p-card>
     </div>
   </div>
 </div>
+

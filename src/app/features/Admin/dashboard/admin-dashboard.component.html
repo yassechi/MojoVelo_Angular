@@ -1,140 +1,68 @@
-<div class="dashboard-container">
-  <div class="mb-4">
-    <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
-      Tableau de bord Administrateur
-    </h1>
-    <p class="text-600">Bienvenue {{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+<div class="dashboard-container page-shell">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard RH</h1>
+      <p class="page-subtitle">Vue d'ensemble des demandes et contrats</p>
+    </div>
+    <span class="chip">CNP Saint-Martin</span>
   </div>
 
-  <!-- Cartes de statistiques -->
-  <div class="grid">
-    <div class="col-12 md:col-6 lg:col-3">
-      <p-card styleClass="shadow-2">
-        <div class="flex align-items-center justify-content-between">
-          <div>
-            <div class="text-500 font-medium mb-2">Compagnies</div>
-            <div class="text-900 font-bold text-4xl">{{ stats.compagnies }}</div>
-          </div>
-          <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:3rem;height:3rem">
-            <i class="pi pi-building text-blue-500 text-xl"></i>
-          </div>
-        </div>
-      </p-card>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Demandes en attente compagnie</div>
+      <div class="stat-value">{{ stats.pendingDemandes }}</div>
     </div>
-
-    <div class="col-12 md:col-6 lg:col-3">
-      <p-card styleClass="shadow-2">
-        <div class="flex align-items-center justify-content-between">
-          <div>
-            <div class="text-500 font-medium mb-2">Employés</div>
-            <div class="text-900 font-bold text-4xl">{{ stats.employes }}</div>
-          </div>
-          <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:3rem;height:3rem">
-            <i class="pi pi-users text-green-500 text-xl"></i>
-          </div>
-        </div>
-      </p-card>
+    <div class="stat-card stat-card--success">
+      <div class="stat-label">Contrats actifs</div>
+      <div class="stat-value">{{ stats.activeContrats }}</div>
     </div>
-
-    <div class="col-12 md:col-6 lg:col-3">
-      <p-card styleClass="shadow-2">
-        <div class="flex align-items-center justify-content-between">
-          <div>
-            <div class="text-500 font-medium mb-2">Contrats</div>
-            <div class="text-900 font-bold text-4xl">{{ stats.contrats }}</div>
-          </div>
-          <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:3rem;height:3rem">
-            <i class="pi pi-file text-orange-500 text-xl"></i>
-          </div>
-        </div>
-      </p-card>
+    <div class="stat-card">
+      <div class="stat-label">Budget total engage</div>
+      <div class="stat-value">{{ formatCurrency(stats.budgetTotal) }}</div>
     </div>
-
-    <div class="col-12 md:col-6 lg:col-3">
-      <p-card styleClass="shadow-2">
-        <div class="flex align-items-center justify-content-between">
-          <div>
-            <div class="text-500 font-medium mb-2">Demandes</div>
-            <div class="text-900 font-bold text-4xl">{{ stats.demandes }}</div>
-          </div>
-          <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width:3rem;height:3rem">
-            <i class="pi pi-inbox text-purple-500 text-xl"></i>
-          </div>
-        </div>
-      </p-card>
+    <div class="stat-card stat-card--accent">
+      <div class="stat-label">Taux de satisfaction</div>
+      <div class="stat-value">{{ stats.satisfactionRate }}%</div>
     </div>
   </div>
 
-  <!-- Graphiques -->
   <div class="grid mt-4">
-    <!-- Demandes par statut -->
-    <div class="col-12 lg:col-6">
-      <p-card>
+    <div class="col-12 lg:col-7">
+      <p-card styleClass="chart-card">
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0">Répartition des demandes</h3>
+            <h3 class="m-0 chart-title">Repartition par type de velo</h3>
           </div>
         </ng-template>
-        <p-chart type="doughnut" [data]="demandesChartData" [options]="chartOptions"></p-chart>
+        <p-chart
+          type="bar"
+          class="mojo-chart"
+          [data]="bikeTypeChartData"
+          [options]="barChartOptions"
+          style="height: 320px"
+        ></p-chart>
       </p-card>
     </div>
 
-    <!-- Contrats par statut -->
-    <div class="col-12 lg:col-6">
-      <p-card>
+    <div class="col-12 lg:col-5">
+      <p-card styleClass="section-card activity-card">
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0">Répartition des contrats</h3>
+            <h3 class="m-0 chart-title">Dernieres activites</h3>
           </div>
         </ng-template>
-        <p-chart type="doughnut" [data]="contratsChartData" [options]="chartOptions"></p-chart>
-      </p-card>
-    </div>
-
-    <!-- Utilisateurs par rôle -->
-    <div class="col-12 lg:col-6">
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-3">
-            <h3 class="m-0">Répartition des utilisateurs par rôle</h3>
-          </div>
-        </ng-template>
-        <p-chart type="pie" [data]="rolesChartData" [options]="chartOptions"></p-chart>
-      </p-card>
-    </div>
-
-    <!-- Statistiques employés -->
-    <div class="col-12 lg:col-6">
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-3">
-            <h3 class="m-0">Détails employés</h3>
-          </div>
-        </ng-template>
-        <div class="grid">
-          <div class="col-12 flex align-items-center justify-content-between mb-3 p-3 border-round" style="background-color: #FEE2E2">
-            <div>
-              <div class="text-500 font-medium">Administrateurs</div>
-              <div class="text-900 font-bold text-2xl">{{ stats.admins }}</div>
+        <div class="activity-list">
+          @if (activityFeed.length === 0) {
+            <div class="text-600">Aucune activite recente</div>
+          } @else {
+            <div class="activity-item" *ngFor="let item of activityFeed">
+              <div>
+                <div class="font-semibold">{{ item.title }}</div>
+                <div class="text-600 text-sm">{{ item.detail }}</div>
+              </div>
+              <span class="activity-time">{{ item.time }}</span>
             </div>
-            <i class="pi pi-shield text-red-500 text-2xl"></i>
-          </div>
-
-          <div class="col-12 flex align-items-center justify-content-between mb-3 p-3 border-round" style="background-color: #FEF3C7">
-            <div>
-              <div class="text-500 font-medium">Managers</div>
-              <div class="text-900 font-bold text-2xl">{{ stats.managers }}</div>
-            </div>
-            <i class="pi pi-briefcase text-orange-500 text-2xl"></i>
-          </div>
-
-          <div class="col-12 flex align-items-center justify-content-between p-3 border-round" style="background-color: #DBEAFE">
-            <div>
-              <div class="text-500 font-medium">Utilisateurs</div>
-              <div class="text-900 font-bold text-2xl">{{ stats.users }}</div>
-            </div>
-            <i class="pi pi-user text-blue-500 text-2xl"></i>
-          </div>
+          }
         </div>
       </p-card>
     </div>

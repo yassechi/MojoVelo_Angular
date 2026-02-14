@@ -17,7 +17,7 @@ export interface Amortissement {
   providedIn: 'root'
 })
 export class AmortissementService {
-  private apiUrl = `${environment.urls.legacyApi}/Amortissement`;
+  private apiUrl = `${environment.urls.coreApi}/Amortissement`;
 
   private readonly http = inject(HttpClient);
   private readonly injector = inject(Injector);

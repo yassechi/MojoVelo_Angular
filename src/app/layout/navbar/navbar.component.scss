@@ -1,9 +1,11 @@
 :host ::ng-deep {
   .navbar-custom {
-    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important;
+    background: rgba(255, 255, 255, 0.86) !important;
     border: none !important;
-    padding: 0.5rem 1rem !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+    padding: 0.65rem 1.25rem !important;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(14px);
 
     .p-toolbar-group-start,
     .p-toolbar-group-end {
@@ -12,20 +14,58 @@
     }
 
     .p-button-text {
-      color: white !important;
+      color: var(--mojo-ink) !important;
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
+        background-color: rgba(15, 118, 110, 0.08) !important;
       }
     }
   }
 }
 
-.logo {
-  font-size: 1.8rem;
-  color: white !important;
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
-.text-900 {
-  color: white !important;
+.brand-mark {
+  color: var(--mojo-ink);
+}
+
+.brand-dot {
+  color: var(--mojo-accent);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.brand-tag {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--mojo-primary);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-pill {
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--mojo-primary-700);
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.nav-avatar {
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
 }

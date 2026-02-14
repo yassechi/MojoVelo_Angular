@@ -5,6 +5,10 @@ import { environment } from '../../../environments/environment';
 
 export interface Velo {
   id?: number;
+  createdDate?: string;
+  modifiedDate?: string;
+  modifiedBy?: string;
+  createdBy?: string;
   numeroSerie: string;
   marque: string;
   modele: string;

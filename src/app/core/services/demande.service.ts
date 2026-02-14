@@ -1,13 +1,14 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export enum DemandeStatus {
   Encours = 1,
-  Attente = 2,
-  AttenteComagnie = 3,
-  Valide = 4
+  AttenteComagnie = 2,
+  Finalisation = 3,
+  Valide = 4,
+  Refuse = 5,
 }
 
 export interface Demande {
@@ -17,6 +18,9 @@ export interface Demande {
   idVelo: number;
   discussionId?: number;
   isActif?: boolean;
+  createdAt?: string;
+  accessoiresObligatoires?: string;
+  accessoiresSouhaites?: string;
 }
 
 @Injectable({
@@ -55,12 +59,14 @@ export class DemandeService {
     switch (status) {
       case DemandeStatus.Encours:
         return 'En cours';
-      case DemandeStatus.Attente:
-        return 'En attente';
       case DemandeStatus.AttenteComagnie:
         return 'Attente Compagnie';
+      case DemandeStatus.Finalisation:
+        return 'Finalisation';
       case DemandeStatus.Valide:
-        return 'Validé';
+        return 'Valide';
+      case DemandeStatus.Refuse:
+        return 'Refuse';
       default:
         return 'Inconnu';
     }
@@ -71,15 +77,34 @@ export class DemandeService {
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case DemandeStatus.Encours:
-        return 'info';
-      case DemandeStatus.Attente:
-        return 'warn';
+        return 'success';
       case DemandeStatus.AttenteComagnie:
-        return 'warn';
+        return 'success';
+      case DemandeStatus.Finalisation:
+        return 'success';
       case DemandeStatus.Valide:
         return 'success';
+      case DemandeStatus.Refuse:
+        return 'danger';
       default:
         return 'secondary';
+    }
+  }
+
+  getStatusClass(status: DemandeStatus): string {
+    switch (status) {
+      case DemandeStatus.Encours:
+        return 'status-tag status-encours';
+      case DemandeStatus.AttenteComagnie:
+        return 'status-tag status-attente';
+      case DemandeStatus.Finalisation:
+        return 'status-tag status-finalisation';
+      case DemandeStatus.Valide:
+        return 'status-tag status-valide';
+      case DemandeStatus.Refuse:
+        return 'status-tag status-refuse';
+      default:
+        return 'status-tag';
     }
   }
 }

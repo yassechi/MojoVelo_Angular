@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -51,9 +51,10 @@ export class DemandeFormDialogComponent implements OnInit {
 
   statusOptions = [
     { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'En attente', value: DemandeStatus.Attente },
     { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Validé', value: DemandeStatus.Valide }
+    { label: 'Finalisation', value: DemandeStatus.Finalisation },
+    { label: 'Valide', value: DemandeStatus.Valide },
+    { label: 'Refuse', value: DemandeStatus.Refuse },
   ];
 
   ngOnInit(): void {
@@ -82,7 +83,7 @@ export class DemandeFormDialogComponent implements OnInit {
         this.users = data;
       },
       error: () => {
-        // L'intercepteur gère l'affichage de l'erreur
+        // L'intercepteur gÃ¨re l'affichage de l'erreur
       }
     });
   }
@@ -138,15 +139,15 @@ export class DemandeFormDialogComponent implements OnInit {
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Succès',
-          detail: this.isEdit ? 'Demande modifiée' : 'Demande créée'
+          summary: 'SuccÃ¨s',
+          detail: this.isEdit ? 'Demande modifiÃ©e' : 'Demande crÃ©Ã©e'
         });
         this.loading = false;
         this.goBack();
       },
       error: () => {
         this.loading = false;
-        // L'intercepteur affiche déjà l'erreur dans le toast
+        // L'intercepteur affiche dÃ©jÃ  l'erreur dans le toast
       }
     });
   }
@@ -163,3 +164,4 @@ export class DemandeFormDialogComponent implements OnInit {
     return '/admin/demandes';
   }
 }
+
