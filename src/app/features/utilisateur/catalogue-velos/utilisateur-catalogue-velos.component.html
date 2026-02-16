@@ -1,4 +1,4 @@
-<div class="catalogue-container page-shell">
+﻿<div class="catalogue-container page-shell">
   <div class="page-header">
     <div>
       <h1 class="page-title">Catalogue de v&eacute;los</h1>
@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <p-card styleClass="section-card">
+  <p-card class="section-card">
     <div class="catalogue-filters">
       <div class="filter-item">
         <label>Marque</label>
@@ -88,7 +88,7 @@
             </div>
             <p-button
               [label]="isSelected(bike) ? 'Selectionne' : 'Selectionner'"
-              styleClass="catalogue-select"
+              class="catalogue-select"
               [loading]="creatingDemande && selectedBikeId === bike.id"
               [disabled]="creatingDemande"
               (click)="confirmSelection(bike)"
@@ -115,3 +115,4 @@
     }
   </p-card>
 </div>
+

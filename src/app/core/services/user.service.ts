@@ -2,27 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { User, UserRole } from '../models/user.model';
 
-export enum UserRole {
-  Admin = 1,
-  Manager = 2,
-  User = 3
-}
-
-export interface User {
-  id?: string;
-  userName: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  role: UserRole;
-  isActif: boolean;
-  organisationId: number | { id: number; name: string }; 
-  password?: string;
-  confirmPassword?: string;
-  tailleCm?: number;
-}
+export type { User } from '../models/user.model';
+export { UserRole } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'

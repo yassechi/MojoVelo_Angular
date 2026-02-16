@@ -12,7 +12,7 @@ import { forkJoin, of, switchMap, finalize, timeout, catchError, map } from 'rxj
 import { Amortissement, AmortissementService } from '../../../../core/services/amortissement.service';
 import { MoisAmortissement, MoisAmortissementService } from '../../../../core/services/mois-amortissement.service';
 import { ErrorService } from '../../../../core/services/error.service';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { environment } from '../../../../../environments/environment';
 import { ContratDetailStore } from './contrat-detail.store';
 
@@ -26,7 +26,7 @@ import { ContratDetailStore } from './contrat-detail.store';
 export class ContratAmortissementComponent {
   private readonly amortissementService = inject(AmortissementService);
   private readonly moisAmortissementService = inject(MoisAmortissementService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
   private readonly store = inject(ContratDetailStore);
   private readonly route = inject(ActivatedRoute);
@@ -223,3 +223,5 @@ export class ContratAmortissementComponent {
     return Number.isFinite(parsed) ? parsed : 0;
   }
 }
+
+

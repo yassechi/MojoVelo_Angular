@@ -9,12 +9,12 @@
     <p-button
       label="Exporter en Excel"
       icon="pi pi-file-excel"
-      styleClass="p-button-outlined"
+      class="p-button-outlined"
       (click)="exportDemandes()"
     ></p-button>
   </div>
 
-  <p-card styleClass="section-card mb-3">
+  <p-card class="section-card mb-3">
     <div class="grid">
       <div class="col-12 md:col-3">
         <label class="block mb-2 font-semibold">Statut</label>
@@ -71,7 +71,7 @@
           [showCurrentPageReport]="true"
           currentPageReportTemplate="Affichage de {first} a {last} sur {totalRecords} demandes"
           [rowsPerPageOptions]="[10, 25, 50]"
-          styleClass="p-datatable-striped"
+          class="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
@@ -99,7 +99,7 @@
               <td>
                 <p-tag
                   [value]="getStatusLabel(demande.status)"
-                  [severity]="getStatusSeverity(demande.status)" [styleClass]="getStatusClass(demande.status)"
+                  [severity]="getStatusSeverity(demande.status)" [ngClass]="getStatusClass(demande.status)"
                 ></p-tag>
               </td>
               <td>
@@ -107,7 +107,7 @@
                   <p-button
                     label="Voir"
                     icon="pi pi-eye"
-                    styleClass="p-button-text"
+                    class="p-button-text"
                     (click)="onView(demande)"
                   ></p-button>
 
@@ -132,6 +132,9 @@
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>
+
+
+
 
 
 

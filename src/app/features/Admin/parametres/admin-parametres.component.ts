@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { UserService, User } from '../../../core/services/user.service';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
@@ -24,14 +24,14 @@ import { ToastModule } from 'primeng/toast';
     PasswordModule,
     ToastModule
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './admin-parametres.component.html',
   styleUrls: ['./admin-parametres.component.scss']
 })
 export class AdminParametresComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private errorService = inject(ErrorService);
 
   profileForm: FormGroup = this.fb.group({
@@ -194,3 +194,5 @@ export class AdminParametresComponent implements OnInit {
   }
 
 }
+
+

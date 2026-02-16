@@ -20,7 +20,7 @@
           [showCurrentPageReport]="true"
           currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} demandes"
           [rowsPerPageOptions]="[10, 25, 50]"
-          styleClass="p-datatable-striped"
+          class="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
@@ -45,26 +45,26 @@
               <td>
                 <p-tag
                   [value]="getStatusLabel(demande.status)"
-                  [severity]="getStatusSeverity(demande.status)" [styleClass]="getStatusClass(demande.status)"
+                  [severity]="getStatusSeverity(demande.status)" [ngClass]="getStatusClass(demande.status)"
                 ></p-tag>
               </td>
               <td>
                 <div class="flex gap-2">
                   <p-button
                     icon="pi pi-eye"
-                    styleClass="p-button-rounded p-button-text"
+                    class="p-button-rounded p-button-text"
                     (click)="onView(demande)"
                     [pTooltip]="'Voir'"
                   ></p-button>
                   <p-button
                     icon="pi pi-pencil"
-                    styleClass="p-button-rounded p-button-text"
+                    class="p-button-rounded p-button-text"
                     (click)="onEdit(demande)"
                     [pTooltip]="'Modifier'"
                   ></p-button>
                   <p-button
                     icon="pi pi-trash"
-                    styleClass="p-button-rounded p-button-text p-button-danger"
+                    class="p-button-rounded p-button-text p-button-danger"
                     (click)="onDelete(demande)"
                     [pTooltip]="'Supprimer'"
                   ></p-button>
@@ -89,4 +89,7 @@
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>
+
+
+
 

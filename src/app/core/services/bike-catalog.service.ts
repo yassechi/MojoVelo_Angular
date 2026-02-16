@@ -48,20 +48,18 @@ export class BikeCatalogService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.urls.cmsApi;
 
-  getBikes(perPage = 100, page = 1, embed = false): Observable<CmsListResponse<BikeItem>> {
-    let params = new HttpParams().set('per_page', String(perPage)).set('page', String(page));
+  getBikes(embed = false): Observable<CmsListResponse<BikeItem>> {
+    let params = new HttpParams();
     if (embed) {
       params = params.set('_embed', '1');
     }
-    return this.http
-      .get<BikeItem[]>(`${this.baseUrl}/bikes`, { params, observe: 'response' })
-      .pipe(
-        map((response) => ({
-          items: response.body ?? [],
-          total: Number(response.headers.get('X-WP-Total') ?? 0),
-          totalPages: Number(response.headers.get('X-WP-TotalPages') ?? 0),
-        })),
-      );
+    return this.http.get<BikeItem[]>(`${this.baseUrl}/bikes`, { params, observe: 'response' }).pipe(
+      map((response) => ({
+        items: response.body ?? [],
+        total: Number(response.headers.get('X-WP-Total') ?? 0),
+        totalPages: Number(response.headers.get('X-WP-TotalPages') ?? 0),
+      })),
+    );
   }
 
   getBikeById(id: number, embed = false): Observable<BikeItem> {
@@ -72,10 +70,9 @@ export class BikeCatalogService {
     return this.http.get<BikeItem>(`${this.baseUrl}/bikes/${id}`, { params });
   }
 
-  getBrands(perPage = 100, page = 1): Observable<CmsListResponse<BikeBrand>> {
-    const params = new HttpParams().set('per_page', String(perPage)).set('page', String(page));
+  getBrands(): Observable<CmsListResponse<BikeBrand>> {
     return this.http
-      .get<BikeBrand[]>(`${this.baseUrl}/bikes_brand`, { params, observe: 'response' })
+      .get<BikeBrand[]>(`${this.baseUrl}/bikes_brand`, { observe: 'response' })
       .pipe(
         map((response) => ({
           items: response.body ?? [],

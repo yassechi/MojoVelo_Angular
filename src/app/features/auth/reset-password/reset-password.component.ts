@@ -10,7 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-reset-password',
@@ -24,7 +24,7 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     ToastModule
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
@@ -33,7 +33,7 @@ export class ResetPasswordComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private errorService = inject(ErrorService);
 
   resetForm: FormGroup = this.fb.group({
@@ -115,3 +115,5 @@ export class ResetPasswordComponent implements OnInit {
     return this.resetForm.get('confirmPassword');
   }
 }
+
+

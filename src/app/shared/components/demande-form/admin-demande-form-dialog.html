@@ -1,4 +1,4 @@
-<div class="demande-form-page">
+﻿<div class="demande-form-page">
   <p-toast></p-toast>
 
   <div class="mb-4 flex justify-content-between align-items-center">
@@ -11,7 +11,7 @@
     <p-button
       label="Retour"
       icon="pi pi-arrow-left"
-      styleClass="p-button-text"
+      class="p-button-text"
       (click)="goBack()"
     ></p-button>
   </div>
@@ -33,7 +33,7 @@
               [filter]="true"
               filterBy="userName,email"
               [showClear]="true"
-              styleClass="w-full"
+              class="w-full"
             >
               <ng-template let-user pTemplate="item">
                 <div class="flex flex-column">
@@ -59,7 +59,7 @@
               formControlName="idVelo"
               [min]="1"
               [useGrouping]="false"
-              styleClass="w-full"
+              class="w-full"
               placeholder="Ex: 1"
             ></p-inputnumber>
             @if (form.get('idVelo')?.invalid && form.get('idVelo')?.touched) {
@@ -81,7 +81,7 @@
               optionLabel="label"
               optionValue="value"
               placeholder="Sélectionnez un statut"
-              styleClass="w-full"
+              class="w-full"
             ></p-select>
             @if (form.get('status')?.invalid && form.get('status')?.touched) {
               <small class="p-error">
@@ -100,7 +100,7 @@
               formControlName="discussionId"
               [min]="1"
               [useGrouping]="false"
-              styleClass="w-full"
+              class="w-full"
               placeholder="Ex: 1"
             ></p-inputnumber>
           </div>
@@ -140,3 +140,4 @@
     </form>
   </p-card>
 </div>
+

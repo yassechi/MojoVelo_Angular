@@ -9,7 +9,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-forgot-password',
@@ -23,7 +23,7 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     ToastModule
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss']
 })
@@ -31,7 +31,7 @@ export class ForgotPasswordComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private errorService = inject(ErrorService);
 
   forgotForm: FormGroup = this.fb.group({
@@ -69,3 +69,5 @@ export class ForgotPasswordComponent {
     return this.forgotForm.get('email');
   }
 }
+
+

@@ -1,4 +1,4 @@
-<div class="employe-form-page">
+﻿<div class="employe-form-page">
   <p-toast></p-toast>
 
   <div class="mb-4 flex justify-content-between align-items-center">
@@ -11,7 +11,7 @@
     <p-button
       label="Retour"
       icon="pi pi-arrow-left"
-      styleClass="p-button-text"
+      class="p-button-text"
       (click)="goBack()"
     ></p-button>
   </div>
@@ -63,8 +63,8 @@
               formControlName="password"
               [toggleMask]="true"
               [feedback]="false"
-              styleClass="w-full"
-              inputStyleClass="w-full"
+              class="w-full"
+              inputclass="w-full"
             ></p-password>
             @if (form.get('password')?.invalid && form.get('password')?.touched) {
               <small class="text-red-500 block mt-1">
@@ -88,8 +88,8 @@
               formControlName="confirmPassword"
               [toggleMask]="true"
               [feedback]="false"
-              styleClass="w-full"
-              inputStyleClass="w-full"
+              class="w-full"
+              inputclass="w-full"
             ></p-password>
             @if (form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched) {
               <small class="text-red-500 block mt-1">
@@ -112,7 +112,7 @@
               [options]="roleOptions"
               optionLabel="label"
               optionValue="value"
-              styleClass="w-full"
+              class="w-full"
             ></p-select>
           </div>
         </div>
@@ -125,7 +125,7 @@
               [options]="organisations"
               optionLabel="name"
               optionValue="id"
-              styleClass="w-full"
+              class="w-full"
               placeholder="Sélectionner"
             ></p-select>
           </div>
@@ -154,4 +154,5 @@
     </form>
   </p-card>
 </div>
+
 

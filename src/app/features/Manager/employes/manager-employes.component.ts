@@ -12,7 +12,7 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-manager-employes',
@@ -27,7 +27,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
     TooltipModule,
     ConfirmDialogModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './manager-employes.component.html',
   styleUrls: ['./manager-employes.component.scss'],
 })
@@ -38,7 +38,7 @@ export class EmployesComponent implements OnInit {
 
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly errorService = inject(ErrorService);
   private readonly router = inject(Router);
@@ -166,3 +166,5 @@ export class EmployesComponent implements OnInit {
     return 'N/A';
   }
 }
+
+

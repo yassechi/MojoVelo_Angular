@@ -18,7 +18,7 @@ export interface Discussion {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DiscussionService {
   private apiUrl = `${environment.urls.coreApi}/Discussion`;

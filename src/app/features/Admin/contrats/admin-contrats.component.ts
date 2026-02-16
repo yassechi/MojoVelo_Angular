@@ -18,7 +18,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../../core/services/error.service';
 
@@ -39,7 +39,7 @@ import { ErrorService } from '../../../core/services/error.service';
     InputTextModule,
     ProgressBarModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './admin-contrats.component.html',
   styleUrls: ['./admin-contrats.component.scss'],
 })
@@ -66,7 +66,7 @@ export class AdminContratsComponent implements OnInit {
 
   private contratService = inject(ContratService);
   private veloService = inject(VeloService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private confirmationService = inject(ConfirmationService);
   private router = inject(Router);
   private errorService = inject(ErrorService);
@@ -223,3 +223,5 @@ export class AdminContratsComponent implements OnInit {
       });
   }
 }
+
+

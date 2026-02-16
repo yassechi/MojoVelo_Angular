@@ -1,4 +1,4 @@
-<div class="register-shell">
+﻿<div class="register-shell">
   <p-toast></p-toast>
 
   <div class="register-card section-card">
@@ -72,7 +72,7 @@
             [options]="organisations"
             optionLabel="name"
             optionValue="id"
-            styleClass="w-full"
+            class="w-full"
             placeholder="Selectionner"
           ></p-select>
           @if (form.get('organisationId')?.invalid && form.get('organisationId')?.touched) {
@@ -89,8 +89,8 @@
             formControlName="password"
             [toggleMask]="true"
             [feedback]="false"
-            styleClass="w-full"
-            inputStyleClass="w-full"
+            class="w-full"
+            inputclass="w-full"
           ></p-password>
           @if (form.get('password')?.invalid && form.get('password')?.touched) {
             <small class="field-error">
@@ -110,8 +110,8 @@
             formControlName="confirmPassword"
             [toggleMask]="true"
             [feedback]="false"
-            styleClass="w-full"
-            inputStyleClass="w-full"
+            class="w-full"
+            inputclass="w-full"
           ></p-password>
           @if (form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched) {
             <small class="field-error">
@@ -130,7 +130,7 @@
         <p-button
           label="Se connecter"
           type="button"
-          styleClass="p-button-outlined"
+          class="p-button-outlined"
           (onClick)="goToLogin()"
         ></p-button>
         <p-button
@@ -153,3 +153,4 @@
     </div>
   </div>
 </div>
+

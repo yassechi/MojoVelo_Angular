@@ -1,4 +1,4 @@
-<div class="employe-detail-page">
+﻿<div class="employe-detail-page">
   <div class="mb-4 flex justify-content-between align-items-center">
     <div>
       <h1 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #1e3a8a">
@@ -10,7 +10,7 @@
       <p-button
         label="Retour"
         icon="pi pi-arrow-left"
-        styleClass="p-button-text"
+        class="p-button-text"
         (click)="goBack()"
       ></p-button>
       <p-button
@@ -22,68 +22,69 @@
     </div>
   </div>
 
-  <p-card *ngIf="user; else loadingTpl">
-    <div class="grid">
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Nom d'utilisateur</div>
-          <div class="font-semibold">{{ user.userName }}</div>
+  @if (user) {
+    <p-card>
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Nom d'utilisateur</div>
+            <div class="font-semibold">{{ user.userName }}</div>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Email</div>
+            <div class="font-semibold">{{ user.email }}</div>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Prénom</div>
+            <div class="font-semibold">{{ user.firstName }}</div>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Nom</div>
+            <div class="font-semibold">{{ user.lastName }}</div>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Téléphone</div>
+            <div class="font-semibold">{{ user.phoneNumber }}</div>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Rôle</div>
+            <p-tag
+              [value]="getRoleLabel(user.role)"
+              [severity]="getRoleSeverity(user.role)"
+            ></p-tag>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Statut</div>
+            <p-tag
+              [value]="user.isActif ? 'Actif' : 'Inactif'"
+              [severity]="user.isActif ? 'success' : 'danger'"
+            ></p-tag>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field mb-3">
+            <div class="text-600 text-sm">Organisation</div>
+            <div class="font-semibold">{{ getOrganisationName(user) }}</div>
+          </div>
         </div>
       </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Email</div>
-          <div class="font-semibold">{{ user.email }}</div>
-        </div>
-      </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Prénom</div>
-          <div class="font-semibold">{{ user.firstName }}</div>
-        </div>
-      </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Nom</div>
-          <div class="font-semibold">{{ user.lastName }}</div>
-        </div>
-      </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Téléphone</div>
-          <div class="font-semibold">{{ user.phoneNumber }}</div>
-        </div>
-      </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Rôle</div>
-          <p-tag
-            [value]="getRoleLabel(user.role)"
-            [severity]="getRoleSeverity(user.role)"
-          ></p-tag>
-        </div>
-      </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Statut</div>
-          <p-tag
-            [value]="user.isActif ? 'Actif' : 'Inactif'"
-            [severity]="user.isActif ? 'success' : 'danger'"
-          ></p-tag>
-        </div>
-      </div>
-      <div class="col-12 md:col-6">
-        <div class="field mb-3">
-          <div class="text-600 text-sm">Organisation</div>
-          <div class="font-semibold">{{ getOrganisationName(user) }}</div>
-        </div>
-      </div>
-    </div>
-  </p-card>
-
-  <ng-template #loadingTpl>
+    </p-card>
+  } @else {
     <p-card>
       <div class="text-600">Chargement...</div>
     </p-card>
-  </ng-template>
+  }
 </div>
+

@@ -166,7 +166,7 @@ export class CatalogueVelosUtilisateurComponent implements OnInit {
 
   private loadBikes(): void {
     this.loading = true;
-    this.bikeCatalogService.getBrands(100).subscribe({
+    this.bikeCatalogService.getBrands().subscribe({
       next: (brandsResponse) => {
         this.brandMap = new Map(brandsResponse.items.map((brand) => [brand.id, brand]));
         this.loadBikesFromCms();
@@ -179,7 +179,7 @@ export class CatalogueVelosUtilisateurComponent implements OnInit {
   }
 
   private loadBikesFromCms(): void {
-    this.bikeCatalogService.getBikes(100, 1, true).subscribe({
+    this.bikeCatalogService.getBikes(true).subscribe({
       next: (bikesResponse) => {
         this.bikes = bikesResponse.items.map((bike) => this.mapBike(bike));
         this.buildOptions();

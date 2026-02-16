@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -11,7 +12,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 import { Organisation, OrganisationService } from '../../../core/services/organisation.service';
 import { ErrorService } from '../../../core/services/error.service';
 
@@ -31,12 +32,11 @@ import { ErrorService } from '../../../core/services/error.service';
     SelectModule,
     InputTextModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './admin-compagnies.component.html',
-  styleUrls: ['./admin-compagnies.component.scss']
+  styleUrls: ['./admin-compagnies.component.scss'],
 })
 export class AdminCompagniesComponent implements OnInit {
-  organisations: Organisation[] = [];
   filteredOrganisations: Organisation[] = [];
   loading = false;
   searchTerm = '';
@@ -49,7 +49,7 @@ export class AdminCompagniesComponent implements OnInit {
   ];
 
   private readonly organisationService = inject(OrganisationService);
-  private readonly messageService = inject(MessageService);
+  private readonly primeMessageService = inject(PrimeMessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly errorService = inject(ErrorService);
   private readonly router = inject(Router);
@@ -59,29 +59,19 @@ export class AdminCompagniesComponent implements OnInit {
   }
 
   loadOrganisations(): void {
+    const isActif = this.statusFilter === 'all' ? undefined : this.statusFilter === 'active';
+    const search = this.searchTerm.trim() || undefined;
     this.loading = true;
-    const isActif =
-      this.statusFilter === 'active'
-        ? true
-        : this.statusFilter === 'inactive'
-          ? false
-          : null;
-    const search = this.searchTerm.trim();
-
+    
     this.organisationService
-      .getList({
-        isActif: isActif ?? undefined,
-        search: search ? search : undefined,
-      })
+      .getList({ isActif, search })
+      .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (data) => {
-          this.organisations = data;
           this.filteredOrganisations = data;
-          this.loading = false;
         },
-        error: (error) => {
+        error: () => {
           this.errorService.showError('Impossible de charger les organisations');
-          this.loading = false;
         },
       });
   }
@@ -112,19 +102,18 @@ export class AdminCompagniesComponent implements OnInit {
       accept: () => {
         this.organisationService.delete(organisation.id).subscribe({
           next: () => {
-            this.messageService.add({
+            this.primeMessageService.add({
               severity: 'success',
               summary: 'Succès',
-              detail: 'Compagnie supprimée'
+              detail: 'Compagnie supprimée',
             });
             this.loadOrganisations();
           },
           error: (error) => {
             this.errorService.showError('Impossible de supprimer la compagnie');
-          }
+          },
         });
-      }
+      },
     });
   }
-
 }

@@ -14,7 +14,7 @@ import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { ErrorService } from '../../../core/services/error.service';
 
 @Component({
@@ -27,7 +27,7 @@ import { ErrorService } from '../../../core/services/error.service';
     TagModule,
     ToastModule
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './utilisateur-contrats.component.html',
   styleUrls: ['./utilisateur-contrats.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,3 +101,5 @@ export class ContratsUtilisateurComponent {
     }).format(amount);
   }
 }
+
+

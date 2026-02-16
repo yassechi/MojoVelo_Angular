@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -31,7 +31,7 @@ import { ErrorService } from '../../../core/services/error.service';
     SelectModule,
     InputTextModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './admin-employes.component.html',
   styleUrls: ['./admin-employes.component.scss']
 })
@@ -57,7 +57,7 @@ export class AdminEmployesComponent implements OnInit {
   ];
 
   private userService = inject(UserService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private confirmationService = inject(ConfirmationService);
   private errorService = inject(ErrorService);
   private router = inject(Router);
@@ -161,3 +161,5 @@ export class AdminEmployesComponent implements OnInit {
     return isActif ? 'Actif' : 'Inactif';
   }
 }
+
+

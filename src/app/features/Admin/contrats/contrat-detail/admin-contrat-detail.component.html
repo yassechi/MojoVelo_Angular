@@ -1,4 +1,4 @@
-<div class="contrat-detail-container page-shell">
+﻿<div class="contrat-detail-container page-shell">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -21,7 +21,7 @@
         <p-tag
           [value]="getStatutLabel(currentContrat.statutContrat)"
           [severity]="getStatutSeverity(currentContrat.statutContrat)"
-          styleClass="text-lg"
+          class="text-lg"
         ></p-tag>
       }
     </div>
@@ -33,7 +33,7 @@
         <p-tablist>
           @for (tab of tabs; track tab.route) {
             <p-tab [value]="tab.route" class="flex items-center gap-2 text-inherit">
-              <i [class]="tab.icon"></i>
+              <i [ngClass]="tab.icon"></i>
               <span>{{ tab.label }}</span>
             </p-tab>
           }
@@ -49,3 +49,5 @@
     </div>
   }
 </div>
+
+

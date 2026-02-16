@@ -8,7 +8,7 @@
       <p-button
         label="Mes demandes"
         icon="pi pi-inbox"
-        styleClass="p-button-outlined"
+        class="p-button-outlined"
         (click)="goToMesDemandes()"
       ></p-button>
     }
@@ -30,7 +30,7 @@
       <label class="block mb-2 font-semibold" for="organisationSelect">Soci&eacute;t&eacute;</label>
       <p-select
         id="organisationSelect"
-        styleClass="w-full precheck-select"
+        class="w-full precheck-select"
         [options]="organisationOptions"
         optionLabel="name"
         [filter]="true"
@@ -140,3 +140,4 @@
   </div>
   }
 </div>
+

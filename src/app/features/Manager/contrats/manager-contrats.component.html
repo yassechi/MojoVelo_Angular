@@ -1,4 +1,4 @@
-<div class="contrats-container page-shell">
+﻿<div class="contrats-container page-shell">
   <p-toast></p-toast>
 
   <div class="contrats-header page-header">
@@ -20,7 +20,7 @@
           [showCurrentPageReport]="true"
           currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} contrats"
           [rowsPerPageOptions]="[10, 25, 50]"
-          styleClass="p-datatable-striped"
+          class="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
@@ -66,7 +66,7 @@
                 <div class="flex gap-2">
                   <p-button
                     icon="pi pi-trash"
-                    styleClass="p-button-rounded p-button-text p-button-danger"
+                    class="p-button-rounded p-button-text p-button-danger"
                     (click)="onDelete(contrat)"
                     [pTooltip]="'Supprimer'"
                   ></p-button>
@@ -91,3 +91,4 @@
 
 <!-- Dialog de confirmation de suppression -->
 <p-confirmDialog></p-confirmDialog>
+

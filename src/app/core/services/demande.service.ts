@@ -194,6 +194,7 @@ export class DemandeService {
     return this.http.put(`${this.apiUrl}/update-status/${id}`, { status });
   }
 
+  //retour en string
   getStatusLabel(status: DemandeStatus): string {
     switch (status) {
       case DemandeStatus.Encours:
@@ -211,6 +212,7 @@ export class DemandeService {
     }
   }
 
+  // retour des couleur par status
   getStatusSeverity(
     status: DemandeStatus,
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
@@ -230,6 +232,7 @@ export class DemandeService {
     }
   }
 
+  // retour design par demande status 
   getStatusClass(status: DemandeStatus): string {
     switch (status) {
       case DemandeStatus.Encours:

@@ -4,7 +4,7 @@ import { httpResource } from '@angular/common/http';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { Document, DocumentService } from '../../../../core/services/document.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { environment } from '../../../../../environments/environment';
@@ -20,7 +20,7 @@ import { ContratDetailStore } from './contrat-detail.store';
 })
 export class ContratDocumentsComponent {
   private readonly documentService = inject(DocumentService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
   private readonly store = inject(ContratDetailStore);
   private readonly coreApi = environment.urls.coreApi;
@@ -115,3 +115,5 @@ export class ContratDocumentsComponent {
     reader.readAsDataURL(file);
   }
 }
+
+

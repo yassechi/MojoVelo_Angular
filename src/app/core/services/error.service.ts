@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { MessageService, PrimeIcons } from 'primeng/api';
+import { MessageService as PrimeMessageService, PrimeIcons } from 'primeng/api';
 
 @Injectable({ providedIn: 'root' })
 export class ErrorService {
-  private readonly messageService = inject(MessageService);
+  private readonly primeMessageService = inject(PrimeMessageService);
 
   showError(detail: string, summary = 'Erreur'): void {
-    this.messageService.add({
+    this.primeMessageService.add({
       severity: 'error',
       summary,
       detail,
@@ -14,3 +14,5 @@ export class ErrorService {
     });
   }
 }
+
+

@@ -1,4 +1,4 @@
-<div class="card">
+﻿<div class="card">
   <p-toast></p-toast>
 
   <h2 class="mb-4">Param&egrave;tres du profil</h2>
@@ -115,8 +115,8 @@
                   formControlName="currentPassword"
                   [toggleMask]="true"
                   [feedback]="false"
-                  styleClass="w-full"
-                  inputStyleClass="w-full"
+                  class="w-full"
+                  inputclass="w-full"
                   autocomplete="new-password"
                 ></p-password>
               </div>
@@ -129,8 +129,8 @@
                   formControlName="newPassword"
                   [toggleMask]="true"
                   [feedback]="true"
-                  styleClass="w-full"
-                  inputStyleClass="w-full"
+                  class="w-full"
+                  inputclass="w-full"
                   autocomplete="new-password"
                 ></p-password>
               </div>
@@ -143,8 +143,8 @@
                   formControlName="confirmPassword"
                   [toggleMask]="true"
                   [feedback]="false"
-                  styleClass="w-full"
-                  inputStyleClass="w-full"
+                  class="w-full"
+                  inputclass="w-full"
                   autocomplete="new-password"
                 ></p-password>
                 @if (passwordForm.get('confirmPassword')?.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
@@ -170,3 +170,4 @@
 
   </div>
 </div>
+

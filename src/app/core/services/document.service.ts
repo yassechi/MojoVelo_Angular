@@ -13,7 +13,7 @@ export interface Document {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DocumentService {
   private apiUrl = `${environment.urls.coreApi}/Document`;
@@ -45,22 +45,21 @@ export class DocumentService {
   }
 
   downloadDocument(doc: Document): void {
-  // Convertir base64 en Blob
-  const byteCharacters = atob(doc.fichier);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'application/pdf' });
+    // Convertir base64 en Blob
+    const byteCharacters = atob(doc.fichier);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
 
-  // Créer un lien de téléchargement
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = doc.nomFichier;
-  link.click();
-  window.URL.revokeObjectURL(url);
+    // Créer un lien de téléchargement
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = doc.nomFichier;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
-  
 }

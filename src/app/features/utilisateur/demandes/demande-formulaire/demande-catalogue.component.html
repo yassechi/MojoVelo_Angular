@@ -1,4 +1,4 @@
-<div class="user-demande-form-page page-shell">
+﻿<div class="user-demande-form-page page-shell">
   <p-toast></p-toast>
   <div class="page-header">
     <div>
@@ -8,7 +8,7 @@
     <p-button
       label="Retour"
       icon="pi pi-arrow-left"
-      styleClass="p-button-text"
+      class="p-button-text"
       (click)="goBack()"
     ></p-button>
   </div>
@@ -43,7 +43,7 @@
               placeholder="Toutes"
               optionLabel="label"
               optionValue="value"
-              styleClass="w-full"
+              class="w-full"
               [showClear]="true"
               (ngModelChange)="onFilterChange()"
             ></p-select>
@@ -59,7 +59,7 @@
               placeholder="Tous"
               optionLabel="label"
               optionValue="value"
-              styleClass="w-full"
+              class="w-full"
               [showClear]="true"
               (ngModelChange)="onFilterChange()"
             ></p-select>
@@ -175,3 +175,4 @@
     </form>
   </p-card>
 </div>
+

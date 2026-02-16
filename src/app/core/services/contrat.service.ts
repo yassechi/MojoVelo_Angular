@@ -20,7 +20,7 @@ export interface Contrat {
   duree: number;
   loyerMensuelHT: number;
   statutContrat: StatutContrat;
-  isActif?: boolean;  
+  isActif?: boolean;
 }
 
 export interface ContratDetail extends Contrat {
@@ -57,6 +57,15 @@ export interface ContratEditData {
   contrat: Contrat;
   users: ContratEditUser[];
   velos: ContratEditVelo[];
+}
+
+export interface ContratListParams {
+  type?: string | null;
+  search?: string | null;
+  endingSoon?: boolean | null;
+  withIncidents?: boolean | null;
+  organisationId?: number | null;
+  userId?: string | null;
 }
 
 export interface AdminContratListItem {
@@ -110,55 +119,34 @@ export class ContratService {
   }
 
   getByUser(userId: string): Observable<Contrat[]> {
-    return this.http.request<Contrat[]>('GET', `${this.apiUrl}/get-by-user/${encodeURIComponent(userId)}`);
+    return this.http.request<Contrat[]>(
+      'GET',
+      `${this.apiUrl}/get-by-user/${encodeURIComponent(userId)}`,
+    );
   }
 
   getByOrganisation(organisationId: number): Observable<Contrat[]> {
-    return this.http.request<Contrat[]>('GET', `${this.apiUrl}/get-by-organisation/${organisationId}`);
+    return this.http.request<Contrat[]>(
+      'GET',
+      `${this.apiUrl}/get-by-organisation/${organisationId}`,
+    );
   }
 
-  getList(params?: {
-    type?: string | null;
-    search?: string | null;
-    endingSoon?: boolean | null;
-    withIncidents?: boolean | null;
-    organisationId?: number | null;
-    userId?: string | null;
-  }): Observable<AdminContratListItem[]> {
-    const query = new URLSearchParams();
-    if (params?.type) {
-      query.set('type', params.type);
-    }
-    if (params?.search) {
-      query.set('search', params.search);
-    }
-    if (params?.endingSoon !== null && params?.endingSoon !== undefined) {
-      query.set('endingSoon', String(params.endingSoon));
-    }
-    if (params?.withIncidents !== null && params?.withIncidents !== undefined) {
-      query.set('withIncidents', String(params.withIncidents));
-    }
-    if (params?.organisationId) {
-      query.set('organisationId', String(params.organisationId));
-    }
-    if (params?.userId) {
-      query.set('userId', params.userId);
-    }
-    const suffix = query.toString();
-    return this.http.request<AdminContratListItem[]>(
-      'GET',
+  getList(params?: ContratListParams): Observable<AdminContratListItem[]> {
+    const suffix = this.buildQueryParams(params);
+    return this.http.get<AdminContratListItem[]>(
       `${this.apiUrl}/list${suffix ? `?${suffix}` : ''}`,
     );
   }
 
-  exportCsv(params?: {
-    type?: string | null;
-    search?: string | null;
-    endingSoon?: boolean | null;
-    withIncidents?: boolean | null;
-    organisationId?: number | null;
-    userId?: string | null;
-  }): Observable<Blob> {
+  exportCsv(params?: ContratListParams): Observable<Blob> {
+    const suffix = this.buildQueryParams(params);
+    return this.http.get(`${this.apiUrl}/export${suffix ? `?${suffix}` : ''}`, {
+      responseType: 'blob',
+    });
+  }
+
+  private buildQueryParams(params?: ContratListParams): string {
     const query = new URLSearchParams();
     if (params?.type) {
       query.set('type', params.type);
@@ -178,10 +166,7 @@ export class ContratService {
     if (params?.userId) {
       query.set('userId', params.userId);
     }
-    const suffix = query.toString();
-    return this.http.get(`${this.apiUrl}/export${suffix ? `?${suffix}` : ''}`, {
-      responseType: 'blob',
-    });
+    return query.toString();
   }
 
   create(contrat: Contrat): Observable<any> {

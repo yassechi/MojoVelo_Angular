@@ -12,7 +12,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { TabsModule } from 'primeng/tabs';
 
@@ -31,7 +31,7 @@ import { ContratDetailStore } from './contrat-detail.store';
     TabsModule,
     RouterOutlet,
   ],
-  providers: [MessageService, ContratDetailStore],
+  providers: [PrimeMessageService, ContratDetailStore],
   templateUrl: './admin-contrat-detail.component.html',
   styleUrls: ['./admin-contrat-detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -127,3 +127,5 @@ export class ContratDetailComponent {
     }
   }
 }
+
+

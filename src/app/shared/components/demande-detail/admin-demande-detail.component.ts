@@ -6,7 +6,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import {
   DemandeDetail,
@@ -34,7 +34,7 @@ import {
     TextareaModule,
     ToastModule,
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './admin-demande-detail.component.html',
   styleUrls: ['./admin-demande-detail.component.scss'],
 })
@@ -44,7 +44,7 @@ export class DemandeDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly bikeCatalogService = inject(BikeCatalogService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly authService = inject(AuthService);
   private readonly messageApiService = inject(MessageApiService);
 
@@ -307,3 +307,5 @@ export class DemandeDetailComponent implements OnInit {
     return '/admin/demandes';
   }
 }
+
+

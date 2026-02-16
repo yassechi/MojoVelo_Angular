@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { UserService, User, UserRole } from '../../../core/services/user.service';
 import { OrganisationService, Organisation } from '../../../core/services/organisation.service';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { ErrorService } from '../../../core/services/error.service';
 
 import { ButtonModule } from 'primeng/button';
@@ -35,7 +35,7 @@ export class EmployeFormDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private organisationService = inject(OrganisationService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private errorService = inject(ErrorService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -231,3 +231,5 @@ export class EmployeFormDialogComponent implements OnInit {
     return '/admin/employes';
   }
 }
+
+

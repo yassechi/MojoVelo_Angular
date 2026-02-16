@@ -14,7 +14,7 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 import { ErrorService } from '../../../core/services/error.service';
 
 @Component({
@@ -30,7 +30,7 @@ import { ErrorService } from '../../../core/services/error.service';
     TooltipModule,
     ConfirmDialogModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './manager-contrats.component.html',
   styleUrls: ['./manager-contrats.component.scss'],
 })
@@ -41,7 +41,7 @@ export class ContratsComponent implements OnInit {
 
   private contratService = inject(ContratService);
   private authService = inject(AuthService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private confirmationService = inject(ConfirmationService);
   private errorService = inject(ErrorService);
 
@@ -137,3 +137,5 @@ export class ContratsComponent implements OnInit {
     }).format(amount);
   }
 }
+
+

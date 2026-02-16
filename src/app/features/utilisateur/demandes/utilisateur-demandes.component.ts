@@ -16,7 +16,7 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-utilisateur-demandes',
@@ -31,7 +31,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
     TooltipModule,
     ConfirmDialogModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './utilisateur-demandes.component.html',
   styleUrls: ['./utilisateur-demandes.component.scss'],
 })
@@ -42,7 +42,7 @@ export class DemandesUtilisateurComponent implements OnInit {
 
   private readonly demandeService = inject(DemandeService);
   private readonly authService = inject(AuthService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly errorService = inject(ErrorService);
   private readonly router = inject(Router);
@@ -136,3 +136,5 @@ export class DemandesUtilisateurComponent implements OnInit {
     return this.demandeService.getStatusClass(status);
   }
 }
+
+

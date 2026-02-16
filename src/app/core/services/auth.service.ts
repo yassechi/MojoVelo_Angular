@@ -3,38 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  id: string;
-  userName: string;
-  email: string;
-  token: string;
-}
-
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  phoneNumber: string;
-  role: number;
-  tailleCm?: number;
-  isActif: boolean;
-  organisationId: number;
-}
-
-export enum UserRole {
-  Admin = 1,
-  Manager = 2,
-  User = 3
-}
-
+import { AuthResponse, LoginRequest } from '../models/auth.model';
+import { User, UserRole } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +13,7 @@ export class AuthService {
   private apiUrl = `${environment.urls.coreApi}/Auth`;
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+
   private readonly currentUserSubject = new BehaviorSubject<User | null>(
     (() => {
       const storedUser = localStorage.getItem('currentUser');
@@ -57,35 +28,22 @@ export class AuthService {
       }
     })(),
   );
+
   public readonly currentUser: Observable<User | null> = this.currentUserSubject.asObservable();
 
-  public get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
-  }
-
-  // âœ… AJOUT DE getCurrentUser()
   public getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
-  login(
-    credentials: LoginRequest,
-    options?: { redirectToDashboard?: boolean },
-  ): Observable<AuthResponse> {
-    const shouldRedirect = options?.redirectToDashboard !== false;
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response) => {
-        if (response && response.token) {
-          localStorage.setItem('token', response.token);
-          // Récupérer les infos complètes de l'utilisateur
-          this.getUserInfo(response.id).subscribe((user) => {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.currentUserSubject.next(user);
-
-            // âœ… REDIRECTION SELON LE RÃ”LE
-            if (shouldRedirect) {
-              this.redirectToRoleDashboard(user.role);
-            }
+  login(identifiants: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, identifiants).pipe(
+      tap((reponse) => {
+        if (reponse && reponse.token) {
+          localStorage.setItem('token', reponse.token);
+          this.getUserInfo(reponse.id).subscribe((utilisateur) => {
+            localStorage.setItem('currentUser', JSON.stringify(utilisateur));
+            this.currentUserSubject.next(utilisateur);
+            this.redirectToRoleDashboard(utilisateur.role);
           });
         }
       }),
@@ -108,18 +66,18 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken(); // les !! pour que ca retourn toujour un true/False
+    return !!this.getToken();
   }
 
-  private redirectToRoleDashboard(role: number): void {
+  private redirectToRoleDashboard(role: UserRole): void {
     switch (role) {
-      case 1: // Admin
+      case UserRole.Admin:
         this.router.navigate(['/admin/dashboard']);
         break;
-      case 2: // Manager
+      case UserRole.Manager:
         this.router.navigate(['/manager/dashboard']);
         break;
-      case 3: // User
+      case UserRole.User:
         this.router.navigate(['/user/dashboard']);
         break;
       default:
@@ -135,8 +93,3 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/forgot-password`, payload);
   }
 }
-
-
-
-
-

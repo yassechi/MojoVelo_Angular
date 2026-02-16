@@ -9,7 +9,7 @@ import 'zone.js';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { intercepteurErreur } from './core/interceptors/error.interceptor';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,6 +25,8 @@ export const appConfig: ApplicationConfig = {
         }
       }
     }),
-    MessageService,
+    PrimeMessageService,
   ]
 };
+
+

@@ -8,7 +8,7 @@ import {
   DemandeStatus,
 } from '../../../core/services/demande.service';
 import { VeloService } from '../../../core/services/velo.service';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService as PrimeMessageService } from 'primeng/api';
 import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
@@ -37,7 +37,7 @@ import { InputTextModule } from 'primeng/inputtext';
     SelectModule,
     InputTextModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './admin-demande.component.html',
   styleUrls: ['./admin-demande.component.scss'],
 })
@@ -64,7 +64,7 @@ export class AdminDemandesComponent implements OnInit {
 
   private demandeService = inject(DemandeService);
   private veloService = inject(VeloService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private confirmationService = inject(ConfirmationService);
   private errorService = inject(ErrorService);
   private router = inject(Router);
@@ -245,3 +245,5 @@ export class AdminDemandesComponent implements OnInit {
       });
   }
 }
+
+

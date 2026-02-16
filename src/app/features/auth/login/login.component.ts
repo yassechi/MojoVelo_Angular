@@ -10,7 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +25,7 @@ import { MessageService } from 'primeng/api';
     ToastModule,
     RouterModule
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -33,7 +33,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private errorService = inject(ErrorService);
 
   loginForm: FormGroup = this.fb.group({
@@ -84,3 +84,5 @@ export class LoginComponent {
     return this.loginForm.get('password');
   }
 }
+
+

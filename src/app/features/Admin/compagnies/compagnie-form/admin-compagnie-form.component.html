@@ -1,4 +1,4 @@
-<div class="compagnie-form-page page-shell">
+﻿<div class="compagnie-form-page page-shell">
   <p-toast></p-toast>
 
   <div class="page-header">
@@ -9,7 +9,7 @@
     <p-button
       label="Retour"
       icon="pi pi-arrow-left"
-      styleClass="p-button-text"
+      class="p-button-text"
       (click)="goBack()"
     ></p-button>
   </div>
@@ -135,7 +135,7 @@
           [filter]="true"
           filterBy="userName,email"
           [showClear]="true"
-          styleClass="w-full"
+          class="w-full"
           [loading]="loadingUsers"
         >
           <ng-template let-user pTemplate="item">
@@ -193,7 +193,7 @@
         <p-button
           label="Annuler"
           icon="pi pi-times"
-          styleClass="p-button-text"
+          class="p-button-text"
           (click)="goBack()"
           [disabled]="loading"
         ></p-button>
@@ -208,3 +208,4 @@
     </form>
   </p-card>
 </div>
+

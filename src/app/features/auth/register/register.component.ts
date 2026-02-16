@@ -7,7 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { UserService, UserRole } from '../../../core/services/user.service';
 import { Organisation, OrganisationService } from '../../../core/services/organisation.service';
 import { ErrorService } from '../../../core/services/error.service';
@@ -24,7 +24,7 @@ import { ErrorService } from '../../../core/services/error.service';
     SelectModule,
     ToastModule,
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
@@ -33,7 +33,7 @@ export class RegisterComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly organisationService = inject(OrganisationService);
   private readonly router = inject(Router);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
 
   loading = false;
@@ -163,3 +163,5 @@ export class RegisterComponent implements OnInit {
     return null;
   }
 }
+
+

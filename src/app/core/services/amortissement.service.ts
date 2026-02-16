@@ -14,7 +14,7 @@ export interface Amortissement {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AmortissementService {
   private apiUrl = `${environment.urls.coreApi}/Amortissement`;
@@ -22,10 +22,9 @@ export class AmortissementService {
   private readonly http = inject(HttpClient);
   private readonly amortissementId = signal<number | null>(null);
 
-  readonly amortissementsResource = httpResource<Amortissement[]>(
-    () => `${this.apiUrl}/get-all`,
-    { defaultValue: [] },
-  );
+  readonly amortissementsResource = httpResource<Amortissement[]>(() => `${this.apiUrl}/get-all`, {
+    defaultValue: [],
+  });
 
   readonly amortissementResource = httpResource<Amortissement | null>(
     () => {

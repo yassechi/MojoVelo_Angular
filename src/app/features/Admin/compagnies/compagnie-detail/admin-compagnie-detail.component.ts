@@ -19,6 +19,7 @@ export class CompagnieDetailComponent implements OnInit {
   private readonly errorService = inject(ErrorService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  // private readonly primeMessageService = inject(this.primeMessageService);
 
   organisation: Organisation | null = null;
   organisationId: number | null = null;
@@ -32,7 +33,7 @@ export class CompagnieDetailComponent implements OnInit {
         return;
       }
       this.organisationId = Number(id);
-      this.loadOrganisation(this.organisationId);
+      this.loadOrganisation(Number(id));
     });
   }
 

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -7,7 +7,7 @@ import { SelectModule } from 'primeng/select';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { User, UserService } from '../../../core/services/user.service';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { Demande, DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 import { CardModule } from 'primeng/card';
 import { ErrorService } from '../../../core/services/error.service';
@@ -32,7 +32,7 @@ export class DemandeFormDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private demandeService = inject(DemandeService);
   private userService = inject(UserService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private errorService = inject(ErrorService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -85,7 +85,7 @@ export class DemandeFormDialogComponent implements OnInit {
         this.users = data;
       },
       error: () => {
-        // L'intercepteur gÃ¨re l'affichage de l'erreur
+        // L'intercepteur gère l'affichage de l'erreur
       }
     });
   }
@@ -141,15 +141,15 @@ export class DemandeFormDialogComponent implements OnInit {
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'SuccÃ¨s',
-          detail: this.isEdit ? 'Demande modifiÃ©e' : 'Demande crÃ©Ã©e'
+          summary: 'Succès',
+          detail: this.isEdit ? 'Demande modifiée' : 'Demande créée'
         });
         this.loading = false;
         this.goBack();
       },
       error: () => {
         this.loading = false;
-        // L'intercepteur affiche dÃ©jÃ  l'erreur dans le toast
+        // L'intercepteur affiche déjà l'erreur dans le toast
       }
     });
   }
@@ -166,4 +166,6 @@ export class DemandeFormDialogComponent implements OnInit {
     return '/admin/demandes';
   }
 }
+
+
 

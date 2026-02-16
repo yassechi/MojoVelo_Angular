@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -9,7 +9,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { SelectModule } from 'primeng/select';
 import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
 import { User, UserService } from '../../../../core/services/user.service';
 import { FileUploadService } from '../../../../core/services/file-upload.service';
@@ -46,7 +46,7 @@ export class CompagnieFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private organisationService = inject(OrganisationService);
   private userService = inject(UserService);
-  private messageService = inject(MessageService);
+  private messageService = inject(PrimeMessageService);
   private fileUploadService = inject(FileUploadService);
   private errorService = inject(ErrorService);
   private route = inject(ActivatedRoute);
@@ -137,7 +137,7 @@ export class CompagnieFormComponent implements OnInit {
     }
 
     if (!allowedTypes.includes(file.type)) {
-      this.errorService.showError('Format non autorisé (jpg, png, gif uniquement)');
+      this.errorService.showError('Format non autoris� (jpg, png, gif uniquement)');
       return;
     }
     this.fileUploadService.uploadLogo(file).subscribe({
@@ -147,12 +147,12 @@ export class CompagnieFormComponent implements OnInit {
         this.form.patchValue({ logoUrl: logoUrl });
         this.messageService.add({
           severity: 'success',
-          summary: 'SuccÃ¨s',
-          detail: 'Logo tÃ©lÃ©chargÃ© avec succÃ¨s'
+          summary: 'Succès',
+          detail: 'Logo téléchargé avec succès'
         });
       },
       error: () => {
-        // L'intercepteur gÃ¨re l'affichage de l'erreur
+        // L'intercepteur gère l'affichage de l'erreur
       }
     });
   }
@@ -180,15 +180,15 @@ export class CompagnieFormComponent implements OnInit {
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'SuccÃ¨s',
-          detail: payload.id ? 'Compagnie mise Ã  jour' : 'Compagnie crÃ©Ã©e',
+          summary: 'Succès',
+          detail: payload.id ? 'Compagnie mise à jour' : 'Compagnie créée',
         });
         this.loading = false;
         this.goBack();
       },
       error: () => {
         this.loading = false;
-        // L'intercepteur affiche dÃ©jÃ  l'erreur dans le toast
+        // L'intercepteur affiche déjà l'erreur dans le toast
       }
     });
   }
@@ -223,5 +223,7 @@ export class CompagnieFormComponent implements OnInit {
     return this.form.get('idContact');
   }
 }
+
+
 
 

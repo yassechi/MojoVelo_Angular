@@ -6,7 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { InputNumber } from 'primeng/inputnumber';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { finalize } from 'rxjs';
 import {
   CreateDemandeWithBikePayload,
@@ -44,7 +44,7 @@ export class DemandeCatalogueComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly demandeService = inject(DemandeService);
   private readonly authService = inject(AuthService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -136,7 +136,7 @@ export class DemandeCatalogueComponent implements OnInit {
 
   private loadBikes(): void {
     this.loadingBikes = true;
-    this.bikeCatalogService.getBrands(100).subscribe({
+    this.bikeCatalogService.getBrands().subscribe({
       next: (brandsResponse) => {
         this.brandMap = new Map(brandsResponse.items.map((brand) => [brand.id, brand]));
       },
@@ -145,7 +145,7 @@ export class DemandeCatalogueComponent implements OnInit {
       },
     });
 
-    this.bikeCatalogService.getBikes(100, 1, true).subscribe({
+    this.bikeCatalogService.getBikes(true).subscribe({
       next: (bikesResponse) => {
         this.bikes = bikesResponse.items;
         this.loadingBikes = false;
@@ -362,3 +362,5 @@ export class DemandeCatalogueComponent implements OnInit {
     this.router.navigate(['/user/demandes', demandeId, 'edit']);
   }
 }
+
+

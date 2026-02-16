@@ -17,7 +17,7 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService as PrimeMessageService, ConfirmationService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -35,7 +35,7 @@ import { FormsModule } from '@angular/forms';
     ConfirmDialogModule,
     SelectModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [PrimeMessageService, ConfirmationService],
   templateUrl: './manager-demandes.component.html',
   styleUrls: ['./manager-demandes.component.scss'],
 })
@@ -54,7 +54,7 @@ export class DemandesComponent implements OnInit {
 
   private readonly demandeService = inject(DemandeService);
   private readonly authService = inject(AuthService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly errorService = inject(ErrorService);
   private readonly router = inject(Router);
@@ -171,3 +171,5 @@ export class DemandesComponent implements OnInit {
     return this.demandeService.getStatusClass(status);
   }
 }
+
+

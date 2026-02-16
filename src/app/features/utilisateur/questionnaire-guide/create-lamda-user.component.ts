@@ -7,7 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService, UserRole } from '../../../core/services/user.service';
 import {
@@ -28,7 +28,7 @@ import { ErrorService } from '../../../core/services/error.service';
     SelectModule,
     ToastModule,
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './create-lamda-user.component.html',
   styleUrls: ['./create-lamda-user.component.scss'],
 })
@@ -39,7 +39,7 @@ export class CreateLamdaUserComponent implements OnInit {
   private readonly organisationService = inject(OrganisationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
 
   loading = false;
@@ -120,7 +120,7 @@ export class CreateLamdaUserComponent implements OnInit {
 
     this.userService.create(payload).subscribe({
       next: () => {
-        this.authService.login({ email, password }, { redirectToDashboard: false }).subscribe({
+        this.authService.login({ email, password }).subscribe({
           next: (response) => {
             this.ensureUserActive(response.id, values);
           },
@@ -279,3 +279,5 @@ export class CreateLamdaUserComponent implements OnInit {
     this.router.navigate(['/choix-parcours'], { queryParams });
   }
 }
+
+

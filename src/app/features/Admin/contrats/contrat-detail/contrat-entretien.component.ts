@@ -9,7 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { DatePicker } from 'primeng/datepicker';
 import { InputNumber } from 'primeng/inputnumber';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 import { Intervention, InterventionService } from '../../../../core/services/intervention.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { environment } from '../../../../../environments/environment';
@@ -35,7 +35,7 @@ import { ContratDetailStore } from './contrat-detail.store';
 })
 export class ContratEntretienComponent {
   private readonly interventionService = inject(InterventionService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
   private readonly store = inject(ContratDetailStore);
   private readonly coreApi = environment.urls.coreApi;
@@ -181,3 +181,4 @@ export class ContratEntretienComponent {
     }
   }
 }
+

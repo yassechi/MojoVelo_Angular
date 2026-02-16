@@ -21,7 +21,7 @@ import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 import { InputNumber } from 'primeng/inputnumber';
 import { Toast } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-contrat-edit',
@@ -37,7 +37,7 @@ import { MessageService } from 'primeng/api';
     InputNumber,
     Toast
   ],
-  providers: [MessageService],
+  providers: [PrimeMessageService],
   templateUrl: './admin-contrat-edit.component.html',
   styleUrls: ['./admin-contrat-edit.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,7 +47,7 @@ export class ContratEditComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly contratService = inject(ContratService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(PrimeMessageService);
   private readonly errorService = inject(ErrorService);
 
   private readonly coreApi = environment.urls.coreApi;
@@ -187,3 +187,5 @@ export class ContratEditComponent {
     this.router.navigate(['/admin/contrats', contratId]);
   }
 }
+
+
