@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return !!this.getToken(); // les !! pour que ca retourn toujour un true/False 
   }
 
   private redirectToRoleDashboard(role: number): void {

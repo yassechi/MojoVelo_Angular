@@ -61,6 +61,7 @@ export const routes: Routes = [
     path: 'admin',
     component: MainLayoutComponent,
     canActivate: [authGuard],
+    data: { role: 1 },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
@@ -99,6 +100,7 @@ export const routes: Routes = [
     path: 'manager',
     component: MainLayoutComponent,
     canActivate: [authGuard],
+    data: { role: 2 },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: ManagerDashboardComponent },
@@ -120,6 +122,7 @@ export const routes: Routes = [
     path: 'user',
     component: MainLayoutComponent,
     canActivate: [authGuard],
+    data: { role: 3 },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: TableauDeBordUtilisateurComponent },
