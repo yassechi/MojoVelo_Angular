@@ -129,7 +129,7 @@
               } @else if (messages.length === 0) {
                 <div class="text-600">Aucun message pour cette demande.</div>
               } @else {
-                <div class="message-list">
+                <div class="message-list" #messageList>
                   @for (message of messages; track message.id) {
                     <div class="message-item" [class.own]="isOwnMessage(message)">
                       <div class="message-bubble">

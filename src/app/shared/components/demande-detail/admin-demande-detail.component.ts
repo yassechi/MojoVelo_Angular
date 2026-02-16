@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -41,6 +41,7 @@ import {
   styleUrls: ['./admin-demande-detail.component.scss'],
 })
 export class DemandeDetailComponent implements OnInit {
+  @ViewChild('messageList') private messageList?: ElementRef<HTMLDivElement>;
   private readonly demandeService = inject(DemandeService);
   private readonly errorService = inject(ErrorService);
   private readonly route = inject(ActivatedRoute);
@@ -86,6 +87,7 @@ export class DemandeDetailComponent implements OnInit {
       .subscribe({
         next: (demande) => {
           this.messages = demande.messages ?? [];
+          this.scheduleScrollToBottom();
           if (this.demande) {
             this.demande = { ...this.demande, status: demande.status, messages: this.messages };
           } else {
@@ -96,6 +98,18 @@ export class DemandeDetailComponent implements OnInit {
           // Rafraichissement silencieux: pas de toast pour eviter le spam
         },
       });
+  }
+
+  private scheduleScrollToBottom(): void {
+    setTimeout(() => this.scrollToBottom());
+  }
+
+  private scrollToBottom(): void {
+    const element = this.messageList?.nativeElement;
+    if (!element) {
+      return;
+    }
+    element.scrollTop = element.scrollHeight;
   }
 
   loadDemande(id: number): void {
@@ -121,6 +135,7 @@ export class DemandeDetailComponent implements OnInit {
         }
         this.demande = demande;
         this.messages = demande.messages ?? [];
+        this.scheduleScrollToBottom();
         this.loading = false;
         this.loadingMessages = false;
         this.loadBikeImage(demande.veloCmsId ?? null);
