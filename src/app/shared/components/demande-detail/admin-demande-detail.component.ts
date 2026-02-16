@@ -1,7 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { filter, interval, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -47,6 +49,7 @@ export class DemandeDetailComponent implements OnInit {
   private readonly messageService = inject(PrimeMessageService);
   private readonly authService = inject(AuthService);
   private readonly messageApiService = inject(MessageApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   demande: DemandeDetail | null = null;
   demandeId: number | null = null;
@@ -69,6 +72,30 @@ export class DemandeDetailComponent implements OnInit {
       this.demandeId = Number(id);
       this.loadDemande(this.demandeId);
     });
+
+    this.startDiscussionRefresh();
+  }
+
+  private startDiscussionRefresh(): void {
+    interval(4000)
+      .pipe(
+        filter(() => !!this.demandeId),
+        switchMap(() => this.demandeService.getDetail(this.demandeId!)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (demande) => {
+          this.messages = demande.messages ?? [];
+          if (this.demande) {
+            this.demande = { ...this.demande, status: demande.status, messages: this.messages };
+          } else {
+            this.demande = demande;
+          }
+        },
+        error: () => {
+          // Rafraichissement silencieux: pas de toast pour eviter le spam
+        },
+      });
   }
 
   loadDemande(id: number): void {
