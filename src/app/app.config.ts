@@ -8,7 +8,7 @@ import 'zone.js';
 
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
-import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { intercepteurErreur } from './core/interceptors/error.interceptor';
 import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
@@ -16,7 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideAnimations(),
-    provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([jwtInterceptor, intercepteurErreur])),
     providePrimeNG({
       theme: {
         preset: Lara,

@@ -21,7 +21,7 @@ import { ToastModule } from 'primeng/toast';
 import { BikeCatalogService, BikeBrand, BikeItem } from '../../../../core/services/bike-catalog.service';
 
 @Component({
-  selector: 'app-utilisateur-demande-formulaire',
+  selector: 'app-demande-catalogue',
   standalone: true,
   imports: [
     CommonModule,
@@ -34,10 +34,10 @@ import { BikeCatalogService, BikeBrand, BikeItem } from '../../../../core/servic
     InputNumber,
     ToastModule,
   ],
-  templateUrl: './utilisateur-demande-formulaire.component.html',
-  styleUrls: ['./utilisateur-demande-formulaire.component.scss'],
+  templateUrl: './demande-catalogue.component.html',
+  styleUrls: ['./demande-catalogue.component.scss'],
 })
-export class DemandeFormulaireUtilisateurComponent implements OnInit {
+export class DemandeCatalogueComponent implements OnInit {
   loading = false;
   private preselectedBikeId: number | null = null;
 
@@ -308,6 +308,7 @@ export class DemandeFormulaireUtilisateurComponent implements OnInit {
 
     const payload: CreateDemandeWithBikePayload = {
       idUser: currentUser.id,
+      mojoId: currentUser.id,
       bike: {
         cmsId: selectedBike.id,
         marque: this.getBrandName(selectedBike.bikes_brand?.[0]),

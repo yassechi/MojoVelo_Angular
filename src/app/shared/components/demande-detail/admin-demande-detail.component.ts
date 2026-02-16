@@ -76,6 +76,22 @@ export class DemandeDetailComponent implements OnInit {
     this.loadingMessages = true;
     this.demandeService.getDetail(id).subscribe({
       next: (demande) => {
+        const currentUser = this.authService.getCurrentUser();
+        if (currentUser?.role === 3) {
+          const currentId = this.normalizeId(currentUser.id);
+          const demandeUserId = this.normalizeId(demande.idUser);
+          if (!currentId || !demandeUserId || currentId !== demandeUserId) {
+            this.loading = false;
+            this.loadingMessages = false;
+            this.demande = null;
+            this.messages = [];
+            this.errorService.showError(
+              'Vous ne pouvez pas acceder a la demande d\'un autre utilisateur',
+            );
+            this.goBack();
+            return;
+          }
+        }
         this.demande = demande;
         this.messages = demande.messages ?? [];
         this.loading = false;

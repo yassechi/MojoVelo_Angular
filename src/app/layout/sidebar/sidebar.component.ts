@@ -110,11 +110,6 @@ export class SidebarComponent implements OnInit {
           routerLink: ['/user/dashboard']
         },
         {
-          label: 'Faire une demande',
-          icon: 'pi pi-send',
-          routerLink: ['/user/faire-demande']
-        },
-        {
           label: 'Mes Contrats',
           icon: 'pi pi-file',
           routerLink: ['/user/contrats']

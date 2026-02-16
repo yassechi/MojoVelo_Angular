@@ -106,6 +106,7 @@ export class CatalogueVelosUtilisateurComponent implements OnInit {
 
     const payload: CreateDemandeWithBikePayload = {
       idUser: currentUser.id,
+      mojoId: currentUser.id,
       bike: {
         cmsId: bike.id,
         marque: bike.brand || 'Marque inconnue',

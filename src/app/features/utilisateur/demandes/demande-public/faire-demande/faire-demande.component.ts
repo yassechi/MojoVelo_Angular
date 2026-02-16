@@ -4,23 +4,22 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
-import { AuthService } from '../../../../core/services/auth.service';
-import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
-import { ErrorService } from '../../../../core/services/error.service';
+import { AuthService } from '../../../../../core/services/auth.service';
+import { Organisation, OrganisationService } from '../../../../../core/services/organisation.service';
+import { ErrorService } from '../../../../../core/services/error.service';
 
 @Component({
-  selector: 'app-utilisateur-demande-accueil',
+  selector: 'app-faire-demande',
   standalone: true,
   imports: [CommonModule, FormsModule, ButtonModule, SelectModule],
-  templateUrl: './utilisateur-demande-accueil.component.html',
-  styleUrls: ['./utilisateur-demande-accueil.component.scss']
+  templateUrl: './faire-demande.component.html',
+  styleUrls: ['./faire-demande.component.scss']
 })
-export class DemandeAccueilUtilisateurComponent implements OnInit {
+export class FaireDemandeComponent implements OnInit {
   organisation: Organisation | null = null;
   organisations: Organisation[] = [];
   loading = false;
   currentUserEmail = '';
-  currentDomain = '';
   isAuthenticated = false;
   supportEmail = 'contact@mojovelo.be';
 
@@ -33,12 +32,7 @@ export class DemandeAccueilUtilisateurComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     this.isAuthenticated = !!user;
     this.currentUserEmail = user?.email ?? '';
-    this.currentDomain = this.extractDomain(this.currentUserEmail) ?? '';
     this.loadOrganisations();
-  }
-
-  goToNewDemande(): void {
-    this.router.navigate(['/user/demandes/new']);
   }
 
   goToMesDemandes(): void {
@@ -53,18 +47,22 @@ export class DemandeAccueilUtilisateurComponent implements OnInit {
 
   onPrimaryAction(): void {
     if (this.isAuthenticated) {
-      this.goToNewDemande();
+      this.goToCreateLamdaUser();
       return;
     }
-    this.goToLogin();
+    this.goToCreateLamdaUser();
   }
 
-  goToLogin(): void {
-    this.router.navigate(['/login']);
-  }
-
-  onOrganisationSelected(): void {
-    // Hook for future side effects if needed
+  goToCreateLamdaUser(): void {
+    const queryParams: Record<string, string> = {};
+    if (this.organisation) {
+      queryParams['organisationId'] = String(this.organisation.id);
+      queryParams['organisationName'] = this.organisation.name;
+      if (this.organisation.logoUrl) {
+        queryParams['organisationLogoUrl'] = this.organisation.logoUrl;
+      }
+    }
+    this.router.navigate(['/create-lamda-user'], { queryParams });
   }
 
   get supportMailto(): string {
@@ -102,16 +100,5 @@ export class DemandeAccueilUtilisateurComponent implements OnInit {
         this.errorService.showError('Impossible de detecter la compagnie');
       }
     });
-  }
-
-  private extractDomain(value: string): string | null {
-    const trimmed = String(value ?? '').trim().toLowerCase();
-    if (!trimmed) {
-      return null;
-    }
-    const atIndex = trimmed.lastIndexOf('@');
-    const raw = atIndex >= 0 ? trimmed.slice(atIndex + 1) : trimmed;
-    const domain = raw.replace(/^@/, '');
-    return domain || null;
   }
 }

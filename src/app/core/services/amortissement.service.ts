@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject, runInInjectionContext } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -20,27 +20,28 @@ export class AmortissementService {
   private apiUrl = `${environment.urls.coreApi}/Amortissement`;
 
   private readonly http = inject(HttpClient);
-  private readonly injector = inject(Injector);
+  private readonly amortissementId = signal<number | null>(null);
+
+  readonly amortissementsResource = httpResource<Amortissement[]>(
+    () => `${this.apiUrl}/get-all`,
+    { defaultValue: [] },
+  );
+
+  readonly amortissementResource = httpResource<Amortissement | null>(
+    () => {
+      const id = this.amortissementId();
+      return id ? `${this.apiUrl}/${id}` : undefined;
+    },
+    { defaultValue: null },
+  );
 
   getAllResource() {
-    return runInInjectionContext(this.injector, () =>
-      httpResource<Amortissement[]>(
-        () => `${this.apiUrl}/get-all`,
-        { defaultValue: [] },
-      ),
-    );
+    return this.amortissementsResource;
   }
 
-  getOneResource(id: () => number | null) {
-    return runInInjectionContext(this.injector, () =>
-      httpResource<Amortissement | null>(
-        () => {
-          const resolvedId = id();
-          return resolvedId ? `${this.apiUrl}/${resolvedId}` : undefined;
-        },
-        { defaultValue: null },
-      ),
-    );
+  getOneResource(id: number | null) {
+    this.amortissementId.set(id);
+    return this.amortissementResource;
   }
 
   getAll(): Observable<Amortissement[]> {

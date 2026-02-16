@@ -6,12 +6,6 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // const routePublic =
-  //   state.url.startsWith('/user/demandes/new') || /\/user\/demandes\/\d+\/edit/.test(state.url);
-  // if (routePublic) {
-  //   return true;
-  // }
-
   if (!authService.isAuthenticated()) {
     router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
     return false;
@@ -30,13 +24,13 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (currentUser) {
     switch (currentUser.role) {
-      case 1: // Admin
+      case 1:
         router.navigate(['/admin/dashboard']);
         break;
-      case 2: // Manager
+      case 2:
         router.navigate(['/manager/dashboard']);
         break;
-      case 3: // User
+      case 3: 
         router.navigate(['/user/dashboard']);
         break;
       default:

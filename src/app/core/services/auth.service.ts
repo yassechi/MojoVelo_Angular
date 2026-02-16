@@ -1,10 +1,40 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
-import { AuthResponse, LoginRequest } from '../models/auth.model';
-import { User } from '../models/user.model';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  id: string;
+  userName: string;
+  email: string;
+  token: string;
+}
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
+  email: string;
+  phoneNumber: string;
+  role: number;
+  tailleCm?: number;
+  isActif: boolean;
+  organisationId: number;
+}
+
+export enum UserRole {
+  Admin = 1,
+  Manager = 2,
+  User = 3
+}
+
 
 @Injectable({
   providedIn: 'root',
@@ -78,7 +108,7 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken(); // les !! pour que ca retourn toujour un true/False 
+    return !!this.getToken(); // les !! pour que ca retourn toujour un true/False
   }
 
   private redirectToRoleDashboard(role: number): void {

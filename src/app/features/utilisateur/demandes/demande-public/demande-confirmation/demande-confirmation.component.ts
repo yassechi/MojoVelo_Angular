@@ -5,13 +5,13 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-  selector: 'app-utilisateur-demande-confirmation',
+  selector: 'app-demande-confirmation',
   standalone: true,
   imports: [CommonModule, CardModule, ButtonModule],
-  templateUrl: './utilisateur-demande-confirmation.component.html',
-  styleUrls: ['./utilisateur-demande-confirmation.component.scss'],
+  templateUrl: './demande-confirmation.component.html',
+  styleUrls: ['./demande-confirmation.component.scss'],
 })
-export class DemandeConfirmationUtilisateurComponent implements OnInit {
+export class DemandeConfirmationComponent implements OnInit {
   bikeTitle = '';
   bikePrice: number | null = null;
   demandeId: number | null = null;

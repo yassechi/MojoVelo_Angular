@@ -30,31 +30,33 @@ import { ParametresComponent as ManagerParametresComponent } from './features/Ma
 import { TableauDeBordUtilisateurComponent } from './features/utilisateur/tableau-de-bord/utilisateur-tableau-de-bord.component';
 import { ContratsUtilisateurComponent } from './features/utilisateur/contrats/utilisateur-contrats.component';
 import { DemandesUtilisateurComponent } from './features/utilisateur/demandes/utilisateur-demandes.component';
-import { DemandeAccueilUtilisateurComponent } from './features/utilisateur/demandes/demande-accueil/utilisateur-demande-accueil.component';
+import { FaireDemandeComponent } from './features/utilisateur/demandes/demande-public/faire-demande/faire-demande.component';
 import { ParametresUtilisateurComponent } from './features/utilisateur/parametres/utilisateur-parametres.component';
 import { ChoixParcoursUtilisateurComponent } from './features/utilisateur/choix-parcours/utilisateur-choix-parcours.component';
 import { CatalogueVelosUtilisateurComponent } from './features/utilisateur/catalogue-velos/utilisateur-catalogue-velos.component';
-import { QuestionnaireGuideUtilisateurComponent } from './features/utilisateur/questionnaire-guide/utilisateur-questionnaire-guide.component';
+import { CreateLamdaUserComponent } from './features/utilisateur/questionnaire-guide/create-lamda-user.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { ContratEditComponent } from './features/Admin/contrats/contrat-edit/admin-contrat-edit.component';
 import { CompagnieFormComponent } from './features/Admin/compagnies/compagnie-form/admin-compagnie-form.component';
 import { EmployeFormDialogComponent } from './shared/components/employe-form/admin-employe-form-dialog';
-import { DemandeFormulaireUtilisateurComponent } from './features/utilisateur/demandes/demande-formulaire/utilisateur-demande-formulaire.component';
+import { DemandeCatalogueComponent } from './features/utilisateur/demandes/demande-formulaire/demande-catalogue.component';
 import { EmployeDetailComponent } from './shared/components/employe-detail/admin-employe-detail.component';
 import { CompagnieDetailComponent } from './features/Admin/compagnies/compagnie-detail/admin-compagnie-detail.component';
-import { DemandeConfirmationUtilisateurComponent } from './features/utilisateur/demandes/demande-confirmation/utilisateur-demande-confirmation.component';
+import { DemandeConfirmationComponent } from './features/utilisateur/demandes/demande-public/demande-confirmation/demande-confirmation.component';
 
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'register', component: CreateLamdaUserComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'faire-demande', component: DemandeAccueilUtilisateurComponent },
-  { path: 'demande-formulaire', component: DemandeFormulaireUtilisateurComponent },
+  { path: 'faire-demande', component: FaireDemandeComponent },
+  { path: 'demande-formulaire', component: DemandeCatalogueComponent },
   { path: 'choix-parcours', component: ChoixParcoursUtilisateurComponent },
-  { path: 'questionnaire-guide', component: QuestionnaireGuideUtilisateurComponent },
+  { path: 'questionnaire-guide', component: CreateLamdaUserComponent },
+  { path: 'create-lamda-user', component: CreateLamdaUserComponent },
   { path: 'catalogue-velos', component: CatalogueVelosUtilisateurComponent },
-  { path: 'demande-confirmation', component: DemandeConfirmationUtilisateurComponent },
+  { path: 'demande-confirmation', component: DemandeConfirmationComponent },
 
   // Routes Admin
   {
@@ -126,11 +128,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: TableauDeBordUtilisateurComponent },
-      { path: 'faire-demande', component: DemandeAccueilUtilisateurComponent },
       { path: 'contrats', component: ContratsUtilisateurComponent },
       { path: 'demandes', component: DemandesUtilisateurComponent },
-      { path: 'demandes/new', component: DemandeFormulaireUtilisateurComponent },
-      { path: 'demandes/:id/edit', component: DemandeFormulaireUtilisateurComponent },
+      { path: 'demandes/new', component: DemandeCatalogueComponent },
+      { path: 'demandes/:id/edit', component: DemandeCatalogueComponent },
       { path: 'demandes/:id', component: DemandeDetailComponent },
       { path: 'parametres', component: ParametresUtilisateurComponent },
     ],

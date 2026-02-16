@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ import { ContratDetailStore } from './contrat-detail.store';
   templateUrl: './contrat-amortissement.component.html',
   styleUrls: ['./contrat-amortissement.component.scss'],
 })
-export class ContratAmortissementComponent implements OnInit {
+export class ContratAmortissementComponent {
   private readonly amortissementService = inject(AmortissementService);
   private readonly moisAmortissementService = inject(MoisAmortissementService);
   private readonly messageService = inject(MessageService);
@@ -90,15 +90,6 @@ export class ContratAmortissementComponent implements OnInit {
     this.lastLoadedContratId = contratId;
     this.loadMonthsByContrat(contratId);
   });
-
-  ngOnInit(): void {
-    const snapshotId =
-      this.route.parent?.snapshot.paramMap.get('id') ??
-      this.route.snapshot.paramMap.get('id');
-    if (snapshotId) {
-      this.loadMonthsByContrat(Number(snapshotId));
-    }
-  }
 
   private isUnauthorized(error: unknown): boolean {
     if (!error || typeof error !== 'object') {
