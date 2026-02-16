@@ -11,6 +11,7 @@ import { MessageService } from 'primeng/api';
 import { Demande, DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 import { CardModule } from 'primeng/card';
 import { ErrorService } from '../../../core/services/error.service';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-demande-form-dialog',
@@ -22,7 +23,8 @@ import { ErrorService } from '../../../core/services/error.service';
     ButtonModule,
     SelectModule,
     CheckboxModule,
-    InputNumberModule
+    InputNumberModule,
+    ToastModule
   ],
   templateUrl: './admin-demande-form-dialog.html'
 })

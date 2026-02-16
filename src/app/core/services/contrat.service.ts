@@ -23,6 +23,68 @@ export interface Contrat {
   isActif?: boolean;  
 }
 
+export interface ContratDetail extends Contrat {
+  beneficiaireName: string;
+  userRhName: string;
+  veloMarque?: string;
+  veloModele?: string;
+  veloNumeroSerie?: string | null;
+}
+
+export interface ContratEditUser {
+  id: string;
+  userName?: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phoneNumber?: string;
+  role?: number;
+  isActif?: boolean;
+  organisationId?: number;
+}
+
+export interface ContratEditVelo {
+  id: number;
+  numeroSerie: string;
+  marque: string;
+  modele: string;
+  type?: string | null;
+  prixAchat?: number;
+  status?: boolean;
+}
+
+export interface ContratEditData {
+  contrat: Contrat;
+  users: ContratEditUser[];
+  velos: ContratEditVelo[];
+}
+
+export interface AdminContratListItem {
+  id: number;
+  ref: string;
+  beneficiaireId: string;
+  beneficiaireName: string;
+  userRhId: string;
+  userRhName: string;
+  organisationId: number;
+  organisationName: string;
+  veloId: number;
+  veloMarque: string;
+  veloModele: string;
+  veloType?: string | null;
+  veloPrixAchat: number;
+  dateDebut: string;
+  dateFin: string;
+  loyerMensuelHT: number;
+  duree: number;
+  statutContrat: StatutContrat;
+  incidentsCount: number;
+  maintenanceBudget: number;
+  maintenanceUsed: number;
+  maintenanceProgress: number;
+  isEndingSoon: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -37,6 +99,89 @@ export class ContratService {
 
   getOne(id: number): Observable<Contrat> {
     return this.http.request<Contrat>('GET', `${this.apiUrl}/get-one/${id}`);
+  }
+
+  getDetail(id: number): Observable<ContratDetail> {
+    return this.http.request<ContratDetail>('GET', `${this.apiUrl}/get-detail/${id}`);
+  }
+
+  getEditData(id: number): Observable<ContratEditData> {
+    return this.http.request<ContratEditData>('GET', `${this.apiUrl}/edit-data/${id}`);
+  }
+
+  getByUser(userId: string): Observable<Contrat[]> {
+    return this.http.request<Contrat[]>('GET', `${this.apiUrl}/get-by-user/${encodeURIComponent(userId)}`);
+  }
+
+  getByOrganisation(organisationId: number): Observable<Contrat[]> {
+    return this.http.request<Contrat[]>('GET', `${this.apiUrl}/get-by-organisation/${organisationId}`);
+  }
+
+  getList(params?: {
+    type?: string | null;
+    search?: string | null;
+    endingSoon?: boolean | null;
+    withIncidents?: boolean | null;
+    organisationId?: number | null;
+    userId?: string | null;
+  }): Observable<AdminContratListItem[]> {
+    const query = new URLSearchParams();
+    if (params?.type) {
+      query.set('type', params.type);
+    }
+    if (params?.search) {
+      query.set('search', params.search);
+    }
+    if (params?.endingSoon !== null && params?.endingSoon !== undefined) {
+      query.set('endingSoon', String(params.endingSoon));
+    }
+    if (params?.withIncidents !== null && params?.withIncidents !== undefined) {
+      query.set('withIncidents', String(params.withIncidents));
+    }
+    if (params?.organisationId) {
+      query.set('organisationId', String(params.organisationId));
+    }
+    if (params?.userId) {
+      query.set('userId', params.userId);
+    }
+    const suffix = query.toString();
+    return this.http.request<AdminContratListItem[]>(
+      'GET',
+      `${this.apiUrl}/list${suffix ? `?${suffix}` : ''}`,
+    );
+  }
+
+  exportCsv(params?: {
+    type?: string | null;
+    search?: string | null;
+    endingSoon?: boolean | null;
+    withIncidents?: boolean | null;
+    organisationId?: number | null;
+    userId?: string | null;
+  }): Observable<Blob> {
+    const query = new URLSearchParams();
+    if (params?.type) {
+      query.set('type', params.type);
+    }
+    if (params?.search) {
+      query.set('search', params.search);
+    }
+    if (params?.endingSoon !== null && params?.endingSoon !== undefined) {
+      query.set('endingSoon', String(params.endingSoon));
+    }
+    if (params?.withIncidents !== null && params?.withIncidents !== undefined) {
+      query.set('withIncidents', String(params.withIncidents));
+    }
+    if (params?.organisationId) {
+      query.set('organisationId', String(params.organisationId));
+    }
+    if (params?.userId) {
+      query.set('userId', params.userId);
+    }
+    const suffix = query.toString();
+    return this.http.get(`${this.apiUrl}/export${suffix ? `?${suffix}` : ''}`, {
+      responseType: 'blob',
+    });
   }
 
   create(contrat: Contrat): Observable<any> {

@@ -52,8 +52,12 @@
     }
 
     .p-menuitem-icon {
-      color: #4b5563;
+      color: var(--mojo-primary) !important;
       margin-right: 0.75rem;
+    }
+
+    .p-menuitem-icon::before {
+      color: var(--mojo-primary) !important;
     }
 
     .p-menuitem-text {

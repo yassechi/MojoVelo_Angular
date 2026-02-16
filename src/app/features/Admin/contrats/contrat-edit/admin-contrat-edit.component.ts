@@ -5,9 +5,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
-import { ContratService, Contrat, StatutContrat } from '../../../../core/services/contrat.service';
-import { User } from '../../../../core/services/user.service';
-import { Velo } from '../../../../core/services/velo.service';
+import {
+  ContratEditData,
+  ContratService,
+  Contrat,
+  StatutContrat,
+} from '../../../../core/services/contrat.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { environment } from '../../../../../environments/environment';
 
@@ -48,7 +51,6 @@ export class ContratEditComponent {
   private readonly errorService = inject(ErrorService);
 
   private readonly coreApi = environment.urls.coreApi;
-  private readonly legacyApi = environment.urls.legacyApi;
 
   readonly contratForm = this.fb.group({
     ref: this.fb.nonNullable.control('', Validators.required),
@@ -72,32 +74,19 @@ export class ContratEditComponent {
     { initialValue: null },
   );
 
-  readonly contratResource = httpResource<Contrat | null>(
+  readonly editDataResource = httpResource<ContratEditData | null>(
     () => {
       const id = this.contratId();
-      return id ? `${this.coreApi}/Contrat/get-one/${id}` : undefined;
+      return id ? `${this.coreApi}/Contrat/edit-data/${id}` : undefined;
     },
     { defaultValue: null },
   );
 
-  readonly usersResource = httpResource<User[]>(
-    () => `${this.coreApi}/User/get-all`,
-    { defaultValue: [] },
-  );
-  readonly velosResource = httpResource<Velo[]>(
-    () => `${this.legacyApi}/Velo/get-all`,
-    { defaultValue: [] },
-  );
+  readonly contratResource = computed(() => this.editDataResource.value()?.contrat ?? null);
+  readonly users = computed(() => this.editDataResource.value()?.users ?? []);
+  readonly velos = computed(() => this.editDataResource.value()?.velos ?? []);
 
-  readonly users = computed(() => this.usersResource.value() ?? []);
-  readonly velos = computed(() => this.velosResource.value() ?? []);
-
-  readonly loading = computed(
-    () =>
-      this.contratResource.isLoading() ||
-      this.usersResource.isLoading() ||
-      this.velosResource.isLoading(),
-  );
+  readonly loading = computed(() => this.editDataResource.isLoading());
 
   readonly statutOptions = [
     { label: 'En cours', value: StatutContrat.EnCours },
@@ -107,7 +96,7 @@ export class ContratEditComponent {
 
   private readonly contratErrorShown = signal(false);
   private readonly contratFormEffect = effect(() => {
-    const contrat = this.contratResource.value();
+    const contrat = this.contratResource();
     if (!contrat) {
       return;
     }
@@ -125,7 +114,7 @@ export class ContratEditComponent {
   });
 
   private readonly contratErrorEffect = effect(() => {
-    const error = this.contratResource.error();
+    const error = this.editDataResource.error();
     if (error && !this.contratErrorShown()) {
       this.errorService.showError('Impossible de charger le contrat');
       this.contratErrorShown.set(true);

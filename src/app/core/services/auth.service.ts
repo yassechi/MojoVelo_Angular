@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
+import { AuthResponse, LoginRequest } from '../models/auth.model';
 import { User } from '../models/user.model';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -33,43 +33,29 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  // ✅ AJOUT DE getCurrentUser()
+  // âœ… AJOUT DE getCurrentUser()
   public getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
-  login(credentials: LoginRequest): Observable<AuthResponse> {
+  login(
+    credentials: LoginRequest,
+    options?: { redirectToDashboard?: boolean },
+  ): Observable<AuthResponse> {
+    const shouldRedirect = options?.redirectToDashboard !== false;
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
         if (response && response.token) {
           localStorage.setItem('token', response.token);
-          // R�cup�rer les infos compl�tes de l'utilisateur
+          // Récupérer les infos complètes de l'utilisateur
           this.getUserInfo(response.id).subscribe((user) => {
             localStorage.setItem('currentUser', JSON.stringify(user));
             this.currentUserSubject.next(user);
 
-            // ✅ REDIRECTION SELON LE RÔLE
-            this.redirectToRoleDashboard(user.role);
-          });
-        }
-      }),
-    );
-  }
-
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
-      tap((response) => {
-        if (response && response.token) {
-          localStorage.setItem('token', response.token);
-          // R�cup�rer les infos compl�tes de l'utilisateur
-          this.getUserInfo(response.id).subscribe((user) => {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.currentUserSubject.next(user);
-
-            setTimeout(() => {
-              // ✅ REDIRECTION SELON LE RÔLE
+            // âœ… REDIRECTION SELON LE RÃ”LE
+            if (shouldRedirect) {
               this.redirectToRoleDashboard(user.role);
-            }, 1000);
+            }
           });
         }
       }),
@@ -95,40 +81,18 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  // // ✅ NOUVELLE MÉTHODE - Redirection selon le rôle
-  // private redirectToRoleDashboard(role: number): void {
-  //   switch (role) {
-  //     case 1: // Admin
-  //       this.router.navigate(['/admin/dashboard']);
-  //       break;
-  //     case 2: // Manager
-  //       this.router.navigate(['/manager/dashboard']);
-  //       break;
-  //     case 3: // User
-  //       this.router.navigate(['/user/dashboard']);
-  //       break;
-  //     default:
-  //       this.router.navigate(['/login']);
-  //   }
-  // }
-
   private redirectToRoleDashboard(role: number): void {
-    console.log('🔍 REDIRECTION - Role:', role);
     switch (role) {
       case 1: // Admin
-        console.log('➡️ Redirection vers /admin/dashboard');
         this.router.navigate(['/admin/dashboard']);
         break;
       case 2: // Manager
-        console.log('➡️ Redirection vers /manager/dashboard');
         this.router.navigate(['/manager/dashboard']);
         break;
       case 3: // User
-        console.log('➡️ Redirection vers /user/dashboard');
         this.router.navigate(['/user/dashboard']);
         break;
       default:
-        console.log('➡️ Redirection vers /login');
         this.router.navigate(['/login']);
     }
   }
@@ -141,6 +105,8 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/forgot-password`, payload);
   }
 }
+
+
 
 
 

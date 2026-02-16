@@ -1,24 +1,23 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { DemandeService } from '../../../core/services/demande.service';
-import { ContratService, StatutContrat } from '../../../core/services/contrat.service';
+import { DashboardService } from '../../../core/services/dashboard.service';
 
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 
 @Component({
-  selector: 'app-user-dashboard',
+  selector: 'app-utilisateur-tableau-de-bord',
   standalone: true,
   imports: [
     CommonModule,
     CardModule,
     ChartModule
   ],
-  templateUrl: './user-dashboard.component.html',
-  styleUrls: ['./user-dashboard.component.scss']
+  templateUrl: './utilisateur-tableau-de-bord.component.html',
+  styleUrls: ['./utilisateur-tableau-de-bord.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class TableauDeBordUtilisateurComponent implements OnInit {
   currentUser: any;
   currentUserId: string | null = null;
 
@@ -34,8 +33,7 @@ export class DashboardComponent implements OnInit {
   chartOptions: any;
 
   private authService = inject(AuthService);
-  private demandeService = inject(DemandeService);
-  private contratService = inject(ContratService);
+  private dashboardService = inject(DashboardService);
 
   ngOnInit(): void {
     this.loadCurrentUser();
@@ -53,33 +51,24 @@ export class DashboardComponent implements OnInit {
   loadStatistics(): void {
     if (!this.currentUserId) return;
 
-    // Charger demandes de l'utilisateur
-    this.demandeService.getAll().subscribe({
-      next: (demandes) => {
-        const userDemandes = demandes.filter(d => d.idUser === this.currentUserId);
-        this.totalDemandes = userDemandes.length;
-        this.demandesEnCours = userDemandes.filter(d => d.status === 1).length;
-        this.updateDemandesChart(userDemandes);
-      }
-    });
-
-    // Charger contrats de l'utilisateur
-    this.contratService.getAll().subscribe({
-      next: (contrats) => {
-        const userContrats = contrats.filter(c => c.beneficiaireId === this.currentUserId);
-        this.totalContrats = userContrats.length;
-        this.contratsActifs = userContrats.filter(c => c.statutContrat === StatutContrat.EnCours).length;
-        this.updateContratsChart(userContrats);
+    this.dashboardService.getUserDashboard(this.currentUserId).subscribe({
+      next: (data) => {
+        this.totalDemandes = data.totalDemandes;
+        this.totalContrats = data.totalContrats;
+        this.demandesEnCours = data.demandesEnCours;
+        this.contratsActifs = data.contratsActifs;
+        this.updateDemandesChartFromCounts(data);
+        this.updateContratsChartFromCounts(data);
       }
     });
   }
 
-  updateDemandesChart(demandes: any[]): void {
+  updateDemandesChartFromCounts(data: any): void {
     const statusCount = {
-      encours: demandes.filter(d => d.status === 1).length,
-      attente: demandes.filter(d => d.status === 2).length,
-      attenteCompagnie: demandes.filter(d => d.status === 3).length,
-      valide: demandes.filter(d => d.status === 4).length
+      encours: data.demandesEnCours ?? 0,
+      attente: data.demandesAttente ?? 0,
+      attenteCompagnie: data.demandesAttenteCompagnie ?? 0,
+      valide: data.demandesValide ?? 0
     };
 
     this.demandesChartData = {
@@ -92,10 +81,10 @@ export class DashboardComponent implements OnInit {
     };
   }
 
-  updateContratsChart(contrats: any[]): void {
+  updateContratsChartFromCounts(data: any): void {
     const statusCount = {
-      enCours: contrats.filter(c => c.statutContrat === 0).length,
-      termine: contrats.filter(c => c.statutContrat === 1).length
+      enCours: data.contratsEnCours ?? 0,
+      termine: data.contratsTermine ?? 0
     };
 
     this.contratsChartData = {

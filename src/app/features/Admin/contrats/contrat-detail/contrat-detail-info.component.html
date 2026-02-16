@@ -48,14 +48,14 @@
       <div class="col-6">
         <p class="text-600 mb-1">B&eacute;n&eacute;ficiaire</p>
         <p class="font-semibold">
-          {{ beneficiaire() ? beneficiaire()!.firstName + ' ' + beneficiaire()!.lastName : 'Chargement...' }}
+          {{ currentContrat.beneficiaireName || currentContrat.beneficiaireId }}
         </p>
       </div>
 
       <div class="col-6">
         <p class="text-600 mb-1">Responsable RH</p>
         <p class="font-semibold">
-          {{ responsableRH() ? responsableRH()!.firstName + ' ' + responsableRH()!.lastName : 'Chargement...' }}
+          {{ currentContrat.userRhName || currentContrat.userRhId }}
         </p>
       </div>
     </div>

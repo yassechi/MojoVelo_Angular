@@ -37,7 +37,9 @@
           <ng-template pTemplate="body" let-demande>
             <tr>
               <td>{{ demande.id }}</td>
-              <td>{{ demande.idVelo }}</td>
+              <td>
+                {{ (demande.veloMarque + ' ' + demande.veloModele).trim() || ('#' + demande.idVelo) }}
+              </td>
               <td>
                 <p-tag
                   [value]="getStatusLabel(demande.status)"

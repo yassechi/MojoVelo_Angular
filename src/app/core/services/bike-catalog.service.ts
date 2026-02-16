@@ -64,6 +64,14 @@ export class BikeCatalogService {
       );
   }
 
+  getBikeById(id: number, embed = false): Observable<BikeItem> {
+    let params = new HttpParams();
+    if (embed) {
+      params = params.set('_embed', '1');
+    }
+    return this.http.get<BikeItem>(`${this.baseUrl}/bikes/${id}`, { params });
+  }
+
   getBrands(perPage = 100, page = 1): Observable<CmsListResponse<BikeBrand>> {
     const params = new HttpParams().set('per_page', String(perPage)).set('page', String(page));
     return this.http

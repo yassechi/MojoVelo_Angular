@@ -23,14 +23,14 @@ export class ContratDocumentsComponent {
   private readonly messageService = inject(MessageService);
   private readonly errorService = inject(ErrorService);
   private readonly store = inject(ContratDetailStore);
-  private readonly legacyApi = environment.urls.legacyApi;
+  private readonly coreApi = environment.urls.coreApi;
 
   readonly contratId = computed(() => this.store.contratId());
 
   readonly documentsResource = httpResource<Document[]>(
     () => {
       const id = this.contratId();
-      return id ? `${this.legacyApi}/Document/get-by-contrat/${id}` : undefined;
+      return id ? `${this.coreApi}/Document/get-by-contrat/${id}` : undefined;
     },
     { defaultValue: [] },
   );

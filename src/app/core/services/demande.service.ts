@@ -23,6 +23,73 @@ export interface Demande {
   accessoiresSouhaites?: string;
 }
 
+export interface AdminDemandeListItem {
+  id: number;
+  status: DemandeStatus;
+  idUser: string;
+  userName: string;
+  organisationId: number;
+  organisationName: string;
+  idVelo: number;
+  veloMarque: string;
+  veloModele: string;
+  veloType?: string | null;
+  veloPrixAchat?: number | null;
+  discussionId?: number;
+  createdAt?: string | null;
+}
+
+export interface DemandeMessage {
+  id: number;
+  contenu: string;
+  dateEnvoi?: string | null;
+  createdDate?: string | null;
+  userId: string;
+  roleLabel: string;
+}
+
+export interface DemandeDetail {
+  id: number;
+  status: DemandeStatus;
+  idUser: string;
+  userName: string;
+  userEmail: string;
+  idVelo: number;
+  veloMarque: string;
+  veloModele: string;
+  veloType?: string | null;
+  veloPrixAchat?: number | null;
+  discussionId: number;
+  veloCmsId?: number | null;
+  accessoiresSouhaites?: string | null;
+  messages: DemandeMessage[];
+}
+
+export interface BikeSnapshotPayload {
+  cmsId: number;
+  marque: string;
+  modele: string;
+  type?: string | null;
+  prixAchat: number;
+}
+
+export interface CreateDemandeWithBikePayload {
+  idUser: string;
+  mojoId?: string | null;
+  bike: BikeSnapshotPayload;
+}
+
+export interface CreateDemandeWithBikeResponse {
+  success?: boolean;
+  message?: string;
+  id?: number;
+  demandeId?: number;
+  veloId?: number;
+  discussionId?: number;
+  messageId?: number;
+  errors?: string[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -39,8 +106,80 @@ export class DemandeService {
     return this.http.get<Demande>(`${this.apiUrl}/get-one/${id}`);
   }
 
+  getDetail(id: number): Observable<DemandeDetail> {
+    return this.http.get<DemandeDetail>(`${this.apiUrl}/get-detail/${id}`);
+  }
+
+  getByUser(userId: string): Observable<Demande[]> {
+    return this.http.get<Demande[]>(`${this.apiUrl}/get-by-user/${encodeURIComponent(userId)}`);
+  }
+
+  getByOrganisation(organisationId: number): Observable<Demande[]> {
+    return this.http.get<Demande[]>(`${this.apiUrl}/get-by-organisation/${organisationId}`);
+  }
+
+  getList(params?: {
+    status?: number | null;
+    type?: string | null;
+    search?: string | null;
+    organisationId?: number | null;
+    userId?: string | null;
+  }): Observable<AdminDemandeListItem[]> {
+    const query = new URLSearchParams();
+    if (params?.status !== null && params?.status !== undefined) {
+      query.set('status', String(params.status));
+    }
+    if (params?.type) {
+      query.set('type', params.type);
+    }
+    if (params?.search) {
+      query.set('search', params.search);
+    }
+    if (params?.organisationId) {
+      query.set('organisationId', String(params.organisationId));
+    }
+    if (params?.userId) {
+      query.set('userId', params.userId);
+    }
+    const suffix = query.toString();
+    return this.http.get<AdminDemandeListItem[]>(`${this.apiUrl}/list${suffix ? `?${suffix}` : ''}`);
+  }
+
+  exportCsv(params?: {
+    status?: number | null;
+    type?: string | null;
+    search?: string | null;
+    organisationId?: number | null;
+    userId?: string | null;
+  }): Observable<Blob> {
+    const query = new URLSearchParams();
+    if (params?.status !== null && params?.status !== undefined) {
+      query.set('status', String(params.status));
+    }
+    if (params?.type) {
+      query.set('type', params.type);
+    }
+    if (params?.search) {
+      query.set('search', params.search);
+    }
+    if (params?.organisationId) {
+      query.set('organisationId', String(params.organisationId));
+    }
+    if (params?.userId) {
+      query.set('userId', params.userId);
+    }
+    const suffix = query.toString();
+    return this.http.get(`${this.apiUrl}/export${suffix ? `?${suffix}` : ''}`, {
+      responseType: 'blob',
+    });
+  }
+
   create(demande: Demande): Observable<any> {
     return this.http.post(`${this.apiUrl}/add`, demande);
+  }
+
+  createWithBike(payload: CreateDemandeWithBikePayload): Observable<CreateDemandeWithBikeResponse> {
+    return this.http.post<CreateDemandeWithBikeResponse>(`${this.apiUrl}/create-with-bike`, payload);
   }
 
   update(demande: Demande): Observable<any> {

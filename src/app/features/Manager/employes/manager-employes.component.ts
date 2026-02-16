@@ -64,14 +64,15 @@ export class EmployesComponent implements OnInit {
 
   loadEmployes(): void {
     this.loading = true;
-    this.userService.getAll().subscribe({
+    if (!this.currentUserOrgId) {
+      this.employes = [];
+      this.loading = false;
+      return;
+    }
+
+    this.userService.getByOrganisation(this.currentUserOrgId, UserRole.User).subscribe({
       next: (data) => {
-        // Filter: only users (not Manager/Admin) from the same organization.
-        this.employes = data.filter((u) => {
-          const orgId =
-            typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId;
-          return u.role === UserRole.User && orgId === this.currentUserOrgId;
-        });
+        this.employes = data;
         this.loading = false;
       },
       error: () => {

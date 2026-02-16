@@ -2,15 +2,13 @@
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-// import { OrganisationService, Organisation } from '../../../core/services/organisation.service';
-// import { UserService, User } from '../../../core/services/user.service';
-// import { FileUploadService } from '../../../core/services/file-upload.service';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule } from 'primeng/fileupload';
 import { SelectModule } from 'primeng/select';
 import { CardModule } from 'primeng/card';
+import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
 import { User, UserService } from '../../../../core/services/user.service';
@@ -30,6 +28,7 @@ import { environment } from '../../../../../environments/environment';
     CheckboxModule,
     FileUploadModule,
     SelectModule,
+    ToastModule,
   ],
   templateUrl: './admin-compagnie-form.component.html',
   styleUrls: ['./admin-compagnie-form.component.scss'],

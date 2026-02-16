@@ -6,12 +6,19 @@
       <h1 class="page-title">Contrats actifs</h1>
       <p class="page-subtitle">Suivi des contrats et budget entretien</p>
     </div>
-    <p-button
-      label="Exporter en Excel"
-      icon="pi pi-file-excel"
-      styleClass="p-button-outlined"
-      (click)="exportContrats()"
-    ></p-button>
+    <div class="flex gap-2">
+      <p-button
+        label="Creer un contrat"
+        icon="pi pi-plus"
+        (click)="onCreateContrat()"
+      ></p-button>
+      <p-button
+        label="Exporter en Excel"
+        icon="pi pi-file-excel"
+        styleClass="p-button-outlined"
+        (click)="exportContrats()"
+      ></p-button>
+    </div>
   </div>
 
   <p-card styleClass="section-card mb-3">
@@ -92,27 +99,27 @@
           <ng-template pTemplate="body" let-contrat>
             <tr>
               <td>
-                <div class="font-semibold">{{ getUserFullName(contrat.beneficiaireId) }}</div>
+                <div class="font-semibold">{{ contrat.beneficiaireName }}</div>
                 <div class="text-600 text-sm">{{ contrat.ref }}</div>
               </td>
               <td>
-                <div class="font-semibold">{{ getBikeTitle(contrat.veloId) }}</div>
-                <div class="text-600 text-sm">{{ getBikeBrand(contrat.veloId) || 'Marque non renseignee' }}</div>
+                <div class="font-semibold">{{ contrat.veloModele || '#' + contrat.veloId }}</div>
+                <div class="text-600 text-sm">{{ contrat.veloMarque || 'Marque non renseignee' }}</div>
               </td>
               <td>{{ formatDate(contrat.dateDebut) }}</td>
-              <td [class.end-soon]="isEndingSoon(contrat.dateFin)">
+              <td [class.end-soon]="contrat.isEndingSoon">
                 {{ formatDate(contrat.dateFin) }}
               </td>
               <td>{{ formatCurrency(contrat.loyerMensuelHT) }}</td>
               <td>
                 <p-progressBar
-                  [value]="getMaintenanceProgress(contrat.veloId)"
+                  [value]="contrat.maintenanceProgress"
                   [showValue]="false"
                   styleClass="maintenance-bar"
                 ></p-progressBar>
                 <div class="text-600 text-sm mt-1">
-                  {{ formatCurrency(getMaintenanceUsed(contrat.veloId)) }} / {{
-                  formatCurrency(getMaintenanceBudget(contrat.veloId))
+                  {{ formatCurrency(contrat.maintenanceUsed) }} / {{
+                  formatCurrency(contrat.maintenanceBudget)
                   }}
                 </div>
               </td>

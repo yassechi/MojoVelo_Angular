@@ -49,8 +49,8 @@
           <ng-template pTemplate="body" let-contrat>
             <tr>
               <td>{{ contrat.ref }}</td>
-              <td>{{ getUserFullName(contrat.beneficiaireId) }}</td>
-              <td>{{ getUserFullName(contrat.userRhId) }}</td>
+              <td>{{ contrat.beneficiaireName || contrat.beneficiaireId }}</td>
+              <td>{{ contrat.userRhName || contrat.userRhId }}</td>
               <td>{{ contrat.veloId }}</td>
               <td>{{ formatDate(contrat.dateDebut) }}</td>
               <td>{{ formatDate(contrat.dateFin) }}</td>

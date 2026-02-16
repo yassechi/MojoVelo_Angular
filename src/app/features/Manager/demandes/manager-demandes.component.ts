@@ -1,9 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
+import {
+  DemandeService,
+  AdminDemandeListItem,
+  DemandeStatus,
+} from '../../../core/services/demande.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service';
 import { ErrorService } from '../../../core/services/error.service';
 
 import { CardModule } from 'primeng/card';
@@ -37,7 +40,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./manager-demandes.component.scss'],
 })
 export class DemandesComponent implements OnInit {
-  demandes: Demande[] = [];
+  demandes: AdminDemandeListItem[] = [];
   loading = false;
   currentUserOrgId: number | null = null;
 
@@ -50,7 +53,6 @@ export class DemandesComponent implements OnInit {
   ];
 
   private readonly demandeService = inject(DemandeService);
-  private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
@@ -78,33 +80,20 @@ export class DemandesComponent implements OnInit {
 
   loadDemandes(): void {
     this.loading = true;
+    if (!this.currentUserOrgId) {
+      this.demandes = [];
+      this.loading = false;
+      return;
+    }
 
-    // First, load users in the organization.
-    this.userService.getAll().subscribe({
-      next: (users) => {
-        const orgUserIds = users
-          .filter((u) => {
-            const orgId =
-              typeof u.organisationId === 'object' ? u.organisationId.id : u.organisationId;
-            return orgId === this.currentUserOrgId;
-          })
-          .map((u) => u.id!);
-
-        // Then load demandes and filter by userId.
-        this.demandeService.getAll().subscribe({
-          next: (data) => {
-            this.demandes = data.filter((d) => orgUserIds.includes(d.idUser));
-            this.loading = false;
-          },
-          error: () => {
-            this.errorService.showError('Impossible de charger les demandes');
-            this.loading = false;
-          },
-        });
+    this.demandeService.getList({ organisationId: this.currentUserOrgId }).subscribe({
+      next: (data) => {
+        this.demandes = data;
+        this.loading = false;
       },
       error: () => {
+        this.errorService.showError('Impossible de charger les demandes');
         this.loading = false;
-        this.errorService.showError('Impossible de charger les utilisateurs');
       },
     });
   }
@@ -113,7 +102,7 @@ export class DemandesComponent implements OnInit {
     this.router.navigate(['/manager/demandes/new']);
   }
 
-  onView(demande: Demande): void {
+  onView(demande: AdminDemandeListItem): void {
     if (!demande.id) {
       this.errorService.showError('ID demande manquant');
       return;
@@ -121,7 +110,7 @@ export class DemandesComponent implements OnInit {
     this.router.navigate(['/manager/demandes', demande.id]);
   }
 
-  onEdit(demande: Demande): void {
+  onEdit(demande: AdminDemandeListItem): void {
     if (!demande.id) {
       this.errorService.showError('ID demande manquant');
       return;
@@ -129,7 +118,7 @@ export class DemandesComponent implements OnInit {
     this.router.navigate(['/manager/demandes', demande.id, 'edit']);
   }
 
-  onStatusChange(demande: Demande, newStatus: DemandeStatus): void {
+  onStatusChange(demande: AdminDemandeListItem, newStatus: DemandeStatus): void {
     this.demandeService.updateStatus(demande.id!, newStatus).subscribe({
       next: () => {
         demande.status = newStatus;
@@ -145,7 +134,7 @@ export class DemandesComponent implements OnInit {
     });
   }
 
-  onDelete(demande: Demande): void {
+  onDelete(demande: AdminDemandeListItem): void {
     this.confirmationService.confirm({
       message: 'Etes-vous sur de vouloir supprimer cette demande ?',
       header: 'Confirmation',

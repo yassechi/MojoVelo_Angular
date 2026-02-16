@@ -1,21 +1,37 @@
 :host ::ng-deep {
   .p-button {
-    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important;
+    background: linear-gradient(
+      135deg,
+      var(--mojo-button-start) 0%,
+      var(--mojo-button-end) 100%
+    ) !important;
     border: none !important;
 
     &:hover {
-      background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+      background: linear-gradient(
+        135deg,
+        var(--mojo-button-hover-start) 0%,
+        var(--mojo-button-hover-end) 100%
+      ) !important;
     }
 
     &:disabled {
       opacity: 0.6 !important;
     }
   }
+
+  .no-account-btn.p-button {
+    color: #ffffff !important;
+  }
+
+  .no-account-btn .p-button-label {
+    color: #ffffff !important;
+  }
 }
 
 .login-shell {
   min-height: 100vh;
-  background: linear-gradient(160deg, rgba(5, 150, 105, 0.32), rgba(209, 250, 229, 0.92));
+  background: linear-gradient(160deg, #065f46 0%, #0f766e 45%, #0b3b2e 100%);
 }
 
 

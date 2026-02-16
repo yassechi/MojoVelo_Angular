@@ -9,8 +9,8 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { PasswordModule } from 'primeng/password';
-import { CheckboxModule } from 'primeng/checkbox';
-import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
+
 
 @Component({
   selector: 'app-admin-parametres',
@@ -22,8 +22,7 @@ import { SelectModule } from 'primeng/select';
     InputTextModule,
     ButtonModule,
     PasswordModule,
-    CheckboxModule,
-    SelectModule
+    ToastModule
   ],
   providers: [MessageService],
   templateUrl: './admin-parametres.component.html',
@@ -52,22 +51,9 @@ export class AdminParametresComponent implements OnInit {
     validators: this.passwordMatchValidator
   });
 
-  preferencesForm: FormGroup = this.fb.group({
-    language: ['fr'],
-    emailNotifications: [true],
-    smsNotifications: [false],
-    newsletterSubscription: [true]
-  });
-
   loading = false;
   currentUser: User | null = null;
-  activeTab: 'profile' | 'password' | 'preferences' = 'profile';
-
-  languageOptions = [
-    { label: 'Français', value: 'fr' },
-    { label: 'English', value: 'en' },
-    { label: 'Nederlands', value: 'nl' }
-  ];
+  activeTab: 'profile' | 'password' = 'profile';
 
   ngOnInit(): void {
     this.loadCurrentUser();
@@ -84,7 +70,7 @@ export class AdminParametresComponent implements OnInit {
     return null;
   }
 
-  setActiveTab(tab: 'profile' | 'password' | 'preferences'): void {
+  setActiveTab(tab: 'profile' | 'password'): void {
     this.activeTab = tab;
   }
 
@@ -108,22 +94,12 @@ export class AdminParametresComponent implements OnInit {
               tailleCm: (userData as any).tailleCm || 177
             });
 
-            this.loadPreferences();
           },
           error: (err) => {
-            console.error('Erreur chargement utilisateur:', err);
             this.errorService.showError('Impossible de charger vos informations');
           }
         });
       }
-    }
-  }
-
-  loadPreferences(): void {
-    const savedPreferences = localStorage.getItem('userPreferences');
-    if (savedPreferences) {
-      const prefs = JSON.parse(savedPreferences);
-      this.preferencesForm.patchValue(prefs);
     }
   }
 
@@ -166,7 +142,6 @@ export class AdminParametresComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        console.error('Erreur mise à jour profil:', err);
         this.errorService.showError('Impossible de mettre à jour vos informations');
       }
     });
@@ -213,25 +188,9 @@ export class AdminParametresComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        console.error('Erreur changement mot de passe:', err);
         this.errorService.showError('Impossible de modifier votre mot de passe');
       }
     });
   }
 
-  savePreferences(): void {
-    if (this.preferencesForm.invalid) {
-      this.preferencesForm.markAllAsTouched();
-      return;
-    }
-
-    const preferences = this.preferencesForm.value;
-    localStorage.setItem('userPreferences', JSON.stringify(preferences));
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Succès',
-      detail: 'Vos préférences ont été enregistrées'
-    });
-  }
 }

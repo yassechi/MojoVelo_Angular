@@ -7,6 +7,13 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  const isPublicDemandeForm =
+    state.url.startsWith('/user/demandes/new') ||
+    /\/user\/demandes\/\d+\/edit/.test(state.url);
+  if (isPublicDemandeForm) {
+    return true;
+  }
+
   // Vérifier si l'utilisateur est authentifié
   if (!authService.isAuthenticated()) {
     router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
@@ -48,4 +55,6 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   return false;
 };
+
+
 

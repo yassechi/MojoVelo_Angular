@@ -16,7 +16,7 @@ export interface Document {
   providedIn: 'root'
 })
 export class DocumentService {
-  private apiUrl = `${environment.urls.legacyApi}/Document`;
+  private apiUrl = `${environment.urls.coreApi}/Document`;
 
   private readonly http = inject(HttpClient);
 

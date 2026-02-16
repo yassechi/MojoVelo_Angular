@@ -1,9 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
-import { InterventionService, Intervention } from '../../../core/services/intervention.service';
-import { BikeCatalogService, BikeItem, BikeBrand } from '../../../core/services/bike-catalog.service';
+import {
+  ContratService,
+  AdminContratListItem,
+  StatutContrat,
+} from '../../../core/services/contrat.service';
+import { VeloService } from '../../../core/services/velo.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -16,7 +19,6 @@ import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { UserService, User } from '../../../core/services/user.service';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../../core/services/error.service';
 
@@ -42,13 +44,9 @@ import { ErrorService } from '../../../core/services/error.service';
   styleUrls: ['./admin-contrats.component.scss'],
 })
 export class AdminContratsComponent implements OnInit {
-  contrats: Contrat[] = [];
-  filteredContrats: Contrat[] = [];
+  contrats: AdminContratListItem[] = [];
+  filteredContrats: AdminContratListItem[] = [];
   loading = false;
-  users: User[] = [];
-  bikes: BikeItem[] = [];
-  brands: BikeBrand[] = [];
-  interventions: Intervention[] = [];
 
   typeFilter: string | 'all' = 'all';
   endFilter: 'all' | 'soon' = 'all';
@@ -56,6 +54,7 @@ export class AdminContratsComponent implements OnInit {
   searchTerm = '';
 
   typeOptions: Array<{ label: string; value: string | 'all' }> = [{ label: 'Tous', value: 'all' }];
+  private typeOptionsLoaded = false;
   endOptions = [
     { label: 'Tous', value: 'all' },
     { label: '< 3 mois', value: 'soon' },
@@ -66,109 +65,70 @@ export class AdminContratsComponent implements OnInit {
   ];
 
   private contratService = inject(ContratService);
-  private userService = inject(UserService);
-  private interventionService = inject(InterventionService);
-  private bikeCatalogService = inject(BikeCatalogService);
+  private veloService = inject(VeloService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private router = inject(Router);
   private errorService = inject(ErrorService);
 
   ngOnInit(): void {
-    this.loadContrats();
-    this.loadUsers();
-    this.loadCatalog();
-    this.loadInterventions();
+    this.loadTypeOptions();
+    this.applyFilters();
   }
 
   loadContrats(): void {
     this.loading = true;
-    this.contratService.getAll().subscribe({
-      next: (data) => {
-        this.contrats = data;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des contrats', error);
-        this.errorService.showError('Impossible de charger les contrats');
-        this.loading = false;
-      },
-    });
-  }
-
-  loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (data) => {
-        this.users = data;
-        this.applyFilters();
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des utilisateurs', error);
-      },
-    });
-  }
-
-  loadCatalog(): void {
-    this.bikeCatalogService.getBikes().subscribe({
-      next: (data) => {
-        this.bikes = data.items;
-        this.updateTypeOptions();
-        this.applyFilters();
-      },
-    });
-
-    this.bikeCatalogService.getBrands().subscribe({
-      next: (data) => {
-        this.brands = data.items;
-      },
-    });
-  }
-
-  loadInterventions(): void {
-    this.interventionService.getAll().subscribe({
-      next: (data) => {
-        this.interventions = data;
-        this.applyFilters();
-      },
-    });
+    const type = this.typeFilter === 'all' ? null : this.typeFilter;
+    const endingSoon = this.endFilter === 'soon' ? true : null;
+    const withIncidents = this.incidentFilter === 'with' ? true : null;
+    const search = this.searchTerm.trim();
+    this.contratService
+      .getList({
+        type: type ?? undefined,
+        endingSoon: endingSoon ?? undefined,
+        withIncidents: withIncidents ?? undefined,
+        search: search ? search : undefined,
+      })
+      .subscribe({
+        next: (data) => {
+          this.contrats = data;
+          this.filteredContrats = data;
+          this.loading = false;
+        },
+        error: (error) => {
+          this.errorService.showError('Impossible de charger les contrats');
+          this.loading = false;
+        },
+      });
   }
 
   applyFilters(): void {
-    const term = this.searchTerm.trim().toLowerCase();
-    this.filteredContrats = this.contrats.filter((contrat) => {
-      if (this.typeFilter !== 'all') {
-        const bikeType = this.getBikeType(contrat.veloId);
-        if (!bikeType || bikeType.toLowerCase() !== this.typeFilter.toLowerCase()) {
-          return false;
-        }
-      }
-      if (this.endFilter === 'soon' && !this.isEndingSoon(contrat.dateFin)) {
-        return false;
-      }
-      if (this.incidentFilter === 'with' && this.getIncidentsCount(contrat.veloId) === 0) {
-        return false;
-      }
-      if (!term) {
-        return true;
-      }
-      const userName = this.getUserFullName(contrat.beneficiaireId).toLowerCase();
-      const bikeTitle = this.getBikeTitle(contrat.veloId).toLowerCase();
-      return userName.includes(term) || bikeTitle.includes(term);
+    this.loadContrats();
+  }
+
+  loadTypeOptions(): void {
+    if (this.typeOptionsLoaded) {
+      return;
+    }
+    this.veloService.getTypes().subscribe({
+      next: (types) => {
+        this.setTypeOptions(types);
+        this.typeOptionsLoaded = true;
+      },
+      error: () => {
+        this.errorService.showError('Impossible de charger les types de velo');
+      },
     });
   }
 
-  updateTypeOptions(): void {
-    const types = new Set(
-      this.bikes.map((bike) => bike.acf?.type).filter((value): value is string => Boolean(value)),
-    );
-    this.typeOptions = [{ label: 'Tous', value: 'all' }, ...Array.from(types).map((value) => ({
-      label: value,
-      value,
-    }))];
+  setTypeOptions(types: string[]): void {
+    this.typeOptions = [
+      { label: 'Tous', value: 'all' },
+      ...types.map((value) => ({ label: value, value })),
+    ];
   }
 
-  onViewDetail(contrat: Contrat): void {
+  onViewDetail(contrat: AdminContratListItem): void {
     if (!contrat.id) {
       this.errorService.showError('ID contrat manquant');
       return;
@@ -176,7 +136,15 @@ export class AdminContratsComponent implements OnInit {
     this.router.navigate(['/admin/contrats', contrat.id]);
   }
 
-  onTerminate(contrat: Contrat): void {
+  onCreateContrat(): void {
+    this.router.navigate(['/admin/contrats/new']);
+  }
+
+  onTerminate(contrat: AdminContratListItem): void {
+    if (!contrat.id) {
+      this.errorService.showError('ID contrat manquant');
+      return;
+    }
     this.confirmationService.confirm({
       message: `Resilier le contrat ${contrat.ref} ?`,
       header: 'Confirmation',
@@ -184,17 +152,26 @@ export class AdminContratsComponent implements OnInit {
       acceptLabel: 'Oui',
       rejectLabel: 'Non',
       accept: () => {
-        this.contratService.update({ ...contrat, statutContrat: StatutContrat.Resilie }).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Succes',
-              detail: 'Contrat resilie',
-            });
-            this.loadContrats();
+        this.contratService.getOne(contrat.id).subscribe({
+          next: (fullContrat) => {
+            this.contratService
+              .update({ ...fullContrat, statutContrat: StatutContrat.Resilie })
+              .subscribe({
+                next: () => {
+                  this.messageService.add({
+                    severity: 'success',
+                    summary: 'Succes',
+                    detail: 'Contrat resilie',
+                  });
+                  this.loadContrats();
+                },
+                error: () => {
+                  this.errorService.showError('Impossible de resilier le contrat');
+                },
+              });
           },
           error: () => {
-            this.errorService.showError('Impossible de resilier le contrat');
+            this.errorService.showError('Impossible de charger le contrat');
           },
         });
       },
@@ -203,19 +180,6 @@ export class AdminContratsComponent implements OnInit {
 
   getStatutLabel(statut: StatutContrat): string {
     return this.contratService.getStatutLabel(statut);
-  }
-
-  getStatutSeverity(statut: StatutContrat): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    switch (statut) {
-      case StatutContrat.EnCours:
-        return 'success';
-      case StatutContrat.Termine:
-        return 'secondary';
-      case StatutContrat.Resilie:
-        return 'danger';
-      default:
-        return 'secondary';
-    }
   }
 
   formatDate(date: string): string {
@@ -229,89 +193,33 @@ export class AdminContratsComponent implements OnInit {
     }).format(amount);
   }
 
-  getUserFullName(userId: string): string {
-    const user = this.users.find((item) => item.id === userId);
-    return user ? `${user.firstName} ${user.lastName}` : userId;
-  }
-
-  getBikeById(veloId: number): BikeItem | undefined {
-    return this.bikes.find((bike) => bike.id === veloId);
-  }
-
-  getBikeTitle(veloId: number): string {
-    const bike = this.getBikeById(veloId);
-    return bike?.title?.rendered ?? `#${veloId}`;
-  }
-
-  getBikeType(veloId: number): string {
-    const bike = this.getBikeById(veloId);
-    return bike?.acf?.type ?? '';
-  }
-
-  getBikeBrand(veloId: number): string {
-    const bike = this.getBikeById(veloId);
-    const brandId = bike?.bikes_brand?.[0];
-    if (!brandId) {
-      return '';
-    }
-    const brand = this.brands.find((item) => item.id === brandId);
-    return brand?.name ?? '';
-  }
-
-  getIncidentsCount(veloId: number): number {
-    return this.interventions.filter((item) => item.veloId === veloId && item.isActif).length;
-  }
-
-  getMaintenanceBudget(veloId: number): number {
-    const bikePrice = this.getBikeById(veloId)?.acf?.prix ?? 0;
-    return Math.max(300, Math.round(bikePrice * 0.05));
-  }
-
-  getMaintenanceUsed(veloId: number): number {
-    return this.interventions
-      .filter((item) => item.veloId === veloId && item.isActif)
-      .reduce((sum, item) => sum + (item.cout || 0), 0);
-  }
-
-  getMaintenanceProgress(veloId: number): number {
-    const budget = this.getMaintenanceBudget(veloId);
-    const used = this.getMaintenanceUsed(veloId);
-    if (!budget) {
-      return 0;
-    }
-    return Math.min(100, Math.round((used / budget) * 100));
-  }
-
-  isEndingSoon(dateFin: string): boolean {
-    const end = new Date(dateFin).getTime();
-    const now = new Date().getTime();
-    const diffDays = (end - now) / (1000 * 60 * 60 * 24);
-    return diffDays <= 90;
-  }
-
   exportContrats(): void {
-    const headers = ['Reference', 'Employe', 'Velo', 'Debut', 'Fin', 'Statut'];
-    const rows = this.filteredContrats.map((contrat) => [
-      contrat.ref,
-      this.getUserFullName(contrat.beneficiaireId),
-      this.getBikeTitle(contrat.veloId),
-      this.formatDate(contrat.dateDebut),
-      this.formatDate(contrat.dateFin),
-      this.getStatutLabel(contrat.statutContrat),
-    ]);
+    const type = this.typeFilter === 'all' ? null : this.typeFilter;
+    const endingSoon = this.endFilter === 'soon' ? true : null;
+    const withIncidents = this.incidentFilter === 'with' ? true : null;
+    const search = this.searchTerm.trim();
 
-    const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'contrats-export.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    this.contratService
+      .exportCsv({
+        type: type ?? undefined,
+        endingSoon: endingSoon ?? undefined,
+        withIncidents: withIncidents ?? undefined,
+        search: search ? search : undefined,
+      })
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'contrats-export.csv');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.errorService.showError("Impossible d'exporter les contrats");
+        },
+      });
   }
 }

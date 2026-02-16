@@ -21,12 +21,16 @@ export interface Velo {
   providedIn: 'root'
 })
 export class VeloService {
-  private apiUrl = `${environment.urls.legacyApi}/Velo`;
+  private apiUrl = `${environment.urls.coreApi}/Velo`;
 
   private readonly http = inject(HttpClient);
 
   getAll(): Observable<Velo[]> {
     return this.http.get<Velo[]>(`${this.apiUrl}/get-all`);
+  }
+
+  getTypes(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/get-types`);
   }
 
   getOne(id: number): Observable<Velo> {

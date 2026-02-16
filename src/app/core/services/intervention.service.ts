@@ -17,7 +17,7 @@ export interface Intervention {
   providedIn: 'root'
 })
 export class InterventionService {
-  private apiUrl = `${environment.urls.legacyApi}/Intervention`;
+  private apiUrl = `${environment.urls.coreApi}/Intervention`;
 
   private readonly http = inject(HttpClient);
 
@@ -27,6 +27,10 @@ export class InterventionService {
 
   getOne(id: number): Observable<Intervention> {
     return this.http.get<Intervention>(`${this.apiUrl}/get-one/${id}`);
+  }
+
+  getByVelo(veloId: number): Observable<Intervention[]> {
+    return this.http.get<Intervention[]>(`${this.apiUrl}/get-by-velo/${veloId}`);
   }
 
   create(intervention: Intervention): Observable<any> {

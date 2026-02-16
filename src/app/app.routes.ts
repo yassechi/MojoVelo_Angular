@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
-import { RegisterComponent } from './features/auth/register/register.component';
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { authGuard } from './core/guards/auth.guard';
@@ -28,24 +27,34 @@ import { EmployesComponent as ManagerEmployesComponent } from './features/Manage
 import { ParametresComponent as ManagerParametresComponent } from './features/Manager/parametres/manager-parametres.component';
 
 // User Components
-import { DashboardComponent as UserDashboardComponent } from './features/User/dashboard/user-dashboard.component';
-import { ContratsComponent as UserContratsComponent } from './features/User/contrats/user-contrats.component';
-import { DemandesComponent as UserDemandesComponent } from './features/User/demandes/user-demandes.component';
-import { ParametresComponent as UserParametresComponent } from './features/User/parametres/user-parametres.component';
+import { TableauDeBordUtilisateurComponent } from './features/utilisateur/tableau-de-bord/utilisateur-tableau-de-bord.component';
+import { ContratsUtilisateurComponent } from './features/utilisateur/contrats/utilisateur-contrats.component';
+import { DemandesUtilisateurComponent } from './features/utilisateur/demandes/utilisateur-demandes.component';
+import { DemandeAccueilUtilisateurComponent } from './features/utilisateur/demandes/demande-accueil/utilisateur-demande-accueil.component';
+import { ParametresUtilisateurComponent } from './features/utilisateur/parametres/utilisateur-parametres.component';
+import { ChoixParcoursUtilisateurComponent } from './features/utilisateur/choix-parcours/utilisateur-choix-parcours.component';
+import { CatalogueVelosUtilisateurComponent } from './features/utilisateur/catalogue-velos/utilisateur-catalogue-velos.component';
+import { QuestionnaireGuideUtilisateurComponent } from './features/utilisateur/questionnaire-guide/utilisateur-questionnaire-guide.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { ContratEditComponent } from './features/Admin/contrats/contrat-edit/admin-contrat-edit.component';
 import { CompagnieFormComponent } from './features/Admin/compagnies/compagnie-form/admin-compagnie-form.component';
 import { EmployeFormDialogComponent } from './shared/components/employe-form/admin-employe-form-dialog';
-import { UserDemandeFormDialogComponent } from './features/User/demandes/user-demande-form-dialog/user-demande-form-dialog';
+import { DemandeFormulaireUtilisateurComponent } from './features/utilisateur/demandes/demande-formulaire/utilisateur-demande-formulaire.component';
 import { EmployeDetailComponent } from './shared/components/employe-detail/admin-employe-detail.component';
 import { CompagnieDetailComponent } from './features/Admin/compagnies/compagnie-detail/admin-compagnie-detail.component';
+import { DemandeConfirmationUtilisateurComponent } from './features/utilisateur/demandes/demande-confirmation/utilisateur-demande-confirmation.component';
 
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'faire-demande', component: DemandeAccueilUtilisateurComponent },
+  { path: 'demande-formulaire', component: DemandeFormulaireUtilisateurComponent },
+  { path: 'choix-parcours', component: ChoixParcoursUtilisateurComponent },
+  { path: 'questionnaire-guide', component: QuestionnaireGuideUtilisateurComponent },
+  { path: 'catalogue-velos', component: CatalogueVelosUtilisateurComponent },
+  { path: 'demande-confirmation', component: DemandeConfirmationUtilisateurComponent },
 
   // Routes Admin
   {
@@ -68,6 +77,7 @@ export const routes: Routes = [
       { path: 'demandes/:id/edit', component: DemandeFormDialogComponent },
       { path: 'demandes/:id', component: DemandeDetailComponent },
       { path: 'contrats', component: AdminContratsComponent },
+      { path: 'contrats/new', component: ContratEditComponent },
       { path: 'contrats/edit/:id', component: ContratEditComponent },
       {
         path: 'contrats/:id',
@@ -112,13 +122,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: UserDashboardComponent },
-      { path: 'contrats', component: UserContratsComponent },
-      { path: 'demandes', component: UserDemandesComponent },
-      { path: 'demandes/new', component: UserDemandeFormDialogComponent },
-      { path: 'demandes/:id/edit', component: UserDemandeFormDialogComponent },
+      { path: 'dashboard', component: TableauDeBordUtilisateurComponent },
+      { path: 'faire-demande', component: DemandeAccueilUtilisateurComponent },
+      { path: 'contrats', component: ContratsUtilisateurComponent },
+      { path: 'demandes', component: DemandesUtilisateurComponent },
+      { path: 'demandes/new', component: DemandeFormulaireUtilisateurComponent },
+      { path: 'demandes/:id/edit', component: DemandeFormulaireUtilisateurComponent },
       { path: 'demandes/:id', component: DemandeDetailComponent },
-      { path: 'parametres', component: UserParametresComponent },
+      { path: 'parametres', component: ParametresUtilisateurComponent },
     ],
   },
 

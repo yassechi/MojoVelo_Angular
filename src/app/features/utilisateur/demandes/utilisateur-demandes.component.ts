@@ -1,7 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
+import {
+  DemandeService,
+  AdminDemandeListItem,
+  DemandeStatus,
+} from '../../../core/services/demande.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ErrorService } from '../../../core/services/error.service';
 
@@ -15,7 +19,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
-  selector: 'app-user-demandes',
+  selector: 'app-utilisateur-demandes',
   standalone: true,
   imports: [
     CommonModule,
@@ -28,11 +32,11 @@ import { MessageService, ConfirmationService } from 'primeng/api';
     ConfirmDialogModule,
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './user-demandes.component.html',
-  styleUrls: ['./user-demandes.component.scss'],
+  templateUrl: './utilisateur-demandes.component.html',
+  styleUrls: ['./utilisateur-demandes.component.scss'],
 })
-export class DemandesComponent implements OnInit {
-  demandes: Demande[] = [];
+export class DemandesUtilisateurComponent implements OnInit {
+  demandes: AdminDemandeListItem[] = [];
   loading = false;
   currentUserId: string | null = null;
 
@@ -57,14 +61,15 @@ export class DemandesComponent implements OnInit {
 
   loadDemandes(): void {
     this.loading = true;
-    this.demandeService.getAll().subscribe({
+    if (!this.currentUserId) {
+      this.demandes = [];
+      this.loading = false;
+      return;
+    }
+
+    this.demandeService.getList({ userId: this.currentUserId }).subscribe({
       next: (data) => {
-        // ✅ Filtrer uniquement les demandes de l'utilisateur connecté
-        if (this.currentUserId) {
-          this.demandes = data.filter(d => d.idUser === this.currentUserId);
-        } else {
-          this.demandes = [];
-        }
+        this.demandes = data;
         this.loading = false;
       },
       error: () => {
@@ -78,7 +83,7 @@ export class DemandesComponent implements OnInit {
     this.router.navigate(['/user/demandes/new']);
   }
 
-  onView(demande: Demande): void {
+  onView(demande: AdminDemandeListItem): void {
     if (!demande.id) {
       this.errorService.showError('ID demande manquant');
       return;
@@ -86,7 +91,7 @@ export class DemandesComponent implements OnInit {
     this.router.navigate(['/user/demandes', demande.id]);
   }
 
-  onEdit(demande: Demande): void {
+  onEdit(demande: AdminDemandeListItem): void {
     if (!demande.id) {
       this.errorService.showError('ID demande manquant');
       return;
@@ -94,7 +99,7 @@ export class DemandesComponent implements OnInit {
     this.router.navigate(['/user/demandes', demande.id, 'edit']);
   }
 
-  onDelete(demande: Demande): void {
+  onDelete(demande: AdminDemandeListItem): void {
     this.confirmationService.confirm({
       message: `Êtes-vous sûr de vouloir supprimer cette demande ?`,
       header: 'Confirmation',

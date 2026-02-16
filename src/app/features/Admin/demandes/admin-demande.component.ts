@@ -2,17 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
+import {
+  DemandeService,
+  AdminDemandeListItem,
+  DemandeStatus,
+} from '../../../core/services/demande.service';
+import { VeloService } from '../../../core/services/velo.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ErrorService } from '../../../core/services/error.service';
-import { UserService, User } from '../../../core/services/user.service';
-import { Organisation, OrganisationService } from '../../../core/services/organisation.service';
-import {
-  BikeCatalogService,
-  BikeItem,
-  BikeBrand,
-} from '../../../core/services/bike-catalog.service';
-import { Velo, VeloService } from '../../../core/services/velo.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -45,14 +42,8 @@ import { InputTextModule } from 'primeng/inputtext';
   styleUrls: ['./admin-demande.component.scss'],
 })
 export class AdminDemandesComponent implements OnInit {
-  demandes: Demande[] = [];
-  filteredDemandes: Demande[] = [];
-  users: User[] = [];
-  organisations: Organisation[] = [];
-  bikes: BikeItem[] = [];
-  brands: BikeBrand[] = [];
-  velos: Velo[] = [];
-  totalBikes = 0;
+  demandes: AdminDemandeListItem[] = [];
+  filteredDemandes: AdminDemandeListItem[] = [];
   loading = false;
   readonly DemandeStatus = DemandeStatus;
 
@@ -69,103 +60,49 @@ export class AdminDemandesComponent implements OnInit {
     { label: 'Refuse', value: DemandeStatus.Refuse },
   ];
   typeOptions: Array<{ label: string; value: string | 'all' }> = [{ label: 'Tous', value: 'all' }];
+  private typeOptionsLoaded = false;
 
   private demandeService = inject(DemandeService);
+  private veloService = inject(VeloService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private errorService = inject(ErrorService);
-  private userService = inject(UserService);
-  private organisationService = inject(OrganisationService);
-  private bikeCatalogService = inject(BikeCatalogService);
-  private veloService = inject(VeloService);
   private router = inject(Router);
 
   ngOnInit(): void {
-    this.loadDemandes();
-    this.loadUsers();
-    this.loadCatalog();
-    this.loadVelos();
-    this.loadOrganisations();
+    this.loadTypeOptions();
+    this.applyFilters();
   }
 
   loadDemandes(): void {
     this.loading = true;
-    this.demandeService.getAll().subscribe({
-      next: (data) => {
-        this.demandes = data;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.errorService.showError('Impossible de charger les demandes');
-        this.loading = false;
-      },
-    });
-  }
-
-  loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (data) => {
-        this.users = data;
-        this.applyFilters();
-      },
-      error: () => {
-        this.errorService.showError('Impossible de charger les utilisateurs');
-      },
-    });
-  }
-
-  loadOrganisations(): void {
-    this.organisationService.getAll().subscribe({
-      next: (data) => {
-        this.organisations = data;
-      },
-      error: () => {
-        this.errorService.showError('Impossible de charger les compagnies');
-      },
-    });
-  }
-
-  loadCatalog(): void {
-    this.bikeCatalogService.getBikes().subscribe({
-      next: (data) => {
-        this.bikes = data.items;
-        this.totalBikes = data.total;
-        this.updateTypeOptions();
-        this.applyFilters();
-      },
-      error: () => {
-        this.errorService.showError('Impossible de charger le catalogue velos');
-      },
-    });
-
-    this.bikeCatalogService.getBrands().subscribe({
-      next: (data) => {
-        this.brands = data.items;
-      },
-      error: () => {
-        this.errorService.showError('Impossible de charger les marques velos');
-      },
-    });
-  }
-
-  loadVelos(): void {
-    this.veloService.getAll().subscribe({
-      next: (data) => {
-        this.velos = data;
-        this.applyFilters();
-      },
-      error: () => {
-        this.errorService.showError('Impossible de charger les velos');
-      },
-    });
+    const status = this.statusFilter === 'all' ? null : this.statusFilter;
+    const type = this.typeFilter === 'all' ? null : this.typeFilter;
+    const search = this.searchTerm.trim();
+    this.demandeService
+      .getList({
+        status: status ?? undefined,
+        type: type ?? undefined,
+        search: search ? search : undefined,
+      })
+      .subscribe({
+        next: (data) => {
+          this.demandes = data;
+          this.filteredDemandes = data;
+          this.loading = false;
+        },
+        error: () => {
+          this.errorService.showError('Impossible de charger les demandes');
+          this.loading = false;
+        },
+      });
   }
 
   onCreate(): void {
     this.router.navigate(['/admin/demandes/new']);
   }
 
-  onView(demande: Demande): void {
+  onView(demande: AdminDemandeListItem): void {
     if (!demande.id) {
       this.errorService.showError('ID demande manquant');
       return;
@@ -173,7 +110,7 @@ export class AdminDemandesComponent implements OnInit {
     this.router.navigate(['/admin/demandes', demande.id]);
   }
 
-  onEdit(demande: Demande): void {
+  onEdit(demande: AdminDemandeListItem): void {
     if (!demande.id) {
       this.errorService.showError('ID demande manquant');
       return;
@@ -181,7 +118,7 @@ export class AdminDemandesComponent implements OnInit {
     this.router.navigate(['/admin/demandes', demande.id, 'edit']);
   }
 
-  onStatusChange(demande: Demande, newStatus: DemandeStatus): void {
+  onStatusChange(demande: AdminDemandeListItem, newStatus: DemandeStatus): void {
     this.demandeService.updateStatus(demande.id!, newStatus).subscribe({
       next: () => {
         demande.status = newStatus;
@@ -197,15 +134,15 @@ export class AdminDemandesComponent implements OnInit {
     });
   }
 
-  onValidate(demande: Demande): void {
+  onValidate(demande: AdminDemandeListItem): void {
     this.onStatusChange(demande, DemandeStatus.Valide);
   }
 
-  onReject(demande: Demande): void {
+  onReject(demande: AdminDemandeListItem): void {
     this.onStatusChange(demande, DemandeStatus.Refuse);
   }
 
-  onDelete(demande: Demande): void {
+  onDelete(demande: AdminDemandeListItem): void {
     this.confirmationService.confirm({
       message: 'Êtes-vous sûr de vouloir supprimer cette demande ?',
       header: 'Confirmation',
@@ -245,116 +182,29 @@ export class AdminDemandesComponent implements OnInit {
   }
 
   applyFilters(): void {
-    const term = this.searchTerm.trim().toLowerCase();
-    this.filteredDemandes = this.demandes.filter((demande) => {
-      if (this.statusFilter !== 'all' && demande.status !== this.statusFilter) {
-        return false;
-      }
-      if (this.typeFilter !== 'all') {
-        const bikeType = this.getBikeType(demande.idVelo);
-        if (!bikeType || bikeType.toLowerCase() !== this.typeFilter.toLowerCase()) {
-          return false;
-        }
-      }
-      if (!term) {
-        return true;
-      }
-      const userName = this.getUserFullName(demande.idUser).toLowerCase();
-      const bikeTitle = this.getBikeTitle(demande.idVelo).toLowerCase();
-      return userName.includes(term) || bikeTitle.includes(term);
+    this.loadDemandes();
+  }
+
+  loadTypeOptions(): void {
+    if (this.typeOptionsLoaded) {
+      return;
+    }
+    this.veloService.getTypes().subscribe({
+      next: (types) => {
+        this.setTypeOptions(types);
+        this.typeOptionsLoaded = true;
+      },
+      error: () => {
+        this.errorService.showError('Impossible de charger les types de velo');
+      },
     });
   }
 
-  updateTypeOptions(): void {
-    const types = new Set(
-      this.bikes
-        .map((bike) => bike.acf?.type)
-        .filter((value): value is string => Boolean(value)),
-    );
-    this.typeOptions = [{ label: 'Tous', value: 'all' }, ...Array.from(types).map((value) => ({
-      label: value,
-      value,
-    }))];
-  }
-
-  getUserFullName(userId: string): string {
-    const user = this.users.find((item) => item.id === userId);
-    return user ? `${user.firstName} ${user.lastName}` : userId;
-  }
-
-  getBikeById(veloId: number): BikeItem | undefined {
-    const direct = this.bikes.find((bike) => bike.id === veloId);
-    if (direct) {
-      return direct;
-    }
-    const velo = this.getVeloById(veloId);
-    const cmsId = this.getCmsIdFromVelo(velo);
-    if (!cmsId) {
-      return undefined;
-    }
-    return this.bikes.find((bike) => bike.id === cmsId);
-  }
-
-  getVeloById(veloId: number): Velo | undefined {
-    return this.velos.find((velo) => velo.id === veloId);
-  }
-
-  private getCmsIdFromVelo(velo?: Velo): number | null {
-    const numeroSerie = velo?.numeroSerie ?? '';
-    if (!numeroSerie.startsWith('CMS-')) {
-      return null;
-    }
-    const id = Number(numeroSerie.replace('CMS-', ''));
-    return Number.isFinite(id) ? id : null;
-  }
-
-  getBikeTitle(veloId: number): string {
-    const bike = this.getBikeById(veloId);
-    if (bike?.title?.rendered) {
-      return bike.title.rendered;
-    }
-    const velo = this.getVeloById(veloId);
-    return velo?.modele ?? `#${veloId}`;
-  }
-
-  getBikeType(veloId: number): string {
-    const bike = this.getBikeById(veloId);
-    return bike?.acf?.type ?? '';
-  }
-
-  getUserOrganisationName(userId: string): string {
-    const user = this.users.find((item) => item.id === userId);
-    if (!user) {
-      return '';
-    }
-    const orgId =
-      typeof user.organisationId === 'object' ? user.organisationId.id : user.organisationId;
-    const organisation = this.organisations.find((item) => item.id === orgId);
-    return organisation?.name ?? '';
-  }
-
-  getBikeTypeOrCompany(veloId: number, userId: string): string {
-    return this.getBikeType(veloId) || this.getUserOrganisationName(userId);
-  }
-
-  getBikePrice(veloId: number): number | null {
-    const bike = this.getBikeById(veloId);
-    if (bike?.acf?.prix !== undefined) {
-      return bike.acf.prix ?? null;
-    }
-    const velo = this.getVeloById(veloId);
-    return velo?.prixAchat ?? null;
-  }
-
-  getBikeBrand(veloId: number): string {
-    const bike = this.getBikeById(veloId);
-    const brandId = bike?.bikes_brand?.[0];
-    if (!brandId) {
-      const velo = this.getVeloById(veloId);
-      return velo?.marque ?? '';
-    }
-    const brand = this.brands.find((item) => item.id === brandId);
-    return brand?.name ?? '';
+  setTypeOptions(types: string[]): void {
+    this.typeOptions = [
+      { label: 'Tous', value: 'all' },
+      ...types.map((value) => ({ label: value, value })),
+    ];
   }
 
   formatCurrency(amount: number | null): string {
@@ -368,28 +218,30 @@ export class AdminDemandesComponent implements OnInit {
   }
 
   exportDemandes(): void {
-    const headers = ['ID', 'Employe', 'Velo', 'Type', 'Prix', 'Statut'];
-    const rows = this.filteredDemandes.map((demande) => [
-      String(demande.id ?? ''),
-      this.getUserFullName(demande.idUser),
-      this.getBikeTitle(demande.idVelo),
-      this.getBikeType(demande.idVelo),
-      this.formatCurrency(this.getBikePrice(demande.idVelo)),
-      this.getStatusLabel(demande.status),
-    ]);
+    const status = this.statusFilter === 'all' ? null : this.statusFilter;
+    const type = this.typeFilter === 'all' ? null : this.typeFilter;
+    const search = this.searchTerm.trim();
 
-    const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'demandes-export.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    this.demandeService
+      .exportCsv({
+        status: status ?? undefined,
+        type: type ?? undefined,
+        search: search ? search : undefined,
+      })
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'demandes-export.csv');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.errorService.showError("Impossible d'exporter les demandes");
+        },
+      });
   }
 }

@@ -51,6 +51,10 @@ export class AmortissementService {
     return this.http.get<Amortissement>(`${this.apiUrl}/${id}`);
   }
 
+  getByVelo(veloId: number): Observable<Amortissement[]> {
+    return this.http.get<Amortissement[]>(`${this.apiUrl}/get-by-velo/${veloId}`);
+  }
+
   create(amortissement: Amortissement): Observable<any> {
     return this.http.post(`${this.apiUrl}/add`, amortissement);
   }

@@ -1,7 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
-import { UserService, User } from '../../../core/services/user.service';
+import {
+  ContratService,
+  AdminContratListItem,
+  StatutContrat,
+} from '../../../core/services/contrat.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -31,48 +35,56 @@ import { ErrorService } from '../../../core/services/error.service';
   styleUrls: ['./manager-contrats.component.scss'],
 })
 export class ContratsComponent implements OnInit {
-  contrats: Contrat[] = [];
+  contrats: AdminContratListItem[] = [];
   loading = false;
-  users: User[] = [];
+  currentUserOrgId: number | null = null;
 
   private contratService = inject(ContratService);
-  private userService = inject(UserService);
+  private authService = inject(AuthService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private errorService = inject(ErrorService);
 
   ngOnInit(): void {
+    this.loadCurrentUserOrg();
     this.loadContrats();
-    this.loadUsers();
+  }
+
+  loadCurrentUserOrg(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      return;
+    }
+
+    if (user.organisationId) {
+      this.currentUserOrgId =
+        typeof user.organisationId === 'object'
+          ? (user.organisationId as any).id
+          : user.organisationId;
+    }
   }
 
   loadContrats(): void {
     this.loading = true;
-    this.contratService.getAll().subscribe({
+    if (!this.currentUserOrgId) {
+      this.contrats = [];
+      this.loading = false;
+      return;
+    }
+
+    this.contratService.getList({ organisationId: this.currentUserOrgId }).subscribe({
       next: (data) => {
         this.contrats = data;
         this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des contrats', error);
         this.errorService.showError('Impossible de charger les contrats');
         this.loading = false;
       },
     });
   }
 
-  loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (data) => {
-        this.users = data;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des utilisateurs', error);
-      }
-    });
-  }
-
-  onDelete(contrat: Contrat): void {
+  onDelete(contrat: AdminContratListItem): void {
     this.confirmationService.confirm({
       message: `Êtes-vous sûr de vouloir supprimer le contrat "${contrat.ref}" ?`,
       header: 'Confirmation',
@@ -90,7 +102,6 @@ export class ContratsComponent implements OnInit {
             this.loadContrats();
           },
           error: (error) => {
-            console.error('Erreur lors de la suppression', error);
             this.errorService.showError('Impossible de supprimer le contrat');
           },
         });
@@ -124,10 +135,5 @@ export class ContratsComponent implements OnInit {
       style: 'currency',
       currency: 'EUR',
     }).format(amount);
-  }
-
-  getUserFullName(userId: string): string {
-    const user = this.users.find((item) => item.id === userId);
-    return user ? `${user.firstName} ${user.lastName}` : userId;
   }
 }

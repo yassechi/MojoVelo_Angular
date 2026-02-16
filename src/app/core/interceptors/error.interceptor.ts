@@ -15,7 +15,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => xhr);
       }
 
-      console.error('Erreur HTTP:', xhr);
       const extractErrorMessage = (error: any): string | null => {
         if (!error) return null;
         if (typeof error === 'string') return error;

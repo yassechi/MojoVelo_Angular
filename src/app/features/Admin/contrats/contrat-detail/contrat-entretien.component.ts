@@ -38,26 +38,17 @@ export class ContratEntretienComponent {
   private readonly messageService = inject(MessageService);
   private readonly errorService = inject(ErrorService);
   private readonly store = inject(ContratDetailStore);
-  private readonly legacyApi = environment.urls.legacyApi;
-
+  private readonly coreApi = environment.urls.coreApi;
   readonly veloId = computed(() => this.store.veloId());
 
   readonly interventionsResource = httpResource<Intervention[]>(
-    () => `${this.legacyApi}/Intervention/get-all`,
+    () => {
+      const veloId = this.veloId();
+      return veloId ? `${this.coreApi}/Intervention/get-by-velo/${veloId}` : undefined;
+    },
     { defaultValue: [] },
   );
-  readonly interventions = computed(() => {
-    if (!this.interventionsResource.hasValue()) {
-      return [];
-    }
-    const veloId = this.veloId();
-    if (!veloId) {
-      return [];
-    }
-    return (this.interventionsResource.value() ?? []).filter(
-      (intervention) => intervention.veloId === veloId && intervention.isActif,
-    );
-  });
+  readonly interventions = computed(() => this.interventionsResource.value() ?? []);
 
   // Mode edition intervention
   editingIntervention = false;

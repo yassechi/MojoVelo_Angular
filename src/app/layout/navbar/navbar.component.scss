@@ -21,6 +21,11 @@
       }
     }
   }
+
+  .p-menu-overlay,
+  .p-menu.p-menu-overlay {
+    z-index: 3000 !important;
+  }
 }
 
 .brand {

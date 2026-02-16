@@ -7,19 +7,21 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { InputNumber } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
-import { finalize, map, switchMap, throwError } from 'rxjs';
-import { Demande, DemandeService, DemandeStatus } from '../../../../core/services/demande.service';
+import { finalize } from 'rxjs';
+import {
+  CreateDemandeWithBikePayload,
+  Demande,
+  DemandeService,
+  DemandeStatus,
+} from '../../../../core/services/demande.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { BikeCatalogService, BikeBrand, BikeItem } from '../../../../core/services/bike-catalog.service';
-import { Velo, VeloService } from '../../../../core/services/velo.service';
-import { Discussion, DiscussionService } from '../../../../core/services/discussion.service';
-import { DiscussionMessage, MessageApiService } from '../../../../core/services/message.service';
 
 @Component({
-  selector: 'app-user-demande-form-dialog',
+  selector: 'app-utilisateur-demande-formulaire',
   standalone: true,
   imports: [
     CommonModule,
@@ -32,11 +34,12 @@ import { DiscussionMessage, MessageApiService } from '../../../../core/services/
     InputNumber,
     ToastModule,
   ],
-  templateUrl: './user-demande-form-dialog.html',
-  styleUrls: ['./user-demande-form-dialog.scss'],
+  templateUrl: './utilisateur-demande-formulaire.component.html',
+  styleUrls: ['./utilisateur-demande-formulaire.component.scss'],
 })
-export class UserDemandeFormDialogComponent implements OnInit {
+export class DemandeFormulaireUtilisateurComponent implements OnInit {
   loading = false;
+  private preselectedBikeId: number | null = null;
 
   private readonly fb = inject(FormBuilder);
   private readonly demandeService = inject(DemandeService);
@@ -46,11 +49,6 @@ export class UserDemandeFormDialogComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly bikeCatalogService = inject(BikeCatalogService);
-  private readonly veloService = inject(VeloService);
-  private readonly discussionService = inject(DiscussionService);
-  private readonly messageApiService = inject(MessageApiService);
-
-  private readonly mojoId = 'c5e095fa-2ce3-4e18-8d23-e66c6be1818c';
 
   form = this.fb.group({
     idVelo: this.fb.control<number | null>(null, Validators.required),
@@ -71,6 +69,12 @@ export class UserDemandeFormDialogComponent implements OnInit {
   readonly pageSize = 8;
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      const bikeId = params.get('bikeId');
+      this.preselectedBikeId = bikeId ? Number(bikeId) : null;
+      this.trySelectPreselectedBike();
+    });
+
     this.loadBikes();
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -146,6 +150,7 @@ export class UserDemandeFormDialogComponent implements OnInit {
         this.bikes = bikesResponse.items;
         this.loadingBikes = false;
         this.currentPage = 1;
+        this.trySelectPreselectedBike();
       },
       error: () => {
         this.loadingBikes = false;
@@ -203,6 +208,18 @@ export class UserDemandeFormDialogComponent implements OnInit {
       summary: 'Velo selectionne',
       detail: bike.title?.rendered ?? 'Velo selectionne',
     });
+  }
+
+  private trySelectPreselectedBike(): void {
+    if (!this.preselectedBikeId || this.bikes.length === 0) {
+      return;
+    }
+    const bike = this.bikes.find((item) => item.id === this.preselectedBikeId);
+    if (!bike) {
+      return;
+    }
+    this.form.patchValue({ idVelo: bike.id });
+    this.preselectedBikeId = null;
   }
 
   onFilterChange(): void {
@@ -279,7 +296,7 @@ export class UserDemandeFormDialogComponent implements OnInit {
             detail: 'Demande modifiee',
           });
           this.loading = false;
-          this.goBack();
+          this.goToDemandeForm(payload.id ?? null);
         },
         error: () => {
           this.loading = false;
@@ -289,140 +306,58 @@ export class UserDemandeFormDialogComponent implements OnInit {
       return;
     }
 
-    const now = new Date().toISOString();
-    const veloPayload: Velo = {
-      id: 0,
-      createdDate: now,
-      modifiedDate: now,
-      createdBy: currentUser.id,
-      modifiedBy: currentUser.id,
-      isActif: true,
-      numeroSerie: `CMS-${selectedBike.id}`,
-      marque: this.getBrandName(selectedBike.bikes_brand?.[0]),
-      modele: selectedBike.title?.rendered ?? 'Modele inconnu',
-      prixAchat: selectedBike.acf?.prix ?? 0,
-      status: true,
+    const payload: CreateDemandeWithBikePayload = {
+      idUser: currentUser.id,
+      bike: {
+        cmsId: selectedBike.id,
+        marque: this.getBrandName(selectedBike.bikes_brand?.[0]),
+        modele: selectedBike.title?.rendered ?? 'Modele inconnu',
+        type: selectedBike.acf?.type ?? null,
+        prixAchat: selectedBike.acf?.prix ?? 0,
+      },
     };
 
-    this.veloService
-      .create(veloPayload)
+    this.demandeService
+      .createWithBike(payload)
       .pipe(
-        map((response) => this.extractId(response, 'velo')),
-        switchMap((veloId) => {
-          if (!veloId) {
-            return throwError(() => new Error('ID velo manquant'));
-          }
-
-          const discussionPayload: Discussion = {
-            id: 0,
-            createdDate: now,
-            modifiedDate: now,
-            createdBy: currentUser.id,
-            modifiedBy: currentUser.id,
-            isActif: true,
-            objet: `Demande velo - ${selectedBike.title?.rendered ?? 'Velo'}`,
-            status: true,
-            dateCreation: now,
-            clientId: currentUser.id,
-            mojoId: this.mojoId,
-          };
-
-          return this.discussionService.create(discussionPayload).pipe(
-            map((response) => ({
-              veloId,
-              discussionId: this.extractId(response, 'discussion'),
-            })),
-          );
-        }),
-        switchMap(({ veloId, discussionId }) => {
-          if (!discussionId) {
-            return throwError(() => new Error('ID discussion manquant'));
-          }
-
-          const messagePayload: DiscussionMessage = {
-            id: 0,
-            createdDate: now,
-            modifiedDate: now,
-            createdBy: this.mojoId,
-            modifiedBy: this.mojoId,
-            isActif: true,
-            contenu: `Bienvenue On va parler du velo "${selectedBike.title?.rendered ?? 'Velo'}"`,
-            dateEnvoi: now,
-            userId: this.mojoId,
-            discussionId,
-          };
-
-          return this.messageApiService.create(messagePayload).pipe(
-            map(() => ({
-              veloId,
-              discussionId,
-            })),
-          );
-        }),
-        switchMap(({ veloId, discussionId }) => {
-          const payload: Demande = {
-            id: this.demandeId ?? this.demande?.id,
-            idUser: currentUser.id,
-            idVelo: veloId,
-            status: DemandeStatus.Encours,
-            discussionId,
-          };
-          return this.demandeService.create(payload);
-        }),
         finalize(() => {
           this.loading = false;
         }),
       )
       .subscribe({
-        next: () => {
+        next: (response) => {
+          const demandeId = response.demandeId ?? response.id ?? null;
           this.messageService.add({
             severity: 'success',
             summary: 'Succes',
             detail: 'Demande creee',
           });
-          this.goBack();
+          this.goToDemandeForm(demandeId);
         },
         error: (error) => {
           const message =
-            error instanceof Error && error.message
+            error?.error?.message ||
+            (error instanceof Error && error.message
               ? error.message
-              : 'Impossible de creer la demande';
+              : 'Impossible de creer la demande');
           this.errorService.showError(message);
         },
       });
   }
 
   goBack(): void {
-    this.router.navigate(['/user/demandes']);
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/user/demandes']);
+      return;
+    }
+    this.router.navigate(['/catalogue-velos']);
   }
 
-  private extractId(response: unknown, label: string): number | null {
-    if (response === null || response === undefined) {
-      return null;
+  private goToDemandeForm(demandeId: number | null): void {
+    if (!demandeId) {
+      this.goBack();
+      return;
     }
-    if (typeof response === 'number') {
-      return response;
-    }
-    if (typeof response === 'string') {
-      const parsed = Number(response);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-    if (typeof response === 'object') {
-      const data = response as Record<string, unknown>;
-      const directId = data['id'] ?? data[`${label}Id`];
-      if (typeof directId === 'number') {
-        return directId;
-      }
-      const nested = (data['data'] ?? data['result'] ?? data['value']) as Record<string, unknown> | undefined;
-      const nestedId = nested?.['id'];
-      if (typeof nestedId === 'number') {
-        return nestedId;
-      }
-      if (typeof nestedId === 'string') {
-        const parsed = Number(nestedId);
-        return Number.isFinite(parsed) ? parsed : null;
-      }
-    }
-    return null;
+    this.router.navigate(['/user/demandes', demandeId, 'edit']);
   }
 }

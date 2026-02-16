@@ -13,6 +13,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { SelectModule } from 'primeng/select';
 import { PasswordModule } from 'primeng/password';
 import { CardModule } from 'primeng/card';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-employe-form-dialog',
@@ -26,6 +27,7 @@ import { CardModule } from 'primeng/card';
     CheckboxModule,
     SelectModule,
     PasswordModule,
+    ToastModule,
   ],
   templateUrl: './admin-employe-form-dialog.html',
 })
@@ -46,11 +48,12 @@ export class EmployeFormDialogComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     phoneNumber: ['', [Validators.required]],
     password: [''],
+    confirmPassword: [''],
     role: [UserRole.User, [Validators.required]],
     isActif: [true],
     organisationId: [null, [Validators.required]],
     tailleCm: [177]
-  });
+  }, { validators: this.passwordMatchValidator });
   loading = false;
   organisations: Organisation[] = [];
   user: User | null = null;
@@ -70,12 +73,14 @@ export class EmployeFormDialogComponent implements OnInit {
       if (id) {
         this.isEdit = true;
         this.userId = id;
+        this.updatePasswordValidators();
         this.loadUserById(id);
       } else {
         this.isEdit = false;
         this.userId = null;
         this.user = null;
         this.form.reset({ isActif: true, role: UserRole.User, tailleCm: 177 });
+        this.updatePasswordValidators();
       }
     });
   }
@@ -143,7 +148,7 @@ export class EmployeFormDialogComponent implements OnInit {
 
     if (values.password && values.password.trim() !== '') {
       payload.password = values.password;
-      payload.confirmPassword = values.password;
+      payload.confirmPassword = values.confirmPassword ?? values.password;
     }
 
     const operation = !this.isEdit
@@ -169,6 +174,53 @@ export class EmployeFormDialogComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate([this.getBasePath()]);
+  }
+
+  private updatePasswordValidators(): void {
+    const passwordControl = this.form.get('password');
+    const confirmControl = this.form.get('confirmPassword');
+    if (!passwordControl || !confirmControl) {
+      return;
+    }
+    if (this.isEdit) {
+      passwordControl.setValidators([]);
+      confirmControl.setValidators([]);
+    } else {
+      passwordControl.setValidators([Validators.required, Validators.minLength(8)]);
+      confirmControl.setValidators([Validators.required]);
+    }
+    passwordControl.updateValueAndValidity();
+    confirmControl.updateValueAndValidity();
+  }
+
+  private passwordMatchValidator(form: FormGroup) {
+    const password = form.get('password');
+    const confirmPassword = form.get('confirmPassword');
+    const passwordValue = password?.value;
+    const confirmValue = confirmPassword?.value;
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    if (!passwordValue && !confirmValue) {
+      if (confirmPassword.errors?.['passwordMismatch']) {
+        const { passwordMismatch, ...rest } = confirmPassword.errors;
+        confirmPassword.setErrors(Object.keys(rest).length ? rest : null);
+      }
+      return null;
+    }
+
+    if (passwordValue !== confirmValue) {
+      confirmPassword.setErrors({ ...(confirmPassword.errors ?? {}), passwordMismatch: true });
+      return { passwordMismatch: true };
+    }
+
+    if (confirmPassword.errors?.['passwordMismatch']) {
+      const { passwordMismatch, ...rest } = confirmPassword.errors;
+      confirmPassword.setErrors(Object.keys(rest).length ? rest : null);
+    }
+    return null;
   }
 
   private getBasePath(): string {

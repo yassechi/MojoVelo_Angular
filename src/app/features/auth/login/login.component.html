@@ -75,18 +75,16 @@
           styleClass="w-full"
           [disabled]="loginForm.invalid"
         ></p-button>
+
+        <div class="mt-3">
+          <p-button
+            label="Pas de compte"
+            styleClass="w-full no-account-btn"
+            [routerLink]="['/faire-demande']"
+          ></p-button>
+        </div>
       </form>
 
-      <ng-template pTemplate="footer">
-        <div class="text-center pt-3">
-          <p class="text-600">
-            Pas encore de compte ?
-            <a routerLink="/register" class="text-blue font-semibold cursor-pointer hover:underline">
-              S'inscrire
-            </a>
-          </p>
-        </div>
-      </ng-template>
     </p-card>
   </div>
 </div>

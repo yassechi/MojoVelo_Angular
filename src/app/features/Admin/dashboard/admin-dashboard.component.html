@@ -4,7 +4,6 @@
       <h1 class="page-title">Dashboard RH</h1>
       <p class="page-subtitle">Vue d'ensemble des demandes et contrats</p>
     </div>
-    <span class="chip">CNP Saint-Martin</span>
   </div>
 
   <div class="stat-grid">
@@ -16,13 +15,9 @@
       <div class="stat-label">Contrats actifs</div>
       <div class="stat-value">{{ stats.activeContrats }}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--accent">
       <div class="stat-label">Budget total engage</div>
       <div class="stat-value">{{ formatCurrency(stats.budgetTotal) }}</div>
-    </div>
-    <div class="stat-card stat-card--accent">
-      <div class="stat-label">Taux de satisfaction</div>
-      <div class="stat-value">{{ stats.satisfactionRate }}%</div>
     </div>
   </div>
 
@@ -64,6 +59,42 @@
             </div>
           }
         </div>
+      </p-card>
+    </div>
+  </div>
+
+  <div class="grid mt-4">
+    <div class="col-12 lg:col-6">
+      <p-card styleClass="chart-card">
+        <ng-template pTemplate="header">
+          <div class="p-3">
+            <h3 class="m-0 chart-title">Demandes par statut</h3>
+          </div>
+        </ng-template>
+        <p-chart
+          type="doughnut"
+          class="mojo-chart"
+          [data]="demandeStatusChartData"
+          [options]="statusChartOptions"
+          style="height: 280px"
+        ></p-chart>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-6">
+      <p-card styleClass="chart-card">
+        <ng-template pTemplate="header">
+          <div class="p-3">
+            <h3 class="m-0 chart-title">Contrats par statut</h3>
+          </div>
+        </ng-template>
+        <p-chart
+          type="doughnut"
+          class="mojo-chart"
+          [data]="contratStatusChartData"
+          [options]="statusChartOptions"
+          style="height: 280px"
+        ></p-chart>
       </p-card>
     </div>
   </div>

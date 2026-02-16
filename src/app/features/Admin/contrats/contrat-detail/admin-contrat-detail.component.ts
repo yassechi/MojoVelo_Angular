@@ -4,7 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/ro
 import { httpResource } from '@angular/common/http';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
-import { ContratService, Contrat, StatutContrat } from '../../../../core/services/contrat.service';
+import { ContratService, ContratDetail, StatutContrat } from '../../../../core/services/contrat.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { environment } from '../../../../../environments/environment';
 
@@ -54,10 +54,10 @@ export class ContratDetailComponent {
     { initialValue: null },
   );
 
-  readonly contratResource = httpResource<Contrat | null>(
+  readonly contratResource = httpResource<ContratDetail | null>(
     () => {
       const id = this.contratId();
-      return id ? `${this.coreApi}/Contrat/get-one/${id}` : undefined;
+      return id ? `${this.coreApi}/Contrat/get-detail/${id}` : undefined;
     },
     { defaultValue: null },
   );

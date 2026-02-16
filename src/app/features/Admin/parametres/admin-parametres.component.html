@@ -1,4 +1,6 @@
 <div class="card">
+  <p-toast></p-toast>
+
   <h2 class="mb-4">Param&egrave;tres du profil</h2>
 
   <!-- Navigation par boutons -->
@@ -14,12 +16,6 @@
       icon="pi pi-lock"
       [outlined]="activeTab !== 'password'"
       (onClick)="setActiveTab('password')"
-    ></p-button>
-    <p-button
-      label="Pr&eacute;f&eacute;rences"
-      icon="pi pi-cog"
-      [outlined]="activeTab !== 'preferences'"
-      (onClick)="setActiveTab('preferences')"
     ></p-button>
   </div>
 
@@ -172,77 +168,5 @@
       </p-card>
     }
 
-    <!-- Onglet Pr&eacute;f&eacute;rences -->
-    @if (activeTab === 'preferences') {
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="p-3">
-            <h3 class="m-0">Pr&eacute;f&eacute;rences</h3>
-          </div>
-        </ng-template>
-
-        <form [formGroup]="preferencesForm" (ngSubmit)="savePreferences()">
-          <div class="grid">
-            <div class="col-12 md:col-6">
-              <div class="field mb-4">
-                <label class="block mb-2 font-semibold">Langue</label>
-                <p-select
-                  formControlName="language"
-                  [options]="languageOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  styleClass="w-full"
-                ></p-select>
-              </div>
-            </div>
-
-            <div class="col-12">
-              <h4 class="mb-3">Notifications</h4>
-            </div>
-
-            <div class="col-12">
-              <div class="flex align-items-center mb-3">
-                <p-checkbox
-                  formControlName="emailNotifications"
-                  [binary]="true"
-                  inputId="emailNotif"
-                ></p-checkbox>
-                <label for="emailNotif" class="ml-2 cursor-pointer">Recevoir des notifications par email</label>
-              </div>
-            </div>
-
-            <div class="col-12">
-              <div class="flex align-items-center mb-3">
-                <p-checkbox
-                  formControlName="smsNotifications"
-                  [binary]="true"
-                  inputId="smsNotif"
-                ></p-checkbox>
-                <label for="smsNotif" class="ml-2 cursor-pointer">Recevoir des notifications par SMS</label>
-              </div>
-            </div>
-
-            <div class="col-12">
-              <div class="flex align-items-center mb-3">
-                <p-checkbox
-                  formControlName="newsletterSubscription"
-                  [binary]="true"
-                  inputId="newsletter"
-                ></p-checkbox>
-                <label for="newsletter" class="ml-2 cursor-pointer">S'abonner &agrave; la newsletter</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-content-end mt-4">
-            <p-button
-              label="Enregistrer les pr&eacute;f&eacute;rences"
-              icon="pi pi-check"
-              type="submit"
-            ></p-button>
-          </div>
-        </form>
-      </p-card>
-    }
   </div>
 </div>

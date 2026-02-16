@@ -9,11 +9,52 @@
     <p-button label="Créer un employé" icon="pi pi-plus" (click)="onCreate()"></p-button>
   </div>
 
+  <p-card styleClass="section-card mb-3">
+    <div class="grid">
+      <div class="col-12 md:col-4">
+        <label class="block mb-2 font-semibold">R&ocirc;le</label>
+        <p-select
+          [options]="roleOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="roleFilter"
+          (onChange)="applyFilters()"
+          placeholder="Tous"
+        ></p-select>
+      </div>
+      <div class="col-12 md:col-4">
+        <label class="block mb-2 font-semibold">Statut</label>
+        <p-select
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="statusFilter"
+          (onChange)="applyFilters()"
+          placeholder="Tous"
+        ></p-select>
+      </div>
+      <div class="col-12 md:col-4">
+        <label class="block mb-2 font-semibold">Recherche</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            class="w-full"
+            placeholder="Nom, email ou t&eacute;l&eacute;phone"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+          />
+        </span>
+      </div>
+    </div>
+  </p-card>
+
   <div class="grid">
     <div class="col-12">
       <p-card>
         <p-table
-          [value]="users"
+          [value]="filteredUsers"
           [loading]="loading"
           [paginator]="true"
           [rows]="10"

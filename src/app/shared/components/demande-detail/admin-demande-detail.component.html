@@ -1,4 +1,6 @@
-﻿<div class="demande-detail-page page-shell">
+<div class="demande-detail-page page-shell">
+  <p-toast></p-toast>
+
   <div class="page-header">
     <div>
       <h1 class="page-title">Detail de la demande</h1>
@@ -18,11 +20,11 @@
           <div class="info-grid">
             <div>
               <div class="text-600 text-sm">Nom</div>
-              <div class="font-semibold">{{ user?.firstName }} {{ user?.lastName }}</div>
+              <div class="font-semibold">{{ demande.userName }}</div>
             </div>
             <div>
               <div class="text-600 text-sm">Email</div>
-              <div class="font-semibold">{{ user?.email }}</div>
+              <div class="font-semibold">{{ demande.userEmail }}</div>
             </div>
             <div>
               <div class="text-600 text-sm">Identifiant</div>
@@ -40,19 +42,19 @@
           <div class="info-grid">
             <div>
               <div class="text-600 text-sm">Modele</div>
-              <div class="font-semibold">{{ bike?.title?.rendered || velo?.modele || '-' }}</div>
+              <div class="font-semibold">{{ bike?.title?.rendered || demande.veloModele || '-' }}</div>
             </div>
             <div>
               <div class="text-600 text-sm">Marque</div>
-              <div class="font-semibold">{{ brand?.name || velo?.marque || 'Non renseignee' }}</div>
+              <div class="font-semibold">{{ demande.veloMarque || 'Non renseignee' }}</div>
             </div>
             <div>
               <div class="text-600 text-sm">Type</div>
-              <div class="font-semibold">{{ bike?.acf?.type || '-' }}</div>
+              <div class="font-semibold">{{ demande.veloType || '-' }}</div>
             </div>
             <div>
               <div class="text-600 text-sm">Prix TVAC</div>
-              <div class="font-semibold">{{ formatCurrency(bike?.acf?.prix ?? velo?.prixAchat) }}</div>
+              <div class="font-semibold">{{ formatCurrency(demande.veloPrixAchat) }}</div>
             </div>
           </div>
         </div>
@@ -69,7 +71,7 @@
           <h3>Recapitulatif financier</h3>
           <div class="summary-line">
             <span>Velo</span>
-            <span>{{ formatCurrency(bike?.acf?.prix ?? velo?.prixAchat) }}</span>
+            <span>{{ formatCurrency(demande.veloPrixAchat) }}</span>
           </div>
           <div class="summary-line">
             <span>Accessoires</span>
@@ -77,9 +79,9 @@
           </div>
           <div class="summary-line total">
             <span>Total estime</span>
-            <span>{{ formatCurrency(bike?.acf?.prix ?? velo?.prixAchat) }}</span>
+            <span>{{ formatCurrency(demande.veloPrixAchat) }}</span>
           </div>
-          <div class="summary-hint">Duree 36 mois · Services inclus</div>
+          <div class="summary-hint">Duree 36 mois � Services inclus</div>
         </div>
 
         <div class="validation-card">
@@ -112,7 +114,7 @@
             }
           </div>
           <div class="bike-preview-title">
-            {{ bike?.title?.rendered || velo?.modele || 'Velo' }}
+            {{ bike?.title?.rendered || demande.veloModele || 'Velo' }}
           </div>
         </div>
       </div>
@@ -130,7 +132,7 @@
                 @for (message of messages; track message.id) {
                   <div class="message-item" [class.own]="isOwnMessage(message)">
                     <div class="message-bubble">
-                      <div class="message-author">{{ getMessageRole(message) }}</div>
+                      <div class="message-author">{{ message.roleLabel }}</div>
                       <div class="message-content">{{ message.contenu }}</div>
                       <div class="message-date">
                         {{ (message.dateEnvoi || message.createdDate) | date: 'dd/MM/yyyy HH:mm' }}

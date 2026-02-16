@@ -27,8 +27,25 @@ export class OrganisationService {
     return this.http.get<Organisation[]>(`${this.apiUrl}/get-all`);
   }
 
+  getList(params?: { isActif?: boolean | null; search?: string | null }): Observable<Organisation[]> {
+    const query = new URLSearchParams();
+    if (params?.isActif !== null && params?.isActif !== undefined) {
+      query.set('isActif', String(params.isActif));
+    }
+    if (params?.search) {
+      query.set('search', params.search);
+    }
+    const suffix = query.toString();
+    return this.http.get<Organisation[]>(`${this.apiUrl}/list${suffix ? `?${suffix}` : ''}`);
+  }
+
   getOne(id: number): Observable<Organisation> {
     return this.http.get<Organisation>(`${this.apiUrl}/get-one/${id}`);
+  }
+
+  resolveByEmailOrDomain(emailOrDomain: string): Observable<Organisation | null> {
+    const value = encodeURIComponent(emailOrDomain || '');
+    return this.http.get<Organisation | null>(`${this.apiUrl}/resolve?emailOrDomain=${value}`);
   }
 
   create(organisation: Organisation): Observable<any> {

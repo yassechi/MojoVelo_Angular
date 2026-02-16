@@ -55,9 +55,6 @@
       <div class="col-12 md:col-2 flex align-items-end">
         <div class="text-600 text-sm">
           {{ filteredDemandes.length }} demandes
-          @if (totalBikes) {
-            <span> · {{ totalBikes }} velos</span>
-          }
         </div>
       </div>
     </div>
@@ -90,15 +87,15 @@
           <ng-template pTemplate="body" let-demande>
             <tr>
               <td>
-                <div class="font-semibold">{{ getUserFullName(demande.idUser) }}</div>
+                <div class="font-semibold">{{ demande.userName }}</div>
                 <div class="text-600 text-sm">{{ demande.idUser }}</div>
               </td>
               <td>
-                <div class="font-semibold">{{ getBikeTitle(demande.idVelo) }}</div>
-                <div class="text-600 text-sm">{{ getBikeBrand(demande.idVelo) || 'Marque non renseignee' }}</div>
+                <div class="font-semibold">{{ demande.veloModele }}</div>
+                <div class="text-600 text-sm">{{ demande.veloMarque || 'Marque non renseignee' }}</div>
               </td>
-              <td>{{ getBikeTypeOrCompany(demande.idVelo, demande.idUser) || '-' }}</td>
-              <td>{{ formatCurrency(getBikePrice(demande.idVelo)) }}</td>
+              <td>{{ demande.veloType || demande.organisationName || '-' }}</td>
+              <td>{{ formatCurrency(demande.veloPrixAchat ?? null) }}</td>
               <td>
                 <p-tag
                   [value]="getStatusLabel(demande.status)"

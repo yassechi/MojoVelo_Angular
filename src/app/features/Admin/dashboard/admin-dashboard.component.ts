@@ -1,10 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService, User } from '../../../core/services/user.service';
-import { DemandeService, Demande, DemandeStatus } from '../../../core/services/demande.service';
-import { ContratService, Contrat, StatutContrat } from '../../../core/services/contrat.service';
-import { BikeCatalogService, BikeItem } from '../../../core/services/bike-catalog.service';
+import { DashboardService } from '../../../core/services/dashboard.service';
+import { DemandeService, DemandeStatus } from '../../../core/services/demande.service';
+import { ContratService, StatutContrat } from '../../../core/services/contrat.service';
 
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
@@ -23,23 +22,19 @@ export class AdminDashboardComponent implements OnInit {
     pendingDemandes: 0,
     activeContrats: 0,
     budgetTotal: 0,
-    satisfactionRate: 0,
   };
 
   bikeTypeChartData: any;
   barChartOptions: any;
+  demandeStatusChartData: any;
+  contratStatusChartData: any;
+  statusChartOptions: any;
   activityFeed: Array<{ title: string; detail: string; time: string }> = [];
 
-  private demandes: Demande[] = [];
-  private contrats: Contrat[] = [];
-  private bikes: BikeItem[] = [];
-  private users: User[] = [];
-
   private authService = inject(AuthService);
-  private userService = inject(UserService);
+  private dashboardService = inject(DashboardService);
   private demandeService = inject(DemandeService);
   private contratService = inject(ContratService);
-  private bikeCatalogService = inject(BikeCatalogService);
 
   ngOnInit(): void {
     this.authService.currentUser.subscribe((user) => {
@@ -49,80 +44,27 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     this.initCharts();
-    this.loadUsers();
-    this.loadDemandes();
-    this.loadContrats();
-    this.loadBikes();
+    this.loadDashboard();
+    this.loadStatusCharts();
   }
 
-  loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (users) => {
-        this.users = users;
-        this.updateActivityFeed();
-      },
-    });
-  }
-
-  loadDemandes(): void {
-    this.demandeService.getAll().subscribe({
-      next: (demandes) => {
-        this.demandes = demandes;
-        this.updateStats();
-        this.updateBikeTypeChart();
-        this.updateActivityFeed();
-      },
-    });
-  }
-
-  loadContrats(): void {
-    this.contratService.getAll().subscribe({
-      next: (contrats) => {
-        this.contrats = contrats;
-        this.updateStats();
-        this.updateActivityFeed();
-      },
-    });
-  }
-
-  loadBikes(): void {
-    this.bikeCatalogService.getBikes().subscribe({
+  loadDashboard(): void {
+    this.dashboardService.getAdminDashboard().subscribe({
       next: (data) => {
-        this.bikes = data.items;
-        this.updateBikeTypeChart();
+        this.stats = {
+          pendingDemandes: data.pendingDemandes,
+          activeContrats: data.activeContrats,
+          budgetTotal: data.budgetTotal,
+        };
+        this.activityFeed = data.activityFeed ?? [];
+        this.updateBikeTypeChart(data.bikeTypeCounts ?? []);
       },
     });
   }
 
-  updateStats(): void {
-    const totalDemandes = this.demandes.length;
-    const valides = this.demandes.filter((d) => d.status === DemandeStatus.Valide).length;
-
-    this.stats.pendingDemandes = this.demandes.filter(
-      (d) => d.status === DemandeStatus.AttenteComagnie,
-    ).length;
-    this.stats.activeContrats = this.contrats.filter(
-      (c) => c.statutContrat === StatutContrat.EnCours,
-    ).length;
-    this.stats.budgetTotal = this.contrats.reduce((sum, contrat) => {
-      const duree = contrat.duree || 36;
-      return sum + (contrat.loyerMensuelHT || 0) * duree;
-    }, 0);
-    this.stats.satisfactionRate = totalDemandes
-      ? Math.round((valides / totalDemandes) * 100)
-      : 0;
-  }
-
-  updateBikeTypeChart(): void {
-    const typeCounts = new Map<string, number>();
-    this.demandes.forEach((demande) => {
-      const type = this.getBikeType(demande.idVelo) || 'Autre';
-      typeCounts.set(type, (typeCounts.get(type) ?? 0) + 1);
-    });
-
-    const sorted = Array.from(typeCounts.entries()).sort((a, b) => b[1] - a[1]);
-    const labels = sorted.map(([label]) => label);
-    const data = sorted.map(([, value]) => value);
+  updateBikeTypeChart(counts: Array<{ label: string; value: number }>): void {
+    const labels = counts.map((item) => item.label);
+    const data = counts.map((item) => item.value);
 
     this.bikeTypeChartData = {
       labels,
@@ -135,36 +77,6 @@ export class AdminDashboardComponent implements OnInit {
         },
       ],
     };
-  }
-
-  updateActivityFeed(): void {
-    const items: Array<{ title: string; detail: string; time: string }> = [];
-
-    const recentDemandes = [...this.demandes]
-      .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))
-      .slice(0, 3);
-
-    recentDemandes.forEach((demande) => {
-      items.push({
-        title: `Demande #${demande.id ?? '-'}`,
-        detail: `${this.getUserName(demande.idUser)} - ${this.getBikeTitle(demande.idVelo)}`,
-        time: demande.createdAt ? this.formatDate(demande.createdAt) : 'En cours',
-      });
-    });
-
-    const recentContrats = [...this.contrats]
-      .sort((a, b) => new Date(b.dateDebut).getTime() - new Date(a.dateDebut).getTime())
-      .slice(0, 2);
-
-    recentContrats.forEach((contrat) => {
-      items.push({
-        title: `Contrat ${contrat.ref}`,
-        detail: `${this.getUserName(contrat.beneficiaireId)} - ${this.getBikeTitle(contrat.veloId)}`,
-        time: this.formatDate(contrat.dateDebut),
-      });
-    });
-
-    this.activityFeed = items;
   }
 
   initCharts(): void {
@@ -193,21 +105,83 @@ export class AdminDashboardComponent implements OnInit {
         },
       },
     };
+
+    this.statusChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#475569',
+            font: { family: 'Manrope', weight: '600' },
+          },
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.92)',
+          titleFont: { family: 'Space Grotesk', size: 13, weight: '700' },
+          bodyFont: { family: 'Manrope', size: 12, weight: '600' },
+          padding: 12,
+          cornerRadius: 12,
+        },
+      },
+    };
   }
 
-  getBikeType(veloId: number): string {
-    const bike = this.bikes.find((item) => item.id === veloId);
-    return bike?.acf?.type ?? '';
-  }
+  private loadStatusCharts(): void {
+    this.demandeService.getAll().subscribe({
+      next: (demandes) => {
+        const statuses = [
+          DemandeStatus.Encours,
+          DemandeStatus.AttenteComagnie,
+          DemandeStatus.Finalisation,
+          DemandeStatus.Valide,
+          DemandeStatus.Refuse,
+        ];
+        const labels = statuses.map((status) => this.demandeService.getStatusLabel(status));
+        const counts = statuses.map(
+          (status) => demandes.filter((d) => d.status === status).length,
+        );
 
-  getBikeTitle(veloId: number): string {
-    const bike = this.bikes.find((item) => item.id === veloId);
-    return bike?.title?.rendered ?? `#${veloId}`;
-  }
+        this.demandeStatusChartData = {
+          labels,
+          datasets: [
+            {
+              data: counts,
+              backgroundColor: ['#bbf7d0', '#86efac', '#4ade80', '#22c55e', '#16a34a'],
+              borderColor: '#ffffff',
+              borderWidth: 2,
+            },
+          ],
+        };
+      },
+    });
 
-  getUserName(userId: string): string {
-    const user = this.users.find((item) => item.id === userId);
-    return user ? `${user.firstName} ${user.lastName}` : userId;
+    this.contratService.getAll().subscribe({
+      next: (contrats) => {
+        const statuses = [
+          StatutContrat.EnCours,
+          StatutContrat.Termine,
+          StatutContrat.Resilie,
+        ];
+        const labels = statuses.map((status) => this.contratService.getStatutLabel(status));
+        const counts = statuses.map(
+          (status) => contrats.filter((c) => c.statutContrat === status).length,
+        );
+
+        this.contratStatusChartData = {
+          labels,
+          datasets: [
+            {
+              data: counts,
+              backgroundColor: ['#bbf7d0', '#4ade80', '#16a34a'],
+              borderColor: '#ffffff',
+              borderWidth: 2,
+            },
+          ],
+        };
+      },
+    });
   }
 
   formatDate(date: string): string {
