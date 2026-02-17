@@ -1,9 +1,8 @@
 <div class="detail-section">
   <h3>Discussion</h3>
   <div class="message-card">
-    @if (loadingMessages) {
-      <div class="text-600">Chargement des messages...</div>
-    } @else if (messages.length === 0) {
+
+    @if (messages.length === 0) {
       <div class="text-600">Aucun message pour cette demande.</div>
     } @else {
       <div class="message-list" #messageList>
@@ -34,10 +33,10 @@
           label="Envoyer"
           icon="pi pi-send"
           (click)="sendMessage()"
-          [loading]="sendingMessage"
           [disabled]="!messageText.trim()"
         ></p-button>
       </div>
     </div>
+
   </div>
 </div>

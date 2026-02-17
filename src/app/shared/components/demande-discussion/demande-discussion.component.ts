@@ -1,25 +1,13 @@
-import {
-  Component,
-  DestroyRef,
-  ElementRef,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-  ViewChild,
-  inject,
-} from '@angular/core';
+import { Component, DestroyRef, ElementRef, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { filter, interval, switchMap } from 'rxjs';
+import { catchError, EMPTY, filter, interval, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { TextareaModule } from 'primeng/textarea';
-import { MessageService as PrimeMessageService } from 'primeng/api';
-import { DemandeDetail, DemandeMessage, DemandeService } from '../../../core/services/demande.service';
-import { ErrorService } from '../../../core/services/error.service';
+import { DemandeMessage, DemandeService } from '../../../core/services/demande.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { DiscussionMessage, MessageApiService } from '../../../core/services/message.service';
+import { MessageApiService } from '../../../core/services/message.service';
 
 @Component({
   selector: 'app-demande-discussion',
@@ -28,108 +16,53 @@ import { DiscussionMessage, MessageApiService } from '../../../core/services/mes
   templateUrl: './demande-discussion.component.html',
   styleUrls: ['./demande-discussion.component.scss'],
 })
-export class DemandeDiscussionComponent implements OnInit, OnChanges {
+export class DemandeDiscussionComponent implements OnInit {
   @Input() demandeId: number | null = null;
-
   @ViewChild('messageList') private messageList?: ElementRef<HTMLDivElement>;
 
   messages: DemandeMessage[] = [];
-  loadingMessages = false;
-  sendingMessage = false;
   messageText = '';
 
   private discussionId: number | null = null;
-  private demandeUserId: string | null = null;
 
   private readonly demandeService = inject(DemandeService);
-  private readonly errorService = inject(ErrorService);
-  private readonly messageService = inject(PrimeMessageService);
   private readonly authService = inject(AuthService);
   private readonly messageApiService = inject(MessageApiService);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    this.startDiscussionRefresh();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['demandeId']) {
-      if (this.demandeId) {
-        this.refreshMessages(true);
-      } else {
-        this.messages = [];
-        this.discussionId = null;
-        this.demandeUserId = null;
-      }
+    if (this.demandeId) {
+      this.demandeService.getDetail(this.demandeId).subscribe(demande => this.chargerMessages(demande));
     }
-  }
 
-  private startDiscussionRefresh(): void {
     interval(4000)
       .pipe(
         filter(() => !!this.demandeId),
-        switchMap(() => this.demandeService.getDetail(this.demandeId!)),
+        switchMap(() => this.demandeService.getDetail(this.demandeId!).pipe(catchError(() => EMPTY))),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe({
-        next: (demande) => {
-          this.applyDemandeDetail(demande);
-        },
-        error: () => {
-          // Rafraichissement silencieux pour eviter le spam
-        },
-      });
+      .subscribe(demande => this.chargerMessages(demande));
   }
 
-  private refreshMessages(showLoader: boolean): void {
-    if (!this.demandeId) {
-      return;
-    }
-    if (showLoader) {
-      this.loadingMessages = true;
-    }
-    this.demandeService.getDetail(this.demandeId).subscribe({
-      next: (demande) => {
-        this.applyDemandeDetail(demande);
-        if (showLoader) {
-          this.loadingMessages = false;
-        }
-      },
-      error: () => {
-        if (showLoader) {
-          this.loadingMessages = false;
-          this.errorService.showError('Impossible de charger les messages');
-        }
-      },
-    });
-  }
-
-  private applyDemandeDetail(demande: DemandeDetail): void {
+  private chargerMessages(demande: any): void {
     this.discussionId = demande.discussionId ?? null;
-    this.demandeUserId = demande.idUser ?? null;
     this.messages = demande.messages ?? [];
-    this.scheduleScrollToBottom();
+    setTimeout(() => {
+      const el = this.messageList?.nativeElement;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
   }
 
   sendMessage(): void {
     const content = this.messageText.trim();
-    if (!content) {
-      return;
-    }
-    if (!this.discussionId) {
-      this.errorService.showError('Aucune discussion disponible');
-      return;
-    }
+    if (!content || !this.discussionId) return;
 
     const currentUser = this.authService.getCurrentUser();
-    if (!currentUser?.id) {
-      this.errorService.showError('Utilisateur non authentifie');
-      return;
-    }
+    if (!currentUser?.id) return;
 
-    this.sendingMessage = true;
     const now = new Date().toISOString();
-    const payload: DiscussionMessage = {
+
+    this.messageApiService.create({
       id: 0,
       createdDate: now,
       modifiedDate: now,
@@ -140,54 +73,14 @@ export class DemandeDiscussionComponent implements OnInit, OnChanges {
       dateEnvoi: now,
       userId: currentUser.id,
       discussionId: this.discussionId,
-    };
-
-    this.messageApiService.create(payload).subscribe({
-      next: () => {
-        this.messageText = '';
-        this.sendingMessage = false;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Message envoyé',
-        });
-        this.refreshMessages(false);
-      },
-      error: () => {
-        this.sendingMessage = false;
-        this.errorService.showError('Impossible d\'envoyer le message');
-      },
+    }).subscribe(() => {
+      this.messageText = '';
+      this.demandeService.getDetail(this.demandeId!).subscribe(demande => this.chargerMessages(demande));
     });
   }
 
   isOwnMessage(message: DemandeMessage): boolean {
     const currentUser = this.authService.getCurrentUser();
-    const currentId = this.normalizeId(currentUser?.id);
-    const messageUserId = this.normalizeId(message.userId);
-    const demandeUserId = this.normalizeId(this.demandeUserId ?? undefined);
-
-    if (currentId) {
-      return messageUserId === currentId;
-    }
-    if (demandeUserId) {
-      return messageUserId === demandeUserId;
-    }
-    return false;
-  }
-
-  private normalizeId(value?: string): string {
-    return (value ?? '').trim().replace(/[{}]/g, '').toLowerCase();
-  }
-
-  private scheduleScrollToBottom(): void {
-    setTimeout(() => this.scrollToBottom());
-  }
-
-  private scrollToBottom(): void {
-    const element = this.messageList?.nativeElement;
-    if (!element) {
-      return;
-    }
-    element.scrollTop = element.scrollHeight;
+    return message.userId === currentUser?.id;
   }
 }
