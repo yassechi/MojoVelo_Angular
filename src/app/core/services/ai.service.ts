@@ -52,13 +52,38 @@ export class AiService {
     );
   }
 
+  uploadClientSingle(file: File): Observable<AiUploadSingleResponse> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post<AiUploadSingleResponse>(`${this.apiUrl}/client/upload`, formData);
+  }
+
+  uploadClientMultiple(files: File[]): Observable<AiUploadMultipleResponse> {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file, file.name));
+    return this.http.post<AiUploadMultipleResponse>(
+      `${this.apiUrl}/client/upload/multiple`,
+      formData,
+    );
+  }
+
   getAdminFiles(): Observable<AiPdfInfo[]> {
     return this.http.get<AiPdfInfo[]>(`${this.apiUrl}/admin/files`);
+  }
+
+  getClientFiles(): Observable<AiPdfInfo[]> {
+    return this.http.get<AiPdfInfo[]>(`${this.apiUrl}/client/files`);
   }
 
   deleteAdminFile(fileName: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(
       `${this.apiUrl}/admin/files/${encodeURIComponent(fileName)}`,
+    );
+  }
+
+  deleteClientFile(fileName: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.apiUrl}/client/files/${encodeURIComponent(fileName)}`,
     );
   }
 }

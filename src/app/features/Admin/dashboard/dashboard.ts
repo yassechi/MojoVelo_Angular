@@ -44,11 +44,18 @@ export class AdminDashboardComponent {
   uploadedAiFiles = signal<AiPdfInfo[]>([]);
   showUploadedFiles = signal(false);
   isDragOver = signal(false);
+  selectedClientAiFiles = signal<File[]>([]);
+  uploadedClientAiFiles = signal<AiPdfInfo[]>([]);
+  showUploadedClientFiles = signal(false);
+  isClientDragOver = signal(false);
   aiMessages = signal<Array<{ role: 'user' | 'assistant'; text: string; time: string }>>([]);
   uploadLoading = signal(false);
   uploadedListLoading = signal(false);
+  uploadClientLoading = signal(false);
+  uploadedClientListLoading = signal(false);
   askLoading = signal(false);
   lastUploadSummary = signal<string | null>(null);
+  lastClientUploadSummary = signal<string | null>(null);
   aiQuestion = '';
 
   private readonly maxFileBytes = 10 * 1024 * 1024;
@@ -224,6 +231,105 @@ export class AdminDashboardComponent {
     });
   }
 
+  onClientAiFileInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const files = input?.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+
+    this.processClientAiFiles(files);
+
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  private processClientAiFiles(files: File[]): void {
+    const validFiles: File[] = [];
+    const rejected: string[] = [];
+
+    files.forEach((file) => {
+      const isPdf =
+        file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      if (!isPdf) {
+        rejected.push(`${file.name} (format non PDF)`);
+        return;
+      }
+      if (file.size > this.maxFileBytes) {
+        rejected.push(`${file.name} (trop volumineux)`);
+        return;
+      }
+      validFiles.push(file);
+    });
+
+    if (rejected.length) {
+      this.messageService.showWarn(`Fichiers ignores: ${rejected.join(' | ')}`);
+    }
+    this.selectedClientAiFiles.set(validFiles);
+  }
+
+  clearClientAiFiles(): void {
+    this.selectedClientAiFiles.set([]);
+  }
+
+  removeSelectedClientAiFile(index: number): void {
+    this.selectedClientAiFiles.update((files) => files.filter((_, i) => i !== index));
+  }
+
+  uploadClientAiFiles(): void {
+    const files = this.selectedClientAiFiles();
+    if (this.uploadClientLoading()) return;
+    if (!files.length) {
+      this.messageService.showWarn('Selectionnez au moins un PDF.');
+      return;
+    }
+
+    this.uploadClientLoading.set(true);
+    const request$: Observable<AiUploadSingleResponse | AiUploadMultipleResponse> =
+      files.length > 1
+        ? this.aiService.uploadClientMultiple(files)
+        : this.aiService.uploadClientSingle(files[0]);
+
+    request$.subscribe({
+      next: (response: any) => {
+        if (response?.message) {
+          this.messageService.showSuccess(response.message);
+          this.lastClientUploadSummary.set(response.message);
+        } else {
+          const uploaded = response?.uploades ?? [];
+          const errors = response?.erreurs ?? [];
+          if (uploaded.length) {
+            this.messageService.showSuccess(`${uploaded.length} fichier(s) uploade(s).`);
+            this.lastClientUploadSummary.set(`Uploades : ${uploaded.join(', ')}`);
+          }
+          if (errors.length) {
+            this.messageService.showWarn(`Erreurs: ${errors.join(' | ')}`);
+          }
+        }
+        this.selectedClientAiFiles.set([]);
+        if (this.showUploadedClientFiles()) {
+          this.loadUploadedClientAiFiles();
+        }
+      },
+      error: () => {
+        this.messageService.showError("Impossible d'uploader les documents.");
+        this.uploadClientLoading.set(false);
+      },
+      complete: () => this.uploadClientLoading.set(false),
+    });
+  }
+
+  loadUploadedClientAiFiles(): void {
+    this.uploadedClientListLoading.set(true);
+    this.aiService.getClientFiles().subscribe({
+      next: (files) => this.uploadedClientAiFiles.set(files ?? []),
+      error: () => {
+        this.messageService.showError("Impossible de charger la liste des PDFs.");
+        this.uploadedClientListLoading.set(false);
+      },
+      complete: () => this.uploadedClientListLoading.set(false),
+    });
+  }
+
   onAiDragOver(event: DragEvent): void {
     event.preventDefault();
     if (event.dataTransfer) {
@@ -245,11 +351,40 @@ export class AdminDashboardComponent {
     this.processAiFiles(files);
   }
 
+  onClientAiDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy';
+    }
+    this.isClientDragOver.set(true);
+  }
+
+  onClientAiDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isClientDragOver.set(false);
+  }
+
+  onClientAiDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isClientDragOver.set(false);
+    const files = event.dataTransfer?.files ? Array.from(event.dataTransfer.files) : [];
+    if (!files.length) return;
+    this.processClientAiFiles(files);
+  }
+
   toggleUploadedFiles(): void {
     const next = !this.showUploadedFiles();
     this.showUploadedFiles.set(next);
     if (next && this.uploadedAiFiles().length === 0 && !this.uploadedListLoading()) {
       this.loadUploadedAiFiles();
+    }
+  }
+
+  toggleUploadedClientFiles(): void {
+    const next = !this.showUploadedClientFiles();
+    this.showUploadedClientFiles.set(next);
+    if (next && this.uploadedClientAiFiles().length === 0 && !this.uploadedClientListLoading()) {
+      this.loadUploadedClientAiFiles();
     }
   }
 
@@ -271,6 +406,29 @@ export class AdminDashboardComponent {
           error: () => {
             this.messageService.showError("Impossible de supprimer le fichier.");
             this.uploadedListLoading.set(false);
+          },
+        });
+      },
+    });
+  }
+
+  deleteUploadedClientAiFile(file: AiPdfInfo): void {
+    this.confirmationService.confirm({
+      message: `Etes-vous sur de vouloir supprimer "${file.fileName}" ?`,
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Oui',
+      rejectLabel: 'Non',
+      accept: () => {
+        this.uploadedClientListLoading.set(true);
+        this.aiService.deleteClientFile(file.fileName).subscribe({
+          next: (response) => {
+            this.messageService.showSuccess(response?.message ?? 'Fichier supprime.');
+            this.loadUploadedClientAiFiles();
+          },
+          error: () => {
+            this.messageService.showError("Impossible de supprimer le fichier.");
+            this.uploadedClientListLoading.set(false);
           },
         });
       },

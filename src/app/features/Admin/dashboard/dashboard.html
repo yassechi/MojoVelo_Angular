@@ -83,140 +83,275 @@
     </div>
   </div>
 
-  <div class="grid mt-4">
-    <div class="col-12 lg:col-4">
-      <p-card class="section-card ai-card">
-        <ng-template pTemplate="header">
-          <div class="p-3">
-            <h3 class="m-0 chart-title">Documents IA</h3>
-          </div>
-        </ng-template>
-        <div class="ai-upload">
-          <input
-            #aiFileInput
-            type="file"
-            class="ai-hidden-input"
-            accept="application/pdf,.pdf"
-            multiple
-            (change)="onAiFileInputChange($event)"
-          />
-          <div
-            class="ai-dropzone"
-            role="button"
-            tabindex="0"
-            aria-label="Choisir un PDF"
-            [class.is-dragover]="isDragOver()"
-            (click)="aiFileInput.click()"
-            (keydown.enter)="aiFileInput.click()"
-            (keydown.space)="$event.preventDefault(); aiFileInput.click()"
-            (dragover)="onAiDragOver($event)"
-            (dragleave)="onAiDragLeave($event)"
-            (drop)="onAiDrop($event)"
-          >
-            <div class="ai-dropzone-icon">
-              <i class="pi pi-cloud-upload"></i>
+  <div class="grid mt-4 ai-section">
+    <div class="col-12">
+      <div class="grid ai-docs-grid">
+        <div class="col-12 lg:col-6">
+        <p-card class="section-card ai-card">
+          <ng-template pTemplate="header">
+            <div class="p-3">
+              <h3 class="m-0 chart-title">Documents IA - Admin</h3>
             </div>
-            <div class="ai-dropzone-title">Importer des PDFs</div>
-            <div class="ai-dropzone-sub">Glissez-deposez ici ou cliquez</div>
-            <div class="ai-dropzone-meta">PDF uniquement, 10 MB max</div>
-          </div>
+          </ng-template>
+          <div class="ai-upload">
+            <input
+              #aiFileInput
+              type="file"
+              class="ai-hidden-input"
+              accept="application/pdf,.pdf"
+              multiple
+              (change)="onAiFileInputChange($event)"
+            />
+            <div
+              class="ai-dropzone"
+              role="button"
+              tabindex="0"
+              aria-label="Choisir un PDF"
+              [class.is-dragover]="isDragOver()"
+              (click)="aiFileInput.click()"
+              (keydown.enter)="aiFileInput.click()"
+              (keydown.space)="$event.preventDefault(); aiFileInput.click()"
+              (dragover)="onAiDragOver($event)"
+              (dragleave)="onAiDragLeave($event)"
+              (drop)="onAiDrop($event)"
+            >
+              <div class="ai-dropzone-icon">
+                <i class="pi pi-cloud-upload"></i>
+              </div>
+              <div class="ai-dropzone-title">Importer des PDFs admin</div>
+              <div class="ai-dropzone-sub">Glissez-deposez ici ou cliquez</div>
+              <div class="ai-dropzone-meta">PDF uniquement, 10 MB max</div>
+            </div>
 
-          <div class="ai-upload-list">
-            @if (selectedAiFiles().length === 0) {
-              <div class="text-600">Aucun fichier sélectionné.</div>
-            } @else {
-              @for (file of selectedAiFiles(); track $index) {
-                <div class="ai-file-item">
-                  <div>
-                    <div class="ai-file-name">{{ file.name }}</div>
-                    <div class="ai-file-meta">{{ formatFileSize(file.size) }}</div>
-                  </div>
-                  <div class="ai-file-actions">
-                    <i class="pi pi-file"></i>
-                    <p-button
-                      icon="pi pi-times"
-                      class="p-button-text p-button-sm ai-file-remove"
-                      (onClick)="removeSelectedAiFile($index)"
-                      [disabled]="uploadLoading()"
-                    ></p-button>
-                  </div>
-                </div>
-              }
-            }
-          </div>
-
-          <div class="ai-upload-actions">
-            <div class="ai-upload-action">
-              <p-button
-                label="Uploader"
-                icon="pi pi-cloud-upload"
-                (click)="uploadAiFiles()"
-                [loading]="uploadLoading()"
-                [disabled]="selectedAiFiles().length === 0 || uploadLoading()"
-              ></p-button>
-            </div>
-            <div class="ai-upload-action">
-              <p-button
-                label="Vider"
-                icon="pi pi-times"
-                class="p-button-text"
-                (click)="clearAiFiles()"
-                [disabled]="selectedAiFiles().length === 0 || uploadLoading()"
-              ></p-button>
-            </div>
-            <div class="ai-upload-action ai-upload-action--full">
-              <p-button
-                label="Manage fichiers"
-                icon="pi pi-folder-open"
-                class="p-button-outlined"
-                (click)="toggleUploadedFiles()"
-                [disabled]="uploadedListLoading()"
-              ></p-button>
-            </div>
-          </div>
-
-          @if (showUploadedFiles()) {
-            <div class="ai-uploaded">
-            <div class="ai-uploaded-title">Documents chargés</div>
-            @if (uploadedListLoading()) {
-              <div class="text-600">Chargement...</div>
-            } @else {
-              @if (uploadedAiFiles().length === 0) {
-                <div class="text-600">Aucun document uploadé.</div>
+            <div class="ai-upload-list">
+              @if (selectedAiFiles().length === 0) {
+                <div class="text-600">Aucun fichier selectionne.</div>
               } @else {
-                @for (file of uploadedAiFiles(); track file.fileName) {
-                  <div class="ai-file-item ai-file-item--uploaded">
+                @for (file of selectedAiFiles(); track $index) {
+                  <div class="ai-file-item">
                     <div>
-                      <div class="ai-file-name">{{ file.fileName }}</div>
-                      <div class="ai-file-meta">
-                        {{ formatFileSize(file.sizeBytes) }} • {{ formatDate(file.lastModifiedUtc) }}
-                      </div>
+                      <div class="ai-file-name">{{ file.name }}</div>
+                      <div class="ai-file-meta">{{ formatFileSize(file.size) }}</div>
                     </div>
                     <div class="ai-file-actions">
+                      <i class="pi pi-file"></i>
                       <p-button
-                        icon="pi pi-trash"
+                        icon="pi pi-times"
                         class="p-button-text p-button-sm ai-file-remove"
-                        (onClick)="deleteUploadedAiFile(file)"
-                        [disabled]="uploadedListLoading()"
+                        (onClick)="removeSelectedAiFile($index)"
+                        [disabled]="uploadLoading()"
                       ></p-button>
                     </div>
                   </div>
                 }
               }
-            }
             </div>
-          }
 
-          @if (lastUploadSummary()) {
-            <div class="text-600 text-sm">{{ lastUploadSummary() }}</div>
-          }
+            <div class="ai-upload-actions">
+              <div class="ai-upload-action">
+                <p-button
+                  label="Uploader"
+                  icon="pi pi-cloud-upload"
+                  (click)="uploadAiFiles()"
+                  [loading]="uploadLoading()"
+                  [disabled]="selectedAiFiles().length === 0 || uploadLoading()"
+                ></p-button>
+              </div>
+              <div class="ai-upload-action">
+                <p-button
+                  label="Vider"
+                  icon="pi pi-times"
+                  class="p-button-text"
+                  (click)="clearAiFiles()"
+                  [disabled]="selectedAiFiles().length === 0 || uploadLoading()"
+                ></p-button>
+              </div>
+              <div class="ai-upload-action ai-upload-action--full">
+                <p-button
+                  label="Manage fichiers"
+                  icon="pi pi-folder-open"
+                  class="p-button-outlined"
+                  (click)="toggleUploadedFiles()"
+                  [disabled]="uploadedListLoading()"
+                ></p-button>
+              </div>
+            </div>
 
-          <small class="text-600">PDF uniquement, 10 MB maximum par fichier.</small>
+            @if (showUploadedFiles()) {
+              <div class="ai-uploaded">
+              <div class="ai-uploaded-title">Documents charges</div>
+              @if (uploadedListLoading()) {
+                <div class="text-600">Chargement...</div>
+              } @else {
+                @if (uploadedAiFiles().length === 0) {
+                  <div class="text-600">Aucun document uploade.</div>
+                } @else {
+                  @for (file of uploadedAiFiles(); track file.fileName) {
+                    <div class="ai-file-item ai-file-item--uploaded">
+                      <div>
+                        <div class="ai-file-name">{{ file.fileName }}</div>
+                        <div class="ai-file-meta">
+                          {{ formatFileSize(file.sizeBytes) }} - {{ formatDate(file.lastModifiedUtc) }}
+                        </div>
+                      </div>
+                      <div class="ai-file-actions">
+                        <p-button
+                          icon="pi pi-trash"
+                          class="p-button-text p-button-sm ai-file-remove"
+                          (onClick)="deleteUploadedAiFile(file)"
+                          [disabled]="uploadedListLoading()"
+                        ></p-button>
+                      </div>
+                    </div>
+                  }
+                }
+              }
+              </div>
+            }
+
+            @if (lastUploadSummary()) {
+              <div class="text-600 text-sm">{{ lastUploadSummary() }}</div>
+            }
+
+            <small class="text-600">PDF uniquement, 10 MB maximum par fichier.</small>
+          </div>
+        </p-card>
         </div>
-      </p-card>
+        <div class="col-12 lg:col-6">
+        <p-card class="section-card ai-card">
+          <ng-template pTemplate="header">
+            <div class="p-3">
+              <h3 class="m-0 chart-title">Documents IA - Client</h3>
+            </div>
+          </ng-template>
+          <div class="ai-upload">
+            <input
+              #aiClientFileInput
+              type="file"
+              class="ai-hidden-input"
+              accept="application/pdf,.pdf"
+              multiple
+              (change)="onClientAiFileInputChange($event)"
+            />
+            <div
+              class="ai-dropzone"
+              role="button"
+              tabindex="0"
+              aria-label="Choisir un PDF client"
+              [class.is-dragover]="isClientDragOver()"
+              (click)="aiClientFileInput.click()"
+              (keydown.enter)="aiClientFileInput.click()"
+              (keydown.space)="$event.preventDefault(); aiClientFileInput.click()"
+              (dragover)="onClientAiDragOver($event)"
+              (dragleave)="onClientAiDragLeave($event)"
+              (drop)="onClientAiDrop($event)"
+            >
+              <div class="ai-dropzone-icon">
+                <i class="pi pi-cloud-upload"></i>
+              </div>
+              <div class="ai-dropzone-title">Importer des PDFs client</div>
+              <div class="ai-dropzone-sub">Glissez-deposez ici ou cliquez</div>
+              <div class="ai-dropzone-meta">PDF uniquement, 10 MB max</div>
+            </div>
+
+            <div class="ai-upload-list">
+              @if (selectedClientAiFiles().length === 0) {
+                <div class="text-600">Aucun fichier selectionne.</div>
+              } @else {
+                @for (file of selectedClientAiFiles(); track $index) {
+                  <div class="ai-file-item">
+                    <div>
+                      <div class="ai-file-name">{{ file.name }}</div>
+                      <div class="ai-file-meta">{{ formatFileSize(file.size) }}</div>
+                    </div>
+                    <div class="ai-file-actions">
+                      <i class="pi pi-file"></i>
+                      <p-button
+                        icon="pi pi-times"
+                        class="p-button-text p-button-sm ai-file-remove"
+                        (onClick)="removeSelectedClientAiFile($index)"
+                        [disabled]="uploadClientLoading()"
+                      ></p-button>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
+            <div class="ai-upload-actions">
+              <div class="ai-upload-action">
+                <p-button
+                  label="Uploader"
+                  icon="pi pi-cloud-upload"
+                  (click)="uploadClientAiFiles()"
+                  [loading]="uploadClientLoading()"
+                  [disabled]="selectedClientAiFiles().length === 0 || uploadClientLoading()"
+                ></p-button>
+              </div>
+              <div class="ai-upload-action">
+                <p-button
+                  label="Vider"
+                  icon="pi pi-times"
+                  class="p-button-text"
+                  (click)="clearClientAiFiles()"
+                  [disabled]="selectedClientAiFiles().length === 0 || uploadClientLoading()"
+                ></p-button>
+              </div>
+              <div class="ai-upload-action ai-upload-action--full">
+                <p-button
+                  label="Manage fichiers"
+                  icon="pi pi-folder-open"
+                  class="p-button-outlined"
+                  (click)="toggleUploadedClientFiles()"
+                  [disabled]="uploadedClientListLoading()"
+                ></p-button>
+              </div>
+            </div>
+
+            @if (showUploadedClientFiles()) {
+              <div class="ai-uploaded">
+              <div class="ai-uploaded-title">Documents charges</div>
+              @if (uploadedClientListLoading()) {
+                <div class="text-600">Chargement...</div>
+              } @else {
+                @if (uploadedClientAiFiles().length === 0) {
+                  <div class="text-600">Aucun document uploade.</div>
+                } @else {
+                  @for (file of uploadedClientAiFiles(); track file.fileName) {
+                    <div class="ai-file-item ai-file-item--uploaded">
+                      <div>
+                        <div class="ai-file-name">{{ file.fileName }}</div>
+                        <div class="ai-file-meta">
+                          {{ formatFileSize(file.sizeBytes) }} - {{ formatDate(file.lastModifiedUtc) }}
+                        </div>
+                      </div>
+                      <div class="ai-file-actions">
+                        <p-button
+                          icon="pi pi-trash"
+                          class="p-button-text p-button-sm ai-file-remove"
+                          (onClick)="deleteUploadedClientAiFile(file)"
+                          [disabled]="uploadedClientListLoading()"
+                        ></p-button>
+                      </div>
+                    </div>
+                  }
+                }
+              }
+              </div>
+            }
+
+            @if (lastClientUploadSummary()) {
+              <div class="text-600 text-sm">{{ lastClientUploadSummary() }}</div>
+            }
+
+            <small class="text-600">PDF uniquement, 10 MB maximum par fichier.</small>
+          </div>
+        </p-card>
+        </div>
+      </div>
     </div>
 
-    <div class="col-12 lg:col-8">
+    <div class="col-12">
       <p-card class="section-card ai-card">
         <ng-template pTemplate="header">
           <div class="p-3">
