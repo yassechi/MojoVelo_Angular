@@ -1,12 +1,14 @@
 import { OrganisationService } from '../../../core/services/organisation.service';
 import { MessageService } from '../../../core/services/message.service';
 import { AiService } from '../../../core/services/ai.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, inject, signal } from '@angular/core';
 import { TextareaModule } from 'primeng/textarea';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { UserRole } from '../../../core/models/user.model';
 
 type QuestionnaireKey = 'usage' | 'distance' | 'terrain' | 'assistance' | 'budget' | 'cargo';
 
@@ -111,6 +113,7 @@ export class QuestionnaireGuideComponent {
   aiResponse = signal<string | null>(null);
   askLoading = signal(false);
   notes = '';
+  fromSidebar = false;
 
   firstName = '';
   lastName = '';
@@ -123,8 +126,10 @@ export class QuestionnaireGuideComponent {
   private readonly organisationService = inject(OrganisationService);
   private readonly aiService = inject(AiService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
 
   constructor() {
+    this.fromSidebar = this.params['entry'] === 'sidebar';
     this.firstName = this.params['firstName'] || '';
     this.lastName = this.params['lastName'] || '';
     this.organisationName = this.params['organisationName'] || '';
@@ -166,6 +171,22 @@ export class QuestionnaireGuideComponent {
   }
 
   goBack(): void {
+    if (this.fromSidebar) {
+      const user = this.authService.getCurrentUser();
+      switch (user?.role) {
+        case UserRole.Admin:
+          this.router.navigate(['/admin/dashboard']);
+          return;
+        case UserRole.Manager:
+          this.router.navigate(['/manager/dashboard']);
+          return;
+        case UserRole.User:
+          this.router.navigate(['/user/dashboard']);
+          return;
+        default:
+          break;
+      }
+    }
     this.router.navigate(['/choix-parcours'], { queryParams: this.queryParams() });
   }
 

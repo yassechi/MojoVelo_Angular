@@ -42,6 +42,13 @@ export class SidebarComponent {
   private setMenu(user: User | null): void {
     const badge = this.unreadCount() > 0 ? { badge: String(this.unreadCount()), badgeStyleClass: 'sidebar-badge' } : {};
     const role = user?.role ?? 3;
+    const aiQueryParams = this.buildAiQueryParams(user);
+    const aiMenuItem = {
+      label: 'Assistant IA - choix velo',
+      icon: 'pi pi-sparkles',
+      routerLink: ['/questionnaire-guide'],
+      queryParams: aiQueryParams,
+    };
     this.menuItems.set(
       role === 1
         ? [
@@ -57,13 +64,30 @@ export class SidebarComponent {
             { label: 'Employés', icon: 'pi pi-users', routerLink: ['/manager/employes'] },
             { label: 'Contrats', icon: 'pi pi-file', routerLink: ['/manager/contrats'] },
             { label: 'Demandes', icon: 'pi pi-inbox', routerLink: ['/manager/demandes'], ...badge },
+            aiMenuItem,
             { label: 'Paramètres', icon: 'pi pi-cog', routerLink: ['/manager/parametres'] }]
         : [
             { label: 'Dashboard', icon: 'pi pi-home', routerLink: ['/user/dashboard'] },
             { label: 'Mes Contrats', icon: 'pi pi-file', routerLink: ['/user/contrats'] },
             { label: 'Mes Demandes', icon: 'pi pi-inbox', routerLink: ['/user/demandes'], ...badge },
+            aiMenuItem,
             { label: 'Paramètres', icon: 'pi pi-cog', routerLink: ['/user/parametres'] }],
     );
+  }
+
+  private buildAiQueryParams(user: User | null): Record<string, string> {
+    if (!user) return { entry: 'sidebar' };
+    const params: Record<string, string> = { entry: 'sidebar' };
+    if (user.firstName) params['firstName'] = user.firstName;
+    if (user.lastName) params['lastName'] = user.lastName;
+    if (typeof user.organisationId === 'number') {
+      params['organisationId'] = String(user.organisationId);
+      return params;
+    }
+    const org = user.organisationId;
+    if (org?.id) params['organisationId'] = String(org.id);
+    if (org?.name) params['organisationName'] = org.name;
+    return params;
   }
 
   private refreshBadge(user: User | null): void {
