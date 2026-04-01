@@ -7,14 +7,14 @@
 // };
 
 
-export const environment = {
-  urls: {
-    coreBase: 'https://localhost:7000',
-    coreApi: 'https://localhost:7000/api',
-    legacyApi: 'http://localhost:5000/api',
-    cmsApi: 'https://mojovelo.be/wp-json/wp/v2',
-  },
-};
+// export const environment = {
+//   urls: {
+//     coreBase: 'https://localhost:7000',
+//     coreApi: 'https://localhost:7000/api',
+//     legacyApi: 'http://localhost:5000/api',
+//     cmsApi: 'https://mojovelo.be/wp-json/wp/v2',
+//   },
+// };
 
 
 // export const environment = {
@@ -26,10 +26,10 @@ export const environment = {
 // };
 
 
-// export const environment = {
-//   urls: {
-//     coreBase: 'https://api-mojo.yassechi.com',
-//     coreApi:  'https://api-mojo.yassechi.com/api',
-//     cmsApi:   'https://mojovelo.be/wp-json/wp/v2',
-//   },
-// };
+export const environment = {
+  urls: {
+    coreBase: 'https://api-mojo.yassechi.com',
+    coreApi:  'https://api-mojo.yassechi.com/api',
+    cmsApi:   'https://mojovelo.be/wp-json/wp/v2',
+  },
+};
