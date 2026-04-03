@@ -5,6 +5,7 @@ import {
 } from '../../../../core/services/demande.service';
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, effect, inject, signal } from '@angular/core';
 import { VeloService } from '../../../../core/services/velo.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -46,23 +47,25 @@ export class AdminDemandesComponent {
   demandes = signal<AdminDemandeListItem[]>([]);
   loading = signal(false);
   unreadDiscussionIds = signal(new Set<number>());
-  typeOptions = signal<Array<{ label: string; value: string | 'all' }>>([
-    { label: 'Tous', value: 'all' },
-  ]);
+  typeOptions = signal<Array<{ label: string; value: string | 'all' }>>([]);
+  private rawTypes = signal<string[]>([]);
 
   statusFilter: DemandeStatus | 'all' = 'all';
   typeFilter: string | 'all' = 'all';
   searchTerm = '';
   readonly DemandeStatus = DemandeStatus;
 
-  statusOptions = [
-    { label: 'Tous', value: 'all' },
-    { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Finalisation', value: DemandeStatus.Finalisation },
-    { label: 'Valide', value: DemandeStatus.Valide },
-    { label: 'Refuse', value: DemandeStatus.Refuse },
-  ];
+  get statusOptions() {
+    const t = this.i18n.t();
+    return [
+      { label: t.common.tous, value: 'all' },
+      { label: t.demandeStatus.encours, value: DemandeStatus.Encours },
+      { label: t.demandeStatus.attenteCompagnie, value: DemandeStatus.AttenteComagnie },
+      { label: t.demandeStatus.finalisation, value: DemandeStatus.Finalisation },
+      { label: t.demandeStatus.valide, value: DemandeStatus.Valide },
+      { label: t.demandeStatus.refuse, value: DemandeStatus.Refuse },
+    ];
+  }
 
   private readonly demandeService = inject(DemandeService);
   private readonly veloService = inject(VeloService);
@@ -72,22 +75,22 @@ export class AdminDemandesComponent {
   private readonly messageApiService = inject(MessageApiService);
   private readonly router = inject(Router);
   private readonly currentUser = this.authService.getCurrentUser();
+  readonly i18n = inject(I18nService);
 
   constructor() {
-    this.veloService
-      .getTypes()
-      .subscribe((types) =>
-        this.typeOptions.set([
-          { label: 'Tous', value: 'all' },
-          ...types.map((v) => ({ label: v, value: v })),
-        ]),
-      );
+    this.veloService.getTypes().subscribe((types) => this.rawTypes.set(types ?? []));
 
     this.load();
     effect(() => {
+      this.i18n.lang();
+      const t = this.i18n.t();
+      this.typeOptions.set([
+        { label: t.common.tous, value: 'all' },
+        ...this.rawTypes().map((v) => ({ label: v, value: v })),
+      ]);
       this.messageApiService.refreshSignal();
       this.loadUnreadDiscussions();
-    });
+    }, { allowSignalWrites: true });
   }
 
   load(): void {
@@ -139,20 +142,20 @@ export class AdminDemandesComponent {
   onStatusChange(d: AdminDemandeListItem, newStatus: DemandeStatus): void {
     this.demandeService.updateStatus(d.id!, newStatus).subscribe(() => {
       d.status = newStatus;
-      this.messageService.showSuccess('Statut mis à jour', 'Succés');
+      this.messageService.showSuccess(this.i18n.get('demandes.statusUpdated'));
     });
   }
 
   onDelete(d: AdminDemandeListItem): void {
     this.confirmationService.confirm({
-      message: 'êtes-vous sur de vouloir supprimer cette demande ?',
-      header: 'Confirmation',
+      message: this.i18n.get('demandes.deleteConfirm'),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () =>
         this.demandeService.delete(d.id!).subscribe(() => {
-          this.messageService.showSuccess('Demande supprimée', 'Succès');
+          this.messageService.showSuccess(this.i18n.get('demandes.deleteSuccess'));
           this.load();
         }),
     });

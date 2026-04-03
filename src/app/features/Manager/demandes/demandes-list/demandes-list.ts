@@ -1,6 +1,7 @@
 import { AdminDemandeListItem, DemandeService, DemandeStatus } from '../../../../core/services/demande.service';
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -29,12 +30,16 @@ export class ManagerDemandesComponent {
   loading = signal(false);
   unreadDiscussionIds = signal(new Set<number>());
 
-  statusOptions = [
-    { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Finalisation', value: DemandeStatus.Finalisation },
-    { label: 'Valid?', value: DemandeStatus.Valide },
-    { label: 'Refus?', value: DemandeStatus.Refuse }];
+  get statusOptions() {
+    const t = this.i18n.t();
+    return [
+      { label: t.demandeStatus.encours, value: DemandeStatus.Encours },
+      { label: t.demandeStatus.attenteCompagnie, value: DemandeStatus.AttenteComagnie },
+      { label: t.demandeStatus.finalisation, value: DemandeStatus.Finalisation },
+      { label: t.demandeStatus.valide, value: DemandeStatus.Valide },
+      { label: t.demandeStatus.refuse, value: DemandeStatus.Refuse },
+    ];
+  }
 
   private readonly demandeService = inject(DemandeService);
   private readonly authService = inject(AuthService);
@@ -42,6 +47,7 @@ export class ManagerDemandesComponent {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   private readonly currentUser: User | null = this.authService.getCurrentUser();
   private readonly orgId: number | null = this.currentUser?.organisationId
@@ -62,7 +68,7 @@ export class ManagerDemandesComponent {
     this.loading.set(true);
     this.demandeService.getList({ organisationId: this.orgId }).subscribe({
       next: (data) => { this.demandes.set(data ?? []); this.loadUnreadDiscussions(); this.loading.set(false); },
-      error: () => { this.messageService.showError('Impossible de charger les demandes'); this.loading.set(false); },
+      error: () => { this.messageService.showError(this.i18n.get('demandes.loadDemandeError')); this.loading.set(false); },
     });
   }
 
@@ -80,21 +86,24 @@ export class ManagerDemandesComponent {
 
   onStatusChange(d: AdminDemandeListItem, status: DemandeStatus): void {
     this.demandeService.updateStatus(d.id!, status).subscribe({
-      next: () => { this.demandes.update((list) => list.map((item) => item.id === d.id ? { ...item, status } : item)); this.messageService.showSuccess('Statut mis ? jour', 'Succ?s'); },
-      error: () => this.messageService.showError('Impossible de mettre ? jour le statut'),
+      next: () => {
+        this.demandes.update((list) => list.map((item) => item.id === d.id ? { ...item, status } : item));
+        this.messageService.showSuccess(this.i18n.get('demandes.statusUpdated'));
+      },
+      error: () => this.messageService.showError(this.i18n.get('demandes.statusUpdateError')),
     });
   }
 
   onDelete(d: AdminDemandeListItem): void {
     this.confirmationService.confirm({
-      message: '?tes-vous s?r de vouloir supprimer cette demande ?',
-      header: 'Confirmation',
+      message: this.i18n.get('demandes.deleteConfirm'),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () => this.demandeService.delete(d.id!).subscribe({
-        next: () => { this.messageService.showSuccess('Demande supprim?e', 'Succ?s'); this.load(); },
-        error: () => this.messageService.showError('Impossible de supprimer la demande'),
+        next: () => { this.messageService.showSuccess(this.i18n.get('demandes.deleteSuccess')); this.load(); },
+        error: () => this.messageService.showError(this.i18n.get('demandes.deleteError')),
       }),
     });
   }

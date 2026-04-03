@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { Document, DocumentService } from '../../core/services/document.service';
 import { MessageService } from '../../core/services/message.service';
+import { I18nService } from '../../core/services/I18n.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
@@ -21,6 +22,7 @@ export class ContratDocumentsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly documentService = inject(DocumentService);
   private readonly messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   readonly contratId = toSignal((this.route.parent ?? this.route).paramMap.pipe(map((p) => Number(p.get('id')) || null)), { initialValue: null });
   readonly documents = signal<Document[]>([]);
@@ -37,7 +39,7 @@ export class ContratDocumentsComponent {
       next: (data) => { this.documents.set(data ?? []); this.loading.set(false); },
       error: (error) => {
         this.loading.set(false);
-        if (!this.isUnauthorized(error)) this.messageService.showError('Impossible de charger les documents');
+        if (!this.isUnauthorized(error)) this.messageService.showError(this.i18n.get('contrats.loadDocumentsError'));
       },
     });
     onCleanup(() => sub.unsubscribe());
@@ -46,10 +48,10 @@ export class ContratDocumentsComponent {
   downloadDocument(doc: Document): void { this.documentService.downloadDocument(doc); }
 
   deleteDocument(doc: Document): void {
-    if (!confirm(`Voulez-vous vraiment supprimer "${doc.nomFichier}" ?`)) return;
+    if (!confirm(this.i18n.format('contrats.deleteDocumentConfirm', { file: doc.nomFichier }))) return;
     this.documentService.delete(doc.id).subscribe({
-      next: () => { this.messageService.showSuccess('Document supprim?', 'Succ?s'); this.reloadDocuments.update((v) => v + 1); },
-      error: () => this.messageService.showError('Impossible de supprimer le document'),
+      next: () => { this.messageService.showSuccess(this.i18n.get('contrats.documentDeleted')); this.reloadDocuments.update((v) => v + 1); },
+      error: () => this.messageService.showError(this.i18n.get('contrats.deleteDocumentError')),
     });
   }
 
@@ -69,8 +71,8 @@ export class ContratDocumentsComponent {
         typeFichier: file.name.split('.').pop() || 'pdf',
         isActif: true,
       }).subscribe({
-        next: () => { this.messageService.showSuccess('Document ajout?', 'Succ?s'); this.reloadDocuments.update((v) => v + 1); },
-        error: () => this.messageService.showError("Impossible d'ajouter le document"),
+        next: () => { this.messageService.showSuccess(this.i18n.get('contrats.documentAdded')); this.reloadDocuments.update((v) => v + 1); },
+        error: () => this.messageService.showError(this.i18n.get('contrats.addDocumentError')),
       });
     };
     reader.readAsDataURL(file);

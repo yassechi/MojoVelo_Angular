@@ -1,7 +1,8 @@
 import { User, UserRole, UserService } from '../../../../core/services/user.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
@@ -32,21 +33,24 @@ export class AdminEmployesComponent {
   roleFilter: UserRole | 'all' = 'all';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
 
-  roleOptions = [
-    { label: 'Tous', value: 'all' },
-    { label: 'Administrateur', value: UserRole.Admin },
-    { label: 'Manager', value: UserRole.Manager },
-    { label: 'Utilisateur', value: UserRole.User }];
-
-  statusOptions = [
-    { label: 'Tous', value: 'all' },
-    { label: 'Actif', value: 'active' },
-    { label: 'Inactif', value: 'inactive' }];
-
   private readonly userService = inject(UserService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
+
+  readonly roleOptions = computed(() => [
+    { label: this.i18n.t().common.tous, value: 'all' },
+    { label: this.i18n.t().employes.admin, value: UserRole.Admin },
+    { label: this.i18n.t().employes.manager, value: UserRole.Manager },
+    { label: this.i18n.t().employes.utilisateur, value: UserRole.User },
+  ]);
+
+  readonly statusOptions = computed(() => [
+    { label: this.i18n.t().common.tous, value: 'all' },
+    { label: this.i18n.t().common.actif, value: 'active' },
+    { label: this.i18n.t().common.inactif, value: 'inactive' },
+  ]);
 
   constructor() { this.load(); }
 
@@ -59,7 +63,10 @@ export class AdminEmployesComponent {
         search: this.searchTerm.trim() || undefined,
       })
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe((data) => this.users.set(data ?? []));
+      .subscribe({
+        next: (data) => this.users.set(data ?? []),
+        error: () => this.messageService.showError(this.i18n.get('employes.loadError')),
+      });
   }
 
   onCreate(): void { this.router.navigate(['/admin/employes/new']); }
@@ -68,19 +75,30 @@ export class AdminEmployesComponent {
 
   onDelete(user: User): void {
     this.confirmationService.confirm({
-      message: 'êtes-vous sur de vouloir supprimer cet utilisateur ?',
-      header: 'Confirmation',
+      message: this.i18n.get('employes.deleteConfirm'),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () => this.userService.delete(user.id!).subscribe({
-        next: () => { this.messageService.showSuccess('Utilisateur supprimé', 'Succès'); this.load(); },
-        error: () => this.messageService.showError("Impossible de supprimer l'utilisateur"),
+        next: () => {
+          this.messageService.showSuccess(this.i18n.get('employes.deleteSuccess'), this.i18n.get('common.succes'));
+          this.load();
+        },
+        error: () => this.messageService.showError(this.i18n.get('employes.deleteError')),
       }),
     });
   }
 
-  getRoleLabel(role: UserRole): string { return this.userService.getRoleLabel(role); }
+  getRoleLabel(role: UserRole): string {
+    return role === UserRole.Admin
+      ? this.i18n.t().employes.admin
+      : role === UserRole.Manager
+        ? this.i18n.t().employes.manager
+        : role === UserRole.User
+          ? this.i18n.t().employes.utilisateur
+          : this.i18n.t().common.inconnu;
+  }
   getSeverity(isActif: boolean): 'success' | 'danger' { return isActif ? 'success' : 'danger'; }
-  getStatusLabel(isActif: boolean): string { return isActif ? 'Actif' : 'Inactif'; }
+  getStatusLabel(isActif: boolean): string { return isActif ? this.i18n.t().common.actif : this.i18n.t().common.inactif; }
 }

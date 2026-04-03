@@ -2,7 +2,8 @@ import { Organisation, OrganisationService } from '../../../../core/services/org
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { User, UserRole, UserService } from '../../../../core/services/user.service';
 import { MessageService } from '../../../../core/services/message.service';
-import { Component, inject, signal } from '@angular/core';
+import { I18nService } from '../../../../core/services/I18n.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -28,11 +29,6 @@ export class EmployeFormDialogComponent {
   isEdit = false;
   userId: string | null = null;
 
-  roleOptions = [
-    { label: 'Administrateur', value: UserRole.Admin },
-    { label: 'Manager', value: UserRole.Manager },
-    { label: 'Utilisateur', value: UserRole.User }];
-
   private readonly fb = inject(FormBuilder);
   form: FormGroup = this.fb.group({
     id: [null],
@@ -54,6 +50,13 @@ export class EmployeFormDialogComponent {
   private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
+
+  readonly roleOptions = computed(() => [
+    { label: this.i18n.t().employes.admin, value: UserRole.Admin },
+    { label: this.i18n.t().employes.manager, value: UserRole.Manager },
+    { label: this.i18n.t().employes.utilisateur, value: UserRole.User },
+  ]);
 
   constructor() {
     this.organisationService.getAll().subscribe({ next: (data) => this.organisations.set(data ?? []) });
@@ -79,7 +82,7 @@ export class EmployeFormDialogComponent {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.showError("Impossible de charger l'employ?");
+        this.messageService.showError(this.i18n.get('employes.loadOneError'));
         this.loading.set(false);
         this.goBack();
       },
@@ -111,7 +114,10 @@ export class EmployeFormDialogComponent {
 
     (this.isEdit ? this.userService.update(payload) : this.userService.create(payload)).subscribe({
       next: () => {
-        this.messageService.showSuccess(this.isEdit ? 'Employ? modifi?' : 'Employ? cr??', 'Succ?s');
+        this.messageService.showSuccess(
+          this.isEdit ? this.i18n.get('employes.updateSuccess') : this.i18n.get('employes.createSuccess'),
+          this.i18n.get('common.succes'),
+        );
         this.loading.set(false);
         this.goBack();
       },

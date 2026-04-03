@@ -1,45 +1,45 @@
 <div class="employes-container page-shell">
   <div class="employes-header page-header">
     <div>
-      <h1 class="page-title">Gestion des employés</h1>
-      <p class="page-subtitle">Liste et gestion des employés</p>
+      <h1 class="page-title">{{ i18n.t().employes.title }}</h1>
+      <p class="page-subtitle">{{ i18n.t().employes.subtitle }}</p>
     </div>
-    <p-button label="Créer un employé" icon="pi pi-plus" (click)="onCreate()"></p-button>
+    <p-button [label]="i18n.t().employes.create" icon="pi pi-plus" (click)="onCreate()"></p-button>
   </div>
 
   <p-card class="section-card mb-3">
     <div class="grid">
       <div class="col-12 md:col-4">
-        <label class="block mb-2 font-semibold">Rôle</label>
+        <label class="block mb-2 font-semibold">{{ i18n.t().employes.role }}</label>
         <p-select
-          [options]="roleOptions"
+          [options]="roleOptions()"
           optionLabel="label"
           optionValue="value"
           [(ngModel)]="roleFilter"
           (onChange)="load()"
-          placeholder="Tous"
+          [placeholder]="i18n.t().common.tous"
         ></p-select>
       </div>
       <div class="col-12 md:col-4">
-        <label class="block mb-2 font-semibold">Statut</label>
+        <label class="block mb-2 font-semibold">{{ i18n.t().employes.statut }}</label>
         <p-select
-          [options]="statusOptions"
+          [options]="statusOptions()"
           optionLabel="label"
           optionValue="value"
           [(ngModel)]="statusFilter"
           (onChange)="load()"
-          placeholder="Tous"
+          [placeholder]="i18n.t().common.tous"
         ></p-select>
       </div>
       <div class="col-12 md:col-4">
-        <label class="block mb-2 font-semibold">Recherche</label>
+        <label class="block mb-2 font-semibold">{{ i18n.t().common.recherche }}</label>
         <span class="p-input-icon-left w-full">
           <i class="pi pi-search"></i>
           <input
             pInputText
             type="text"
             class="w-full"
-            placeholder="Nom, email ou téléphone"
+            [placeholder]="i18n.t().employes.searchPlaceholder"
             [(ngModel)]="searchTerm"
             (input)="load()"
           />
@@ -57,23 +57,23 @@
           [paginator]="true"
           [rows]="10"
           [showCurrentPageReport]="true"
-          currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} employés"
+          [currentPageReportTemplate]="i18n.t().employes.reportTemplate"
           [rowsPerPageOptions]="[10, 25, 50]"
           class="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
               <th pSortableColumn="userName">
-                Nom d'utilisateur
+                {{ i18n.t().employes.username }}
                 <p-sortIcon field="userName"></p-sortIcon>
               </th>
-              <th>Prénom</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Téléphone</th>
-              <th>Rôle</th>
-              <th>Statut</th>
-              <th style="width: 150px">Actions</th>
+              <th>{{ i18n.t().employes.prenom }}</th>
+              <th>{{ i18n.t().employes.nom }}</th>
+              <th>{{ i18n.t().employes.email }}</th>
+              <th>{{ i18n.t().employes.telephone }}</th>
+              <th>{{ i18n.t().employes.role }}</th>
+              <th>{{ i18n.t().employes.statut }}</th>
+              <th style="width: 150px">{{ i18n.t().employes.actions }}</th>
             </tr>
           </ng-template>
 
@@ -102,19 +102,19 @@
                     icon="pi pi-eye"
                     class="p-button-rounded p-button-text"
                     (click)="onView(user)"
-                    [pTooltip]="'Voir'"
+                    [pTooltip]="i18n.t().common.voir"
                   ></p-button>
                   <p-button
                     icon="pi pi-pencil"
                     class="p-button-rounded p-button-text"
                     (click)="onEdit(user)"
-                    [pTooltip]="'Modifier'"
+                    [pTooltip]="i18n.t().common.modifier"
                   ></p-button>
                   <p-button
                     icon="pi pi-trash"
                     class="p-button-rounded p-button-text p-button-danger"
                     (click)="onDelete(user)"
-                    [pTooltip]="'Supprimer'"
+                    [pTooltip]="i18n.t().common.supprimer"
                   ></p-button>
                 </div>
               </td>
@@ -125,7 +125,7 @@
             <tr>
               <td colspan="8" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
-                <p class="mt-3 text-600">Aucun employé trouvé</p>
+                <p class="mt-3 text-600">{{ i18n.t().employes.aucun }}</p>
               </td>
             </tr>
           </ng-template>

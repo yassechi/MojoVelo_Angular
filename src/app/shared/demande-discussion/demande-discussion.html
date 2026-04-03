@@ -1,9 +1,9 @@
 <div class="detail-section">
-  <h3>Discussion</h3>
+  <h3>{{ i18n.t().discussion.title }}</h3>
   <div class="message-card">
 
     @if (messages.length === 0) {
-      <div class="text-600">Aucun message pour cette demande.</div>
+      <div class="text-600">{{ i18n.t().discussion.aucunMessage }}</div>
     } @else {
       <div class="message-list" #messageList>
         @for (message of messages; track message.id) {
@@ -25,12 +25,12 @@
         pInputTextarea
         rows="3"
         class="w-full"
-        placeholder="Ecrire un message..."
+        [placeholder]="i18n.t().discussion.ecrireMessage"
         [(ngModel)]="messageText"
       ></textarea>
       <div class="flex justify-content-end mt-2">
         <p-button
-          label="Envoyer"
+          [label]="i18n.t().discussion.envoyer"
           icon="pi pi-send"
           (click)="sendMessage()"
           [disabled]="!messageText.trim()"

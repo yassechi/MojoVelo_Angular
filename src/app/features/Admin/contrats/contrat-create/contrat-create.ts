@@ -1,4 +1,4 @@
-import {
+﻿import {
   Contrat,
   ContratEditUser,
   ContratEditVelo,
@@ -9,7 +9,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from '../../../../core/services/message.service';
 import { UserService } from '../../../../core/services/user.service';
 import { VeloService } from '../../../../core/services/velo.service';
-import { Component, inject } from '@angular/core';
+import { I18nService } from '../../../../core/services/I18n.service';
+import { Component, computed, inject } from '@angular/core';
 import { InputNumber } from 'primeng/inputnumber';
 import { DatePicker } from 'primeng/datepicker';
 import { CommonModule } from '@angular/common';
@@ -17,8 +18,8 @@ import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { Card } from 'primeng/card';
+import { TooltipModule } from 'primeng/tooltip';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-contrat-create',
@@ -28,6 +29,7 @@ import { forkJoin } from 'rxjs';
     ReactiveFormsModule,
     Card,
     Button,
+    TooltipModule,
     InputText,
     Select,
     DatePicker,
@@ -42,6 +44,7 @@ export class ContratCreateComponent {
   private readonly messageService = inject(MessageService);
   private readonly userService = inject(UserService);
   private readonly veloService = inject(VeloService);
+  readonly i18n = inject(I18nService);
 
   users: ContratEditUser[] = [];
   beneficiaires: ContratEditUser[] = [];
@@ -61,10 +64,11 @@ export class ContratCreateComponent {
     statutContrat: this.fb.nonNullable.control(StatutContrat.EnCours, Validators.required),
   });
 
-  readonly statutOptions = [
-    { label: 'En cours', value: StatutContrat.EnCours },
-    { label: 'Terminé', value: StatutContrat.Termine },
-    { label: 'Résilié', value: StatutContrat.Resilie }];
+  readonly statutOptions = computed(() => [
+    { label: this.i18n.t().contratStatus.enCours, value: StatutContrat.EnCours },
+    { label: this.i18n.t().contratStatus.termine, value: StatutContrat.Termine },
+    { label: this.i18n.t().contratStatus.resilie, value: StatutContrat.Resilie },
+  ]);
 
   constructor() {
     this.loadCreateData();
@@ -72,7 +76,7 @@ export class ContratCreateComponent {
 
   onSubmit(): void {
     if (this.contratForm.invalid) {
-      this.messageService.showWarn('Veuillez remplir tous les champs obligatoires');
+      this.messageService.showWarn(this.i18n.get('contrats.fillRequired'));
       return;
     }
 
@@ -84,7 +88,7 @@ export class ContratCreateComponent {
       v.duree === null ||
       v.loyerMensuelHT === null
     ) {
-      this.messageService.showError('Formulaire incomplet');
+      this.messageService.showError(this.i18n.get('contrats.formIncomplete'));
       return;
     }
 
@@ -103,8 +107,7 @@ export class ContratCreateComponent {
 
     this.contratService.create(contrat).subscribe({
       next: (response) => {
-        this.messageService.showSuccess('Contrat crée avec succès');
-        // si c est crée on a l'Id et en redirige vers le contrat crée
+        this.messageService.showSuccess(this.i18n.get('contrats.createSuccess'));
         const newId = response?.id;
         if (newId) {
           setTimeout(() => (window.location.href = `/admin/contrats/${newId}`), 1000);
@@ -114,7 +117,7 @@ export class ContratCreateComponent {
       },
       error: (err) =>
         this.messageService.showError(
-          err?.error?.message ?? err?.error?.Message ?? 'Impossible de créer le contrat',
+          err?.error?.message ?? err?.error?.Message ?? this.i18n.get('contrats.createError'),
         ),
     });
   }
@@ -125,16 +128,28 @@ export class ContratCreateComponent {
 
   private loadCreateData(): void {
     this.loading = true;
-    this.userService.getList({ isActif: true }).subscribe((users) => {
-      const usersList = (users ?? []) as ContratEditUser[];
-      this.users = usersList;
-      this.beneficiaires = usersList;
-      this.responsablesRh = usersList;
+    this.userService.getList({ isActif: true }).subscribe({
+      next: (users) => {
+        const usersList = (users ?? []) as ContratEditUser[];
+        this.users = usersList;
+        this.beneficiaires = usersList;
+        this.responsablesRh = usersList;
 
-      this.veloService.getAll().subscribe((velos) => {
-        this.velos = (velos ?? []) as ContratEditVelo[];
+        this.veloService.getAll().subscribe({
+          next: (velos) => {
+            this.velos = (velos ?? []) as ContratEditVelo[];
+            this.loading = false;
+          },
+          error: () => {
+            this.loading = false;
+            this.messageService.showError(this.i18n.get('contrats.loadDataError'));
+          },
+        });
+      },
+      error: () => {
         this.loading = false;
-      });
+        this.messageService.showError(this.i18n.get('contrats.loadDataError'));
+      },
     });
   }
 

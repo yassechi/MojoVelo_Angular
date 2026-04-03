@@ -1,8 +1,8 @@
 <div class="demandes-container page-shell">
   <div class="demandes-header page-header">
     <div>
-      <h1 class="page-title">Gestion des demandes</h1>
-      <p class="page-subtitle">Validation et suivi des demandes de velo</p>
+      <h1 class="page-title">{{ i18n.t().demandes.title }}</h1>
+      <p class="page-subtitle">{{ i18n.t().demandes.subtitle }}</p>
     </div>
 
   </div>
@@ -10,36 +10,36 @@
   <p-card class="section-card mb-3">
     <div class="grid">
       <div class="col-12 md:col-3">
-        <label class="block mb-2 font-semibold">Statut</label>
+        <label class="block mb-2 font-semibold">{{ i18n.t().demandes.statut }}</label>
         <p-select
           [options]="statusOptions"
           optionLabel="label"
           optionValue="value"
           [(ngModel)]="statusFilter"
           (onChange)="load()"
-          placeholder="Tous"
+          [placeholder]="i18n.t().common.tous"
         ></p-select>
       </div>
       <div class="col-12 md:col-3">
-        <label class="block mb-2 font-semibold">Type de velo</label>
+        <label class="block mb-2 font-semibold">{{ i18n.t().demandes.typeVelo }}</label>
         <p-select
           [options]="typeOptions()"
           optionLabel="label"
           optionValue="value"
           [(ngModel)]="typeFilter"
           (onChange)="load()"
-          placeholder="Tous"
+          [placeholder]="i18n.t().common.tous"
         ></p-select>
       </div>
       <div class="col-12 md:col-4">
-        <label class="block mb-2 font-semibold">Recherche</label>
+        <label class="block mb-2 font-semibold">{{ i18n.t().common.recherche }}</label>
         <span class="p-input-icon-left w-full">
           <i class="pi pi-search"></i>
           <input
             pInputText
             type="text"
             class="w-full"
-            placeholder="Rechercher par employe ou velo"
+            [placeholder]="i18n.t().demandes.recherche"
             [(ngModel)]="searchTerm"
             (input)="load()"
           />
@@ -47,7 +47,7 @@
       </div>
       <div class="col-12 md:col-2 flex align-items-end">
         <div class="text-600 text-sm">
-          {{ demandes().length }} demandes
+          {{ demandes().length }} {{ i18n.t().demandes.countLabel }}
         </div>
       </div>
     </div>
@@ -62,18 +62,18 @@
           [paginator]="true"
           [rows]="10"
           [showCurrentPageReport]="true"
-          currentPageReportTemplate="Affichage de {first} a {last} sur {totalRecords} demandes"
+          [currentPageReportTemplate]="i18n.t().demandes.reportTemplate"
           [rowsPerPageOptions]="[10, 25, 50]"
           class="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
-              <th>Employe</th>
-              <th>Velo</th>
-              <th>Type</th>
-              <th>Prix TVAC</th>
-              <th>Statut</th>
-              <th style="width: 120px">Actions</th>
+              <th>{{ i18n.t().demandes.employee }}</th>
+              <th>{{ i18n.t().demandes.velo }}</th>
+              <th>{{ i18n.t().demandes.type }}</th>
+              <th>{{ i18n.t().demandes.prixTvac }}</th>
+              <th>{{ i18n.t().demandes.statut }}</th>
+              <th style="width: 120px">{{ i18n.t().common.actions }}</th>
             </tr>
           </ng-template>
 
@@ -85,7 +85,7 @@
               </td>
               <td>
                 <div class="font-semibold">{{ demande.veloModele }}</div>
-                <div class="text-600 text-sm">{{ demande.veloMarque || 'Marque non renseignee' }}</div>
+                <div class="text-600 text-sm">{{ demande.veloMarque || i18n.t().demandes.brandUnknown }}</div>
               </td>
               <td>{{ demande.veloType || demande.organisationName || '-' }}</td>
               <td>{{ demande.veloPrixAchat == null ? '-' : (demande.veloPrixAchat | currency:'EUR') }}</td>
@@ -98,7 +98,7 @@
                   <span
                     *ngIf="hasUnreadMessages(demande)"
                     class="unread-indicator"
-                    pTooltip="Nouveau message"
+                    [pTooltip]="i18n.t().demandes.nouveauMessage"
                     tooltipPosition="top"
                   ></span>
                 </div>
@@ -106,7 +106,7 @@
               <td>
                 <div class="flex gap-2">
                   <p-button
-                    label="Voir"
+                    [label]="i18n.t().common.voir"
                     icon="pi pi-eye"
                     class="p-button-text"
                     (click)="onView(demande)"
@@ -121,7 +121,7 @@
             <tr>
               <td colspan="6" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
-                <p class="mt-3 text-600">Aucune demande trouvee</p>
+                <p class="mt-3 text-600">{{ i18n.t().demandes.aucune }}</p>
               </td>
             </tr>
           </ng-template>

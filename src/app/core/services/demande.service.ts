@@ -1,4 +1,5 @@
 ﻿import { Injectable, inject } from '@angular/core';
+import { I18nService } from './I18n.service';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -105,6 +106,7 @@ export class DemandeService {
   private apiUrl = `${environment.urls.coreApi}/Demande`;
 
   private readonly http = inject(HttpClient);
+  private readonly i18n = inject(I18nService);
 
   getOne(id: number): Observable<Demande> {
     return this.http.get<Demande>(`${this.apiUrl}/get-one/${id}`);
@@ -161,19 +163,20 @@ export class DemandeService {
   }
 
   getStatusLabel(status: DemandeStatus): string {
+    const t = this.i18n.t();
     switch (status) {
       case DemandeStatus.Encours:
-        return 'En cours';
+        return t.demandeStatus.encours;
       case DemandeStatus.AttenteComagnie:
-        return 'Attente Compagnie';
+        return t.demandeStatus.attenteCompagnie;
       case DemandeStatus.Finalisation:
-        return 'Finalisation';
+        return t.demandeStatus.finalisation;
       case DemandeStatus.Valide:
-        return 'Valide';
+        return t.demandeStatus.valide;
       case DemandeStatus.Refuse:
-        return 'Refuse';
+        return t.demandeStatus.refuse;
       default:
-        return 'Inconnu';
+        return t.common.inconnu;
     }
   }
 

@@ -1,5 +1,6 @@
 import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -22,6 +23,7 @@ export class CompagnieDetailComponent {
   private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.organisationId = Number(this.route.snapshot.paramMap.get('id')) || null;
@@ -35,7 +37,7 @@ export class CompagnieDetailComponent {
         this.loadLogo(this.organisationId!);
       },
       error: () => {
-        this.messageService.showError('Impossible de charger la compagnie');
+        this.messageService.showError(this.i18n.get('compagnies.loadOneError'));
         this.goBack();
       },
     });

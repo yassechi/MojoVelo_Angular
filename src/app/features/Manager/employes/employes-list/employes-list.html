@@ -1,10 +1,10 @@
 <div class="employes-container page-shell">
   <div class="page-header">
     <div>
-      <h1 class="page-title">Gestion des employés</h1>
-      <p class="page-subtitle">Liste et gestion des employés de votre organisation</p>
+      <h1 class="page-title">{{ i18n.t().employes.title }}</h1>
+      <p class="page-subtitle">{{ i18n.t().employes.managerSubtitle }}</p>
     </div>
-    <p-button label="Créer un employé" icon="pi pi-plus" (click)="onCreate()"></p-button>
+    <p-button [label]="i18n.t().employes.create" icon="pi pi-plus" (click)="onCreate()"></p-button>
   </div>
 
   <div class="grid">
@@ -16,21 +16,21 @@
           [paginator]="true"
           [rows]="10"
           [showCurrentPageReport]="true"
-          currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} employés"
+          [currentPageReportTemplate]="i18n.t().employes.reportTemplate"
           [rowsPerPageOptions]="[10, 25, 50]"
           class="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
-              <th pSortableColumn="userName">Nom d'utilisateur <p-sortIcon field="userName"></p-sortIcon></th>
-              <th pSortableColumn="firstName">Prénom <p-sortIcon field="firstName"></p-sortIcon></th>
-              <th pSortableColumn="lastName">Nom <p-sortIcon field="lastName"></p-sortIcon></th>
-              <th>Email</th>
-              <th>Téléphone</th>
-              <th>Rôle</th>
-              <th>Organisation</th>
-              <th>Statut</th>
-              <th style="width: 150px">Actions</th>
+              <th pSortableColumn="userName">{{ i18n.t().employes.username }} <p-sortIcon field="userName"></p-sortIcon></th>
+              <th pSortableColumn="firstName">{{ i18n.t().employes.prenom }} <p-sortIcon field="firstName"></p-sortIcon></th>
+              <th pSortableColumn="lastName">{{ i18n.t().employes.nom }} <p-sortIcon field="lastName"></p-sortIcon></th>
+              <th>{{ i18n.t().employes.email }}</th>
+              <th>{{ i18n.t().employes.telephone }}</th>
+              <th>{{ i18n.t().employes.role }}</th>
+              <th>{{ i18n.t().employes.organisation }}</th>
+              <th>{{ i18n.t().employes.statut }}</th>
+              <th style="width: 150px">{{ i18n.t().employes.actions }}</th>
             </tr>
           </ng-template>
 
@@ -46,13 +46,13 @@
               </td>
               <td>{{ getOrganisationName(user) }}</td>
               <td>
-                <p-tag [value]="user.isActif ? 'Actif' : 'Inactif'" [severity]="user.isActif ? 'success' : 'danger'"></p-tag>
+                <p-tag [value]="user.isActif ? i18n.t().common.actif : i18n.t().common.inactif" [severity]="user.isActif ? 'success' : 'danger'"></p-tag>
               </td>
               <td>
                 <div class="flex gap-2">
-                  <p-button icon="pi pi-eye"    class="p-button-rounded p-button-text"                 (click)="onView(user)"   [pTooltip]="'Voir'"></p-button>
-                  <p-button icon="pi pi-pencil" class="p-button-rounded p-button-text"                 (click)="onEdit(user)"   [pTooltip]="'Modifier'"></p-button>
-                  <p-button icon="pi pi-trash"  class="p-button-rounded p-button-text p-button-danger" (click)="onDelete(user)" [pTooltip]="'Supprimer'"></p-button>
+                  <p-button icon="pi pi-eye"    class="p-button-rounded p-button-text"                 (click)="onView(user)"   [pTooltip]="i18n.t().common.voir"></p-button>
+                  <p-button icon="pi pi-pencil" class="p-button-rounded p-button-text"                 (click)="onEdit(user)"   [pTooltip]="i18n.t().common.modifier"></p-button>
+                  <p-button icon="pi pi-trash"  class="p-button-rounded p-button-text p-button-danger" (click)="onDelete(user)" [pTooltip]="i18n.t().common.supprimer"></p-button>
                 </div>
               </td>
             </tr>
@@ -62,7 +62,7 @@
             <tr>
               <td colspan="9" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
-                <p class="mt-3 text-600">Aucun employé trouvé pour votre organisation</p>
+                <p class="mt-3 text-600">{{ i18n.t().employes.managerEmpty }}</p>
               </td>
             </tr>
           </ng-template>

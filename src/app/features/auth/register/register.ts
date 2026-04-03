@@ -2,6 +2,7 @@ import { Organisation, OrganisationService } from '../../../core/services/organi
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { UserService, UserRole } from '../../../core/services/user.service';
 import { MessageService } from '../../../core/services/message.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -27,6 +28,7 @@ export class RegisterComponent {
   private readonly organisationService = inject(OrganisationService);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   form = this.fb.group({
     userName: ['', Validators.required],
@@ -48,7 +50,7 @@ export class RegisterComponent {
       },
       error: () => {
         this.loadingOrganisations.set(false);
-        this.messageService.showError('Impossible de charger les organisations');
+        this.messageService.showError(this.i18n.get('auth.loadOrganisationsError'));
       },
     });
   }
@@ -71,12 +73,12 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.messageService.showSuccess('Compte cree avec succes', 'Succes');
+        this.messageService.showSuccess(this.i18n.get('auth.registerSuccess'));
         this.router.navigate(['/login']);
       },
       error: (err) => {
         this.loading.set(false);
-        this.messageService.showError(err?.error?.message || 'Impossible de creer le compte');
+        this.messageService.showError(err?.error?.message || this.i18n.get('auth.registerError'));
       },
     });
   }

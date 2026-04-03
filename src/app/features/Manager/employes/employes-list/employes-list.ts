@@ -1,5 +1,6 @@
 import { User, UserRole, UserService } from '../../../../core/services/user.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Component, inject, signal } from '@angular/core';
@@ -29,6 +30,7 @@ export class ManagerEmployesComponent {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   private readonly orgId: number | null = (() => {
     const user = this.authService.getCurrentUser();
@@ -43,7 +45,7 @@ export class ManagerEmployesComponent {
     this.loading.set(true);
     this.userService.getByOrganisation(this.orgId, UserRole.User).subscribe({
       next: (data) => { this.employes.set(data ?? []); this.loading.set(false); },
-      error: () => { this.messageService.showError('Impossible de charger les employ?s'); this.loading.set(false); },
+      error: () => { this.messageService.showError(this.i18n.get('employes.loadError')); this.loading.set(false); },
     });
   }
 
@@ -52,26 +54,33 @@ export class ManagerEmployesComponent {
   onEdit(u: User): void { this.router.navigate(['/manager/employes', u.id, 'edit']); }
 
   onDelete(u: User): void {
+    const name = `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.userName;
     this.confirmationService.confirm({
-      message: `?tes-vous s?r de vouloir supprimer l'employ? "${u.firstName} ${u.lastName}" ?`,
-      header: 'Confirmation',
+      message: this.i18n.format('employes.deleteConfirmName', { name }),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () => this.userService.delete(u.id!).subscribe({
-        next: () => { this.messageService.showSuccess('Employ? supprim?', 'Succ?s'); this.load(); },
-        error: () => this.messageService.showError("Impossible de supprimer l'employ?"),
+        next: () => { this.messageService.showSuccess(this.i18n.get('employes.deleteSuccess'), this.i18n.get('common.succes')); this.load(); },
+        error: () => this.messageService.showError(this.i18n.get('employes.deleteError')),
       }),
     });
   }
 
   getRoleLabel(role: UserRole): string {
-    return role === UserRole.Admin ? 'Administrateur' : role === UserRole.Manager ? 'Manager' : role === UserRole.User ? 'Utilisateur' : 'Inconnu';
+    return role === UserRole.Admin
+      ? this.i18n.t().employes.admin
+      : role === UserRole.Manager
+        ? this.i18n.t().employes.manager
+        : role === UserRole.User
+          ? this.i18n.t().employes.utilisateur
+          : this.i18n.t().common.inconnu;
   }
   getRoleSeverity(role: UserRole): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     return role === UserRole.Admin ? 'danger' : role === UserRole.Manager ? 'warn' : role === UserRole.User ? 'info' : 'secondary';
   }
   getOrganisationName(u: User): string {
-    return u.organisationId && typeof u.organisationId === 'object' ? (u.organisationId as any).name || 'N/A' : 'N/A';
+    return u.organisationId && typeof u.organisationId === 'object' ? (u.organisationId as any).name || this.i18n.t().common.inconnu : this.i18n.t().common.inconnu;
   }
 }

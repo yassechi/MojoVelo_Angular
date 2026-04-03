@@ -1,6 +1,7 @@
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from '../../../core/services/message.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { CommonModule } from '@angular/common';
@@ -19,6 +20,7 @@ export class ForgotPasswordComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   forgotForm: FormGroup = this.fb.group({ email: ['', [Validators.required, Validators.email]] });
   loading = signal(false);
@@ -31,11 +33,11 @@ export class ForgotPasswordComponent {
       next: () => {
         this.loading.set(false);
         this.emailSent.set(true);
-        this.messageService.showSuccess('Si cet email existe, vous recevrez un lien de r?initialisation.', 'Email envoy?');
+        this.messageService.showSuccess(this.i18n.get('auth.emailSentInfo'), this.i18n.get('auth.emailSentTitle'));
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.showError('Une erreur est survenue. Veuillez r?essayer.');
+        this.messageService.showError(this.i18n.get('auth.forgotError'));
       }
     });
   }

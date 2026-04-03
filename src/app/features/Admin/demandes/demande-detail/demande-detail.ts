@@ -1,5 +1,4 @@
-
-import {
+﻿import {
   DemandeDetail,
   DemandeService,
   DemandeStatus,
@@ -8,8 +7,9 @@ import { DemandeDiscussionComponent } from '../../../../shared/demande-discussio
 import { VeloCatalogService, VeloItem } from '../../../../core/services/velo-catalog.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -41,52 +41,49 @@ export class DemandeDetailComponent {
   private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   constructor() {
-    //const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.route.paramMap.subscribe(p => {
-      let id = Number(p.get("id"))
+    this.route.paramMap.subscribe((p) => {
+      const id = Number(p.get('id'));
       if (!id) {
-      this.goBack();
-      return;
-    }
-    this.demandeId.set(id);
-    this.loading.set(true);
-    this.demandeService.getDetail(id).subscribe({
-      next: (demande) => {
-        const user = this.authService.getCurrentUser();
-        if (user?.role === 3) {
-          const userId = this.normalizeId(user.id);
-          const demandeId = this.normalizeId(demande.idUser);
-          if (!userId || !demandeId || userId !== demandeId) {
-            this.messageService.showError(
-              "Vous ne pouvez pas accéder ? la demande d'un autre utilisateur",
-            );
-            this.loading.set(false);
-            this.goBack();
+        this.goBack();
+        return;
+      }
+      this.demandeId.set(id);
+      this.loading.set(true);
+      this.demandeService.getDetail(id).subscribe({
+        next: (demande) => {
+          const user = this.authService.getCurrentUser();
+          if (user?.role === 3) {
+            const userId = this.normalizeId(user.id);
+            const demandeId = this.normalizeId(demande.idUser);
+            if (!userId || !demandeId || userId !== demandeId) {
+              this.messageService.showError(this.i18n.get('demandes.accessDenied'));
+              this.loading.set(false);
+              this.goBack();
+              return;
+            }
+          }
+          this.demande.set(demande);
+          this.loading.set(false);
+          const cmsId = demande.veloCmsId ?? null;
+          if (!cmsId) {
+            this.velo.set(null);
             return;
           }
-        }
-        this.demande.set(demande);
-        this.loading.set(false);
-        const cmsId = demande.veloCmsId ?? null;
-        if (!cmsId) {
-          this.velo.set(null);
-          return;
-        }
-        this.veloCatalogService.getVeloById(cmsId).subscribe({
-          next: (velo) => this.velo.set(velo),
-          error: () => this.velo.set(null),
-        });
-      },
-      error: () => {
-        this.messageService.showError('Impossible de charger la demande');
-        this.loading.set(false);
-        this.goBack();
-      },
+          this.veloCatalogService.getVeloById(cmsId).subscribe({
+            next: (velo) => this.velo.set(velo),
+            error: () => this.velo.set(null),
+          });
+        },
+        error: () => {
+          this.messageService.showError(this.i18n.get('demandes.loadDemandeError'));
+          this.loading.set(false);
+          this.goBack();
+        },
+      });
     });
-    })
-
   }
 
   onValidate(): void {
@@ -107,17 +104,11 @@ export class DemandeDetailComponent {
       next: () => {
         this.demande.update((d) => (d ? { ...d, status: decision } : d));
         this.messageService.showSuccess(
-          {
-            [DemandeStatus.Finalisation]: 'Demande en finalisation',
-            [DemandeStatus.Valide]: 'Demande valid?e',
-            [DemandeStatus.AttenteComagnie]: 'Demande en attente compagnie',
-            [DemandeStatus.Refuse]: 'Demande refus?e',
-            [DemandeStatus.Encours]: 'Demande en cours',
-          }[decision],
-          'Succès',
+          this.i18n.format('demandes.statusChanged', { status: this.getStatusLabel(decision) }),
+          this.i18n.get('common.succes'),
         );
       },
-      error: () => this.messageService.showError('Impossible de mettre ? jour la demande'),
+      error: () => this.messageService.showError(this.i18n.get('demandes.statusUpdateError')),
     });
   }
 
@@ -149,9 +140,8 @@ export class DemandeDetailComponent {
   }
 
   getVeloImage(velo: VeloItem | null): string | null {
-    //return velo?._embedded?.['wp:featuredmedia']?.[0]?.source_url ?? null;
-    console.log(velo?.yoast_head_json?.['og_image'].url)
-    console.log(velo)
+    console.log(velo?.yoast_head_json?.['og_image'].url);
+    console.log(velo);
     return velo?.yoast_head_json?.['og_image'][0].url ?? null;
   }
   get isUserView(): boolean {
@@ -167,9 +157,9 @@ export class DemandeDetailComponent {
     return this.demandeService.getStatusSeverity(s);
   }
   formatCurrency(amount?: number | null): string {
-    return amount == null
-      ? '-'
-      : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+    if (amount == null) return '-';
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(amount);
   }
   private normalizeId(value?: string): string {
     return (value ?? '').trim().replace(/[{}]/g, '').toLowerCase();

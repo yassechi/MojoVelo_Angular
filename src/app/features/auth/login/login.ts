@@ -1,6 +1,7 @@
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from '../../../core/services/message.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -23,6 +24,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -36,11 +38,17 @@ export class LoginComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.messageService.showSuccess(`Bienvenue ${response.userName}!`, 'Connexion réussie');
+        this.messageService.showSuccess(
+          this.i18n.format('auth.welcomeUser', { name: response.userName }),
+          this.i18n.get('auth.loginSuccess'),
+        );
       },
       error: (error) => {
         this.loading.set(false);
-        this.messageService.showError(error.error?.message || 'Email ou mot de passe incorrect', 'Erreur de connexion');
+        this.messageService.showError(
+          error.error?.message || this.i18n.get('auth.loginError'),
+          this.i18n.get('auth.loginErrorTitle'),
+        );
       }
     });
   }

@@ -2,8 +2,9 @@ import { OrganisationService } from '../../../core/services/organisation.service
 import { MessageService } from '../../../core/services/message.service';
 import { AiService } from '../../../core/services/ai.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { TextareaModule } from 'primeng/textarea';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,72 +26,6 @@ interface QuestionnaireQuestion {
   options: QuestionnaireOption[];
 }
 
-const QUESTIONS: QuestionnaireQuestion[] = [
-  {
-    key: 'usage',
-    title: 'Usage principal',
-    subtitle: 'Comment allez-vous utiliser votre velo ? ',
-    options: [
-      { label: 'Domicile-travail', value: 'domicile-travail', hint: 'Trajets quotidiens' },
-      { label: 'Loisir', value: 'loisir', hint: 'Balades et week-ends' },
-      { label: 'Sport', value: 'sport', hint: 'Sorties sportives' },
-      { label: 'Mixte', value: 'mixte', hint: 'Un peu de tout' },
-    ],
-  },
-  {
-    key: 'distance',
-    title: 'Distance moyenne',
-    subtitle: 'Distance par trajet ou sortie',
-    options: [
-      { label: '0-5 km', value: '0-5', hint: 'Tres court' },
-      { label: '5-10 km', value: '5-10', hint: 'Court' },
-      { label: '10-20 km', value: '10-20', hint: 'Moyen' },
-      { label: '20+ km', value: '20+', hint: 'Long' },
-    ],
-  },
-  {
-    key: 'terrain',
-    title: 'Type de terrain',
-    subtitle: 'Profil de vos trajets',
-    options: [
-      { label: 'Plat', value: 'plat', hint: 'Routes plates' },
-      { label: 'Mixte', value: 'mixte', hint: 'Un peu de relief' },
-      { label: 'Montagne', value: 'montagne', hint: 'Forte pente' },
-      { label: 'Ville', value: 'ville', hint: 'Circulation urbaine' },
-    ],
-  },
-  {
-    key: 'assistance',
-    title: 'Assistance electrique',
-    subtitle: 'Souhaitez-vous un moteur ?',
-    options: [
-      { label: 'Aucune', value: 'aucune', hint: 'Velo classique' },
-      { label: 'Electrique', value: 'electrique', hint: 'Assistance E-bike' },
-    ],
-  },
-  {
-    key: 'budget',
-    title: 'Budget',
-    subtitle: 'Fourchette de prix',
-    options: [
-      { label: '500-1000 EUR', value: '500-1000', hint: 'Entree de gamme' },
-      { label: '1000-2000 EUR', value: '1000-2000', hint: 'Milieu de gamme' },
-      { label: '2000-3000 EUR', value: '2000-3000', hint: 'Premium' },
-      { label: '3000+ EUR', value: '3000+', hint: 'Haut de gamme' },
-    ],
-  },
-  {
-    key: 'cargo',
-    title: 'Besoin de charge',
-    subtitle: 'Transport de sac ou de materiel',
-    options: [
-      { label: 'Aucun', value: 'aucun', hint: 'Rien a transporter' },
-      { label: 'Leger', value: 'leger', hint: 'Sac ou ordinateur' },
-      { label: 'Important', value: 'important', hint: 'Charge lourde' },
-    ],
-  },
-];
-
 const DEFAULT_ANSWERS: Record<QuestionnaireKey, string | null> = {
   usage: null,
   distance: null,
@@ -108,7 +43,9 @@ const DEFAULT_ANSWERS: Record<QuestionnaireKey, string | null> = {
   styleUrls: ['./questionnaire-guide.scss'],
 })
 export class QuestionnaireGuideComponent {
-  readonly questions = QUESTIONS;
+  readonly questions = computed<QuestionnaireQuestion[]>(
+    () => this.i18n.t().questionnaire.questions as QuestionnaireQuestion[],
+  );
   answers = signal<Record<QuestionnaireKey, string | null>>({ ...DEFAULT_ANSWERS });
   aiResponse = signal<string | null>(null);
   askLoading = signal(false);
@@ -127,6 +64,7 @@ export class QuestionnaireGuideComponent {
   private readonly aiService = inject(AiService);
   private readonly messageService = inject(MessageService);
   private readonly authService = inject(AuthService);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.fromSidebar = this.params['entry'] === 'sidebar';
@@ -157,11 +95,13 @@ export class QuestionnaireGuideComponent {
   }
 
   progressPercent(): number {
-    return Math.round((this.answeredCount() / this.questions.length) * 100);
+    const total = this.questions().length;
+    if (!total) return 0;
+    return Math.round((this.answeredCount() / total) * 100);
   }
 
   isComplete(): boolean {
-    return this.answeredCount() === this.questions.length;
+    return this.answeredCount() === this.questions().length;
   }
 
   reset(): void {
@@ -193,7 +133,7 @@ export class QuestionnaireGuideComponent {
   askAi(): void {
     if (this.askLoading()) return;
     if (!this.isComplete()) {
-      this.messageService.showWarn('Merci de repondre a toutes les questions.');
+      this.messageService.showWarn(this.i18n.get('questionnaire.completeWarning'));
       return;
     }
 
@@ -202,11 +142,11 @@ export class QuestionnaireGuideComponent {
 
     this.aiService.askClient(question).subscribe({
       next: (response) => {
-        const text = response?.response?.trim() || 'Aucune reponse disponible.';
+        const text = response?.response?.trim() || this.i18n.get('questionnaire.noResponse');
         this.aiResponse.set(text);
       },
       error: () => {
-        this.messageService.showError("Impossible d'obtenir une reponse IA.");
+        this.messageService.showError(this.i18n.get('questionnaire.aiError'));
         this.askLoading.set(false);
       },
       complete: () => this.askLoading.set(false),
@@ -214,25 +154,26 @@ export class QuestionnaireGuideComponent {
   }
 
   private buildPrompt(): string {
+    const t = this.i18n.t().questionnaire;
     const answers = this.answers();
     const lines = [
-      'Tu es un conseiller velo pour entreprise.',
-      'Analyse le profil ci-dessous et recommande 3 velos maximum.',
-      'Reponds en francais et reste concis.',
+      t.promptRole,
+      t.promptTask,
+      t.promptLanguage,
       '',
-      'Profil:',
-      `Organisation: ${this.organisationName || 'non precisee'}`,
-      `Usage: ${answers.usage}`,
-      `Distance: ${answers.distance}`,
-      `Terrain: ${answers.terrain}`,
-      `Assistance: ${answers.assistance}`,
-      `Budget: ${answers.budget}`,
-      `Charge: ${answers.cargo}`,
+      t.promptProfile,
+      `${t.promptOrganisation}: ${this.organisationName || t.promptNotSpecified}`,
+      `${t.promptUsage}: ${answers.usage}`,
+      `${t.promptDistance}: ${answers.distance}`,
+      `${t.promptTerrain}: ${answers.terrain}`,
+      `${t.promptAssistance}: ${answers.assistance}`,
+      `${t.promptBudget}: ${answers.budget}`,
+      `${t.promptCargo}: ${answers.cargo}`,
     ];
 
     const note = this.notes.trim();
     if (note) {
-      lines.push(`Notes: ${note}`);
+      lines.push(`${t.promptNotes}: ${note}`);
     }
 
     return lines.join('\n');

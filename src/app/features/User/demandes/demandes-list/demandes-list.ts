@@ -1,6 +1,7 @@
 import { AdminDemandeListItem, DemandeService, DemandeStatus } from '../../../../core/services/demande.service';
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -33,6 +34,7 @@ export class DemandesUtilisateurComponent {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   private readonly currentUser: User | null = this.authService.getCurrentUser();
 
@@ -51,7 +53,10 @@ export class DemandesUtilisateurComponent {
     this.loading.set(true);
     this.demandeService.getList({ userId }).subscribe({
       next: (data) => { this.demandes.set(data ?? []); this.loadUnreadDiscussions(); this.loading.set(false); },
-      error: () => { this.messageService.showError('Impossible de charger les demandes'); this.loading.set(false); },
+      error: () => {
+        this.messageService.showError(this.i18n.get('demandes.loadDemandeError'));
+        this.loading.set(false);
+      },
     });
   }
 
@@ -69,14 +74,14 @@ export class DemandesUtilisateurComponent {
 
   onDelete(d: AdminDemandeListItem): void {
     this.confirmationService.confirm({
-      message: 'Êtes-vous sûr de vouloir supprimer cette demande ? ?',
-      header: 'Confirmation',
+      message: this.i18n.get('demandes.deleteConfirm'),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () => this.demandeService.delete(d.id!).subscribe({
-        next: () => { this.messageService.showSuccess('Demande supprim?e', 'Succ?s'); this.load(); },
-        error: () => this.messageService.showError('Impossible de supprimer la demande'),
+        next: () => { this.messageService.showSuccess(this.i18n.get('demandes.deleteSuccess')); this.load(); },
+        error: () => this.messageService.showError(this.i18n.get('demandes.deleteError')),
       }),
     });
   }
