@@ -1,11 +1,8 @@
 import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Component, computed, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
-import { ConfirmationService } from 'primeng/api';
-import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -26,11 +23,8 @@ import { finalize } from 'rxjs';
     ButtonModule,
     TableModule,
     TagModule,
-    TooltipModule,
-    ConfirmDialogModule,
     SelectModule,
     InputTextModule],
-  providers: [ConfirmationService],
   templateUrl: './compagnies-list.html',
   styleUrls: ['./compagnies-list.scss'],
 })
@@ -41,7 +35,6 @@ export class AdminCompagniesComponent {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
 
   private readonly organisationService = inject(OrganisationService);
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
   readonly i18n = inject(I18nService);
@@ -95,29 +88,5 @@ export class AdminCompagniesComponent {
   }
   onView(org: Organisation): void {
     this.router.navigate(['/admin/compagnies', org.id]);
-  }
-  onEdit(org: Organisation): void {
-    this.router.navigate(['/admin/compagnies', org.id, 'edit']);
-  }
-
-  onDelete(org: Organisation): void {
-    this.confirmationService.confirm({
-      message: this.i18n.format('compagnies.deleteConfirm', { name: org.name }),
-      header: this.i18n.get('common.confirmer'),
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: this.i18n.get('common.oui'),
-      rejectLabel: this.i18n.get('common.non'),
-      accept: () =>
-        this.organisationService.delete(org.id).subscribe({
-          next: () => {
-            this.messageService.showSuccess(
-              this.i18n.get('compagnies.deleteSuccess'),
-              this.i18n.get('common.succes'),
-            );
-            this.load();
-          },
-          error: () => this.messageService.showError(this.i18n.get('compagnies.deleteError')),
-        }),
-    });
   }
 }

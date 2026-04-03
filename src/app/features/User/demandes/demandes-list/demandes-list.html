@@ -25,12 +25,11 @@
               <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
               <th>{{ i18n.t().demandes.velo }}</th>
               <th>{{ i18n.t().demandes.statut }}</th>
-              <th style="width: 150px">{{ i18n.t().common.actions }}</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-demande>
-            <tr>
+            <tr class="clickable-row" (click)="onView(demande)">
               <td>{{ demande.id }}</td>
               <td>{{ (demande.veloMarque + ' ' + demande.veloModele).trim() || ('#' + demande.idVelo) }}</td>
               <td>
@@ -41,19 +40,12 @@
                   }
                 </div>
               </td>
-              <td>
-                <div class="flex gap-2">
-                  <p-button icon="pi pi-eye"    class="p-button-rounded p-button-text"                 (click)="onView(demande)"   [pTooltip]="i18n.t().common.voir"></p-button>
-                  <p-button icon="pi pi-pencil" class="p-button-rounded p-button-text"                 (click)="onEdit(demande)"   [pTooltip]="i18n.t().common.modifier"></p-button>
-                  <p-button icon="pi pi-trash"  class="p-button-rounded p-button-text p-button-danger" (click)="onDelete(demande)" [pTooltip]="i18n.t().common.supprimer"></p-button>
-                </div>
-              </td>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4" class="text-center py-5">
+              <td colspan="3" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
                 <p class="mt-3 text-600">{{ i18n.t().demandes.userEmpty }}</p>
               </td>
@@ -65,4 +57,3 @@
   </div>
 </div>
 
-<p-confirmDialog></p-confirmDialog>

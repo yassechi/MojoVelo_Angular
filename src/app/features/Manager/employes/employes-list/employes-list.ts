@@ -2,10 +2,7 @@ import { User, UserRole, UserService } from '../../../../core/services/user.serv
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Component, inject, signal } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
-import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -16,8 +13,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-manager-employes',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, TooltipModule, ConfirmDialogModule],
-  providers: [ConfirmationService],
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule],
   templateUrl: './employes-list.html',
   styleUrls: ['./employes-list.scss'],
 })
@@ -27,7 +23,6 @@ export class ManagerEmployesComponent {
 
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
   readonly i18n = inject(I18nService);
@@ -51,22 +46,6 @@ export class ManagerEmployesComponent {
 
   onCreate(): void { this.router.navigate(['/manager/employes/new']); }
   onView(u: User): void { this.router.navigate(['/manager/employes', u.id]); }
-  onEdit(u: User): void { this.router.navigate(['/manager/employes', u.id, 'edit']); }
-
-  onDelete(u: User): void {
-    const name = `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.userName;
-    this.confirmationService.confirm({
-      message: this.i18n.format('employes.deleteConfirmName', { name }),
-      header: this.i18n.get('common.confirmer'),
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: this.i18n.get('common.oui'),
-      rejectLabel: this.i18n.get('common.non'),
-      accept: () => this.userService.delete(u.id!).subscribe({
-        next: () => { this.messageService.showSuccess(this.i18n.get('employes.deleteSuccess'), this.i18n.get('common.succes')); this.load(); },
-        error: () => this.messageService.showError(this.i18n.get('employes.deleteError')),
-      }),
-    });
-  }
 
   getRoleLabel(role: UserRole): string {
     return role === UserRole.Admin

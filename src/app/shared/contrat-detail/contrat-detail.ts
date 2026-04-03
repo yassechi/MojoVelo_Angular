@@ -21,6 +21,8 @@ import { I18nService } from '../../core/services/I18n.service';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -34,10 +36,12 @@ import { User } from '../../core/models/user.model';
     CardModule,
     ButtonModule,
     TagModule,
+    ConfirmDialogModule,
     TooltipModule,
     RouterLink,
     RouterLinkActive,
     RouterOutlet],
+  providers: [ConfirmationService],
   templateUrl: './contrat-detail.html',
   styleUrls: ['./contrat-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,6 +51,7 @@ export class ContratDetailComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly contratService = inject(ContratService);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   readonly i18n = inject(I18nService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sub = new Subscription();
@@ -128,6 +133,30 @@ export class ContratDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });
+  }
+
+  onDelete(): void {
+    const id = this.contratId;
+    if (!id) return;
+    const ref = this.contrat?.ref || String(id);
+    this.confirmationService.confirm({
+      message: this.i18n.format('contrats.deleteConfirm', { ref }),
+      header: this.i18n.get('common.confirmer'),
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
+      accept: () =>
+        this.contratService.delete(id).subscribe({
+          next: () => {
+            this.messageService.showSuccess(
+              this.i18n.get('contrats.deleteSuccess'),
+              this.i18n.get('common.succes'),
+            );
+            this.goBack();
+          },
+          error: () => this.messageService.showError(this.i18n.get('contrats.deleteError')),
+        }),
+    });
   }
   getStatutLabel(statut: StatutContrat): string {
     return this.contratService.getStatutLabel(statut);

@@ -61,12 +61,11 @@
               <th>{{ i18n.t().compagnies.emailAutorise }}</th>
               <th>{{ i18n.t().compagnies.contact }}</th>
               <th>{{ i18n.t().compagnies.statut }}</th>
-              <th style="width: 150px">{{ i18n.t().compagnies.actions }}</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-org>
-            <tr>
+            <tr class="clickable-row" (click)="onView(org)">
               <td>
                 @if (org.logoUrl) {
                   <img
@@ -91,34 +90,12 @@
                   [severity]="org.isActif ? 'success' : 'danger'"
                 ></p-tag>
               </td>
-              <td>
-                <div class="flex gap-2">
-                  <p-button
-                    icon="pi pi-eye"
-                    class="p-button-rounded p-button-text"
-                    (click)="onView(org)"
-                    [pTooltip]="i18n.t().common.voir"
-                  ></p-button>
-                  <p-button
-                    icon="pi pi-pencil"
-                    class="p-button-rounded p-button-text"
-                    (click)="onEdit(org)"
-                    [pTooltip]="i18n.t().common.modifier"
-                  ></p-button>
-                  <p-button
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-text p-button-danger"
-                    (click)="onDelete(org)"
-                    [pTooltip]="i18n.t().common.supprimer"
-                  ></p-button>
-                </div>
-              </td>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="7" class="text-center py-5">
+              <td colspan="6" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
                 <p class="mt-3 text-600">{{ i18n.t().compagnies.aucune }}</p>
               </td>
@@ -129,5 +106,3 @@
     </div>
   </div>
 </div>
-
-<p-confirmDialog></p-confirmDialog>

@@ -63,7 +63,7 @@
           </ng-template>
 
           <ng-template pTemplate="body" let-contrat>
-            <tr>
+            <tr class="clickable-row" (click)="onViewDetail(contrat)">
               <td>{{ contrat.ref }}</td>
               <td>{{ contrat.beneficiaireId }}</td>
               <td>{{ contrat.userRhId }}</td>
@@ -75,8 +75,12 @@
               <td>{{ getStatutLabel(contrat.statutContrat) }}</td>
               <td>
                 <div class="flex gap-2">
-                  <p-button [label]="i18n.t().common.voir"     icon="pi pi-eye"   class="p-button-text"                 (click)="onViewDetail(contrat)"></p-button>
-                  <p-button [label]="i18n.t().contrats.resilier" icon="pi pi-times" class="p-button-text p-button-danger" (click)="onTerminate(contrat)"></p-button>
+                  <p-button
+                    [label]="i18n.t().contrats.resilier"
+                    icon="pi pi-times"
+                    class="p-button-text p-button-danger"
+                    (click)="$event.stopPropagation(); onTerminate(contrat)"
+                  ></p-button>
                 </div>
               </td>
             </tr>

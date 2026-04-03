@@ -4,9 +4,7 @@ import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { User } from '../../../../core/models/user.model';
-import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -18,8 +16,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-user-demandes',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, TooltipModule, ConfirmDialogModule],
-  providers: [ConfirmationService],
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, TooltipModule],
   templateUrl: './demandes-list.html',
   styleUrls: ['./demandes-list.scss'],
 })
@@ -31,7 +28,6 @@ export class DemandesUtilisateurComponent {
   private readonly demandeService = inject(DemandeService);
   private readonly authService = inject(AuthService);
   private readonly messageApiService = inject(MessageApiService);
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
   readonly i18n = inject(I18nService);
@@ -70,21 +66,6 @@ export class DemandesUtilisateurComponent {
 
   onCreate(): void { this.router.navigate(['/user/demandes/new']); }
   onView(d: AdminDemandeListItem): void { this.router.navigate(['/user/demandes', d.id]); }
-  onEdit(d: AdminDemandeListItem): void { this.router.navigate(['/user/demandes', d.id, 'edit']); }
-
-  onDelete(d: AdminDemandeListItem): void {
-    this.confirmationService.confirm({
-      message: this.i18n.get('demandes.deleteConfirm'),
-      header: this.i18n.get('common.confirmer'),
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: this.i18n.get('common.oui'),
-      rejectLabel: this.i18n.get('common.non'),
-      accept: () => this.demandeService.delete(d.id!).subscribe({
-        next: () => { this.messageService.showSuccess(this.i18n.get('demandes.deleteSuccess')); this.load(); },
-        error: () => this.messageService.showError(this.i18n.get('demandes.deleteError')),
-      }),
-    });
-  }
 
   hasUnreadMessages(d: AdminDemandeListItem): boolean { return !!d.discussionId && this.unreadDiscussionIds().has(d.discussionId); }
   getStatusLabel(s: DemandeStatus): string { return this.demandeService.getStatusLabel(s); }

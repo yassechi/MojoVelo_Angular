@@ -73,12 +73,11 @@
               <th>{{ i18n.t().demandes.type }}</th>
               <th>{{ i18n.t().demandes.prixTvac }}</th>
               <th>{{ i18n.t().demandes.statut }}</th>
-              <th style="width: 120px">{{ i18n.t().common.actions }}</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-demande>
-            <tr>
+            <tr class="clickable-row" (click)="onView(demande)">
               <td>
                 <div class="font-semibold">{{ demande.userName }}</div>
                 <div class="text-600 text-sm">{{ demande.idUser }}</div>
@@ -103,23 +102,12 @@
                   ></span>
                 </div>
               </td>
-              <td>
-                <div class="flex gap-2">
-                  <p-button
-                    [label]="i18n.t().common.voir"
-                    icon="pi pi-eye"
-                    class="p-button-text"
-                    (click)="onView(demande)"
-                  ></p-button>
-
-                </div>
-              </td>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="6" class="text-center py-5">
+              <td colspan="5" class="text-center py-5">
                 <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
                 <p class="mt-3 text-600">{{ i18n.t().demandes.aucune }}</p>
               </td>
@@ -130,13 +118,6 @@
     </div>
   </div>
 </div>
-
-<!-- Dialog de confirmation de suppression -->
-<p-confirmDialog></p-confirmDialog>
-
-
-
-
 
 
 

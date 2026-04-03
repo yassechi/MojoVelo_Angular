@@ -4,9 +4,10 @@
       <h1 class="page-title">{{ i18n.t().employes.detailTitle }}</h1>
       <p class="page-subtitle">{{ i18n.t().employes.detailSubtitle }}</p>
     </div>
-    <div class="flex gap-2">
-      <p-button [label]="i18n.t().common.retour"   icon="pi pi-arrow-left" class="p-button-text" (click)="goBack()"></p-button>
-      <p-button [label]="i18n.t().common.modifier" icon="pi pi-pencil"     (click)="goEdit()" [disabled]="!userId()"></p-button>
+    <div class="flex gap-2 detail-action-group">
+      <p-button [label]="i18n.t().common.retour"   icon="pi pi-arrow-left" class="btn-action btn-action-1" (click)="goBack()"></p-button>
+      <p-button [label]="i18n.t().common.modifier" icon="pi pi-pencil"     class="btn-action btn-action-2" (click)="goEdit()" [disabled]="!userId()"></p-button>
+      <p-button [label]="i18n.t().common.supprimer" icon="pi pi-trash"     class="btn-action btn-action-3" (click)="onDelete()" [disabled]="!userId()"></p-button>
     </div>
   </div>
 
@@ -72,3 +73,5 @@
     </p-card>
   }
 </div>
+
+<p-confirmDialog></p-confirmDialog>

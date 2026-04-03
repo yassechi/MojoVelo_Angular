@@ -12,6 +12,8 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { UserRole } from '../../../../core/models/user.model';
@@ -23,8 +25,10 @@ import { UserRole } from '../../../../core/models/user.model';
     CommonModule,
     CardModule,
     ButtonModule,
+    ConfirmDialogModule,
     TagModule,
     DemandeDiscussionComponent],
+  providers: [ConfirmationService],
   templateUrl: './demande-detail.html',
   styleUrls: ['./demande-detail.scss'],
 })
@@ -39,6 +43,7 @@ export class DemandeDetailComponent {
   private readonly veloCatalogService = inject(VeloCatalogService);
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly i18n = inject(I18nService);
@@ -109,6 +114,29 @@ export class DemandeDetailComponent {
         );
       },
       error: () => this.messageService.showError(this.i18n.get('demandes.statusUpdateError')),
+    });
+  }
+
+  onDelete(): void {
+    const id = this.demandeId();
+    if (!id) return;
+    this.confirmationService.confirm({
+      message: this.i18n.get('demandes.deleteConfirm'),
+      header: this.i18n.get('common.confirmer'),
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
+      accept: () =>
+        this.demandeService.delete(id).subscribe({
+          next: () => {
+            this.messageService.showSuccess(
+              this.i18n.get('demandes.deleteSuccess'),
+              this.i18n.get('common.succes'),
+            );
+            this.goBack();
+          },
+          error: () => this.messageService.showError(this.i18n.get('demandes.deleteError')),
+        }),
     });
   }
 

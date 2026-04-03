@@ -9,13 +9,10 @@ import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, effect, inject, signal } from '@angular/core';
 import { VeloService } from '../../../../core/services/velo.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { User } from '../../../../core/models/user.model';
 import { InputTextModule } from 'primeng/inputtext';
-import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -31,15 +28,12 @@ import { finalize } from 'rxjs';
     CommonModule,
     FormsModule,
     CardModule,
-    ButtonModule,
     TagModule,
     TableModule,
-    ConfirmDialogModule,
     TooltipModule,
     SelectModule,
     InputTextModule,
   ],
-  providers: [ConfirmationService],
   templateUrl: './demandes-list.html',
   styleUrls: ['./demandes-list.scss'],
 })
@@ -69,7 +63,6 @@ export class AdminDemandesComponent {
 
   private readonly demandeService = inject(DemandeService);
   private readonly veloService = inject(VeloService);
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly authService = inject(AuthService);
   private readonly messageApiService = inject(MessageApiService);
@@ -128,37 +121,6 @@ export class AdminDemandesComponent {
   }
   onView(d: AdminDemandeListItem): void {
     this.router.navigate(['/admin/demandes', d.id]);
-  }
-  onEdit(d: AdminDemandeListItem): void {
-    this.router.navigate(['/admin/demandes', d.id, 'edit']);
-  }
-  onValidate(d: AdminDemandeListItem): void {
-    this.onStatusChange(d, DemandeStatus.Valide);
-  }
-  onReject(d: AdminDemandeListItem): void {
-    this.onStatusChange(d, DemandeStatus.Refuse);
-  }
-
-  onStatusChange(d: AdminDemandeListItem, newStatus: DemandeStatus): void {
-    this.demandeService.updateStatus(d.id!, newStatus).subscribe(() => {
-      d.status = newStatus;
-      this.messageService.showSuccess(this.i18n.get('demandes.statusUpdated'));
-    });
-  }
-
-  onDelete(d: AdminDemandeListItem): void {
-    this.confirmationService.confirm({
-      message: this.i18n.get('demandes.deleteConfirm'),
-      header: this.i18n.get('common.confirmer'),
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: this.i18n.get('common.oui'),
-      rejectLabel: this.i18n.get('common.non'),
-      accept: () =>
-        this.demandeService.delete(d.id!).subscribe(() => {
-          this.messageService.showSuccess(this.i18n.get('demandes.deleteSuccess'));
-          this.load();
-        }),
-    });
   }
 
   hasUnreadMessages(d: AdminDemandeListItem): boolean {
