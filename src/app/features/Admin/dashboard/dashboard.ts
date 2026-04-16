@@ -261,8 +261,6 @@ export class AdminDashboardComponent {
     });
   }
 
-
-
   deleteUploadedAiFile(file: AiPdfInfo): void {
     this.confirmationService.confirm({
       message: this.i18n.format('ai.deleteFileConfirm', { file: file.fileName }),

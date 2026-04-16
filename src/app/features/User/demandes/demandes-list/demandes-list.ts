@@ -1,7 +1,4 @@
-import {
-  AdminDemandeListItem,
-  DemandeService,
-} from '../../../../core/services/demande.service';
+import { AdminDemandeListItem, DemandeService } from '../../../../core/services/demande.service';
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
@@ -22,7 +19,17 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-user-demandes',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, TooltipModule, PageHeaderComponent, EmptyTableComponent, DemandeStatutTagComponent],
+  imports: [
+    CommonModule,
+    CardModule,
+    ButtonModule,
+    TableModule,
+    TagModule,
+    TooltipModule,
+    PageHeaderComponent,
+    EmptyTableComponent,
+    DemandeStatutTagComponent,
+  ],
   templateUrl: './demandes-list.html',
   styleUrls: ['./demandes-list.scss'],
 })

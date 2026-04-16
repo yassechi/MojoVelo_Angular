@@ -7,7 +7,7 @@ import { ChartModule } from 'primeng/chart';
  * Carte réutilisable contenant un graphique Doughnut PrimeNG.
  *
  * @example
- * <app-doughnut-chart-card 
+ * <app-doughnut-chart-card
  *   [title]="i18n.t().dashboard.chartTitle"
  *   [data]="chartData()"
  *   [options]="chartOptions"
@@ -33,11 +33,13 @@ import { ChartModule } from 'primeng/chart';
       ></p-chart>
     </p-card>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class DoughnutChartCardComponent {
   @Input({ required: true }) title!: string;

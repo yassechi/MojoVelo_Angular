@@ -13,13 +13,7 @@ import { DemandeService, DemandeStatus } from '../../core/services/demande.servi
   selector: 'app-demande-statut-tag',
   standalone: true,
   imports: [CommonModule, TagModule],
-  template: `
-    <p-tag 
-      [value]="label" 
-      [severity]="severity" 
-      [ngClass]="cssClass"
-    ></p-tag>
-  `,
+  template: ` <p-tag [value]="label" [severity]="severity" [ngClass]="cssClass"></p-tag> `,
 })
 export class DemandeStatutTagComponent {
   @Input({ required: true }) statut!: DemandeStatus;

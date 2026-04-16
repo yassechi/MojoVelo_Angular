@@ -66,7 +66,7 @@ import { finalize } from 'rxjs';
       </div>
     </p-card>
   `,
-  styleUrls: ['./ai-chat.scss']
+  styleUrls: ['./ai-chat.scss'],
 })
 export class AiChatComponent {
   @Input() type: 'admin' | 'client' = 'admin';
@@ -107,27 +107,24 @@ export class AiChatComponent {
     this.aiQuestion = '';
     this.askLoading.set(true);
 
-    const request$ = this.type === 'client' 
-      ? this.aiService.askClient(q) 
-      : this.aiService.askAdmin(q);
+    const request$ =
+      this.type === 'client' ? this.aiService.askClient(q) : this.aiService.askAdmin(q);
 
-    request$
-      .pipe(finalize(() => this.askLoading.set(false)))
-      .subscribe({
-        next: (res: AiAskResponse) => {
-          this.aiMessages.update((msgs) => [
-            ...msgs,
-            {
-              role: 'assistant',
-              text: res.response || this.i18n.get('ai.noAnswer'),
-              time: new Date().toLocaleTimeString(this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              }),
-            },
-          ]);
-        },
-        error: () => this.messageService.showError(this.i18n.get('ai.askError')),
-      });
+    request$.pipe(finalize(() => this.askLoading.set(false))).subscribe({
+      next: (res: AiAskResponse) => {
+        this.aiMessages.update((msgs) => [
+          ...msgs,
+          {
+            role: 'assistant',
+            text: res.response || this.i18n.get('ai.noAnswer'),
+            time: new Date().toLocaleTimeString(this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE', {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+          },
+        ]);
+      },
+      error: () => this.messageService.showError(this.i18n.get('ai.askError')),
+    });
   }
 }

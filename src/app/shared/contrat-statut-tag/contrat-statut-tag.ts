@@ -13,9 +13,7 @@ import { ContratService, StatutContrat } from '../../core/services/contrat.servi
   selector: 'app-contrat-statut-tag',
   standalone: true,
   imports: [CommonModule, TagModule],
-  template: `
-    <p-tag [value]="label" [severity]="severity"></p-tag>
-  `,
+  template: ` <p-tag [value]="label" [severity]="severity"></p-tag> `,
 })
 export class ContratStatutTagComponent {
   @Input({ required: true }) statut!: StatutContrat;

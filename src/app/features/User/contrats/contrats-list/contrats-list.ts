@@ -21,7 +21,15 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-user-contrats',
   standalone: true,
-  imports: [CommonModule, CardModule, TableModule, TagModule, PageHeaderComponent, EmptyTableComponent, ContratStatutTagComponent],
+  imports: [
+    CommonModule,
+    CardModule,
+    TableModule,
+    TagModule,
+    PageHeaderComponent,
+    EmptyTableComponent,
+    ContratStatutTagComponent,
+  ],
   templateUrl: './contrats-list.html',
   styleUrls: ['./contrats-list.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -15,7 +15,15 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-manager-employes',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, PageHeaderComponent, EmptyTableComponent],
+  imports: [
+    CommonModule,
+    CardModule,
+    ButtonModule,
+    TableModule,
+    TagModule,
+    PageHeaderComponent,
+    EmptyTableComponent,
+  ],
   templateUrl: './employes-list.html',
   styleUrls: ['./employes-list.scss'],
 })
