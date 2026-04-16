@@ -1,7 +1,8 @@
-﻿import { OrganisationService } from '../../../../core/services/organisation.service';
+import { OrganisationService } from '../../../../core/services/organisation.service';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { User, UserService } from '../../../../core/services/user.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileUploadModule } from 'primeng/fileupload';
@@ -23,7 +24,8 @@ import { CardModule } from 'primeng/card';
     InputTextModule,
     CheckboxModule,
     FileUploadModule,
-    SelectModule],
+    SelectModule,
+  ],
   templateUrl: './compagnie-form.html',
   styleUrls: ['./compagnie-form.scss'],
 })
@@ -44,7 +46,8 @@ export class CompagnieFormComponent {
     contactEmail: ['', [Validators.required, Validators.email]],
     emailAutorise: [
       '',
-      [Validators.required, Validators.pattern(/^@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
+      [Validators.required, Validators.pattern(/^@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)],
+    ],
     idContact: ['', Validators.required],
     isActif: [true],
   });
@@ -73,6 +76,7 @@ export class CompagnieFormComponent {
   private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.loadingUsers.set(true);
@@ -105,11 +109,11 @@ export class CompagnieFormComponent {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      this.messageService.showError('Fichier trop volumineux (max 5MB)');
+      this.messageService.showError(this.i18n.get('compagnies.fileTooLarge'));
       return;
     }
     if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type)) {
-      this.messageService.showError('Format non autorisé (jpg, png, gif)');
+      this.messageService.showError(this.i18n.get('compagnies.fileInvalidType'));
       return;
     }
 
@@ -118,7 +122,7 @@ export class CompagnieFormComponent {
         this.pendingLogo = { base64, fileName: file.name, mimeType: file.type };
         this.uploadedLogo.set(dataUrl);
       })
-      .catch(() => this.messageService.showError('Impossible de lire le fichier'));
+      .catch(() => this.messageService.showError(this.i18n.get('compagnies.fileReadError')));
   }
 
   onSubmit(): void {
@@ -152,8 +156,10 @@ export class CompagnieFormComponent {
 
   private finishSave(isEdit: boolean): void {
     this.messageService.showSuccess(
-      isEdit ? 'Compagnie mise à jour' : 'Compagnie créée',
-      'Succès',
+      isEdit
+        ? this.i18n.get('compagnies.updateSuccess')
+        : this.i18n.get('compagnies.createSuccess'),
+      this.i18n.get('common.succes'),
     );
     this.loading.set(false);
     this.goBack();

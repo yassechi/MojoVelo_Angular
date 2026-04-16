@@ -1,8 +1,9 @@
 import { Contrat, ContratService, StatutContrat } from '../../../../core/services/contrat.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { VeloService } from '../../../../core/services/velo.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
@@ -27,7 +28,8 @@ import { finalize } from 'rxjs';
     TooltipModule,
     ConfirmDialogModule,
     SelectModule,
-    InputTextModule],
+    InputTextModule,
+  ],
   providers: [ConfirmationService],
   templateUrl: './contrats-list.html',
   styleUrls: ['./contrats-list.scss'],
@@ -35,35 +37,52 @@ import { finalize } from 'rxjs';
 export class AdminContratsComponent {
   contrats = signal<Contrat[]>([]);
   loading = signal(false);
-  typeOptions = signal<Array<{ label: string; value: string | 'all' }>>([
-    { label: 'Tous', value: 'all' }]);
+  typeOptions = signal<Array<{ label: string; value: string | 'all' }>>([]);
+  private rawTypes = signal<string[]>([]);
 
   typeFilter: string | 'all' = 'all';
   endFilter: 'all' | 'soon' = 'all';
   incidentFilter: 'all' | 'with' = 'all';
   searchTerm = '';
 
-  endOptions = [
-    { label: 'Tous', value: 'all' },
-    { label: '< 3 mois', value: 'soon' }];
-  incidentOptions = [
-    { label: 'Tous', value: 'all' },
-    { label: 'Avec incidents', value: 'with' }];
+  get endOptions() {
+    const t = this.i18n.t();
+    return [
+      { label: t.common.tous, value: 'all' },
+      { label: t.contrats.endSoon, value: 'soon' },
+    ];
+  }
+  get incidentOptions() {
+    const t = this.i18n.t();
+    return [
+      { label: t.common.tous, value: 'all' },
+      { label: t.contrats.avecIncidents, value: 'with' },
+    ];
+  }
 
   private readonly contratService = inject(ContratService);
   private readonly veloService = inject(VeloService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.veloService.getTypes().subscribe({
-      next: (types) =>
-        this.typeOptions.set([
-          { label: 'Tous', value: 'all' },
-          ...types.map((v) => ({ label: v, value: v }))]),
-      error: () => this.messageService.showError('Impossible de charger les types de velo'),
+      next: (types) => this.rawTypes.set(types ?? []),
+      error: () => this.messageService.showError(this.i18n.get('contrats.loadTypesError')),
     });
+    effect(
+      () => {
+        this.i18n.lang();
+        const t = this.i18n.t();
+        this.typeOptions.set([
+          { label: t.common.tous, value: 'all' },
+          ...this.rawTypes().map((v) => ({ label: v, value: v })),
+        ]);
+      },
+      { allowSignalWrites: true },
+    );
     this.load();
   }
 
@@ -79,13 +98,13 @@ export class AdminContratsComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (data) => this.contrats.set(data ?? []),
-        error: () => this.messageService.showError('Impossible de charger les contrats'),
+        error: () => this.messageService.showError(this.i18n.get('contrats.loadError')),
       });
   }
 
   onViewDetail(contrat: Contrat): void {
     if (!contrat.id) {
-      this.messageService.showError('Contrat invalide');
+      this.messageService.showError(this.i18n.get('contrats.invalid'));
       return;
     }
     this.router.navigate(['/admin/contrats', contrat.id]);
@@ -96,15 +115,15 @@ export class AdminContratsComponent {
 
   onTerminate(contrat: Contrat): void {
     if (!contrat.id) {
-      this.messageService.showError('Contrat invalide');
+      this.messageService.showError(this.i18n.get('contrats.invalid'));
       return;
     }
     this.confirmationService.confirm({
-      message: `R?silier le contrat ${contrat.ref} ?`,
-      header: 'Confirmation',
+      message: this.i18n.format('contrats.terminateConfirm', { ref: contrat.ref }),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () =>
         this.contratService.getOne(contrat.id!).subscribe({
           next: (full) =>
@@ -112,12 +131,13 @@ export class AdminContratsComponent {
               .update({ ...full, statutContrat: StatutContrat.Resilie })
               .subscribe({
                 next: () => {
-                  this.messageService.showSuccess('Contrat r?sili?', 'Succ?s');
+                  this.messageService.showSuccess(this.i18n.get('contrats.terminateSuccess'));
                   this.load();
                 },
-                error: () => this.messageService.showError('Impossible de r?silier le contrat'),
+                error: () =>
+                  this.messageService.showError(this.i18n.get('contrats.terminateError')),
               }),
-          error: () => this.messageService.showError('Impossible de charger le contrat'),
+          error: () => this.messageService.showError(this.i18n.get('contrats.loadOneError')),
         }),
     });
   }
@@ -141,7 +161,7 @@ export class AdminContratsComponent {
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
         },
-        error: () => this.messageService.showError("Impossible d'exporter les contrats"),
+        error: () => this.messageService.showError(this.i18n.get('contrats.exportError')),
       });
   }
 
@@ -149,7 +169,8 @@ export class AdminContratsComponent {
     return this.contratService.getStatutLabel(statut);
   }
   formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('fr-FR');
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return new Date(date).toLocaleDateString(locale);
   }
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);

@@ -1,8 +1,9 @@
-import { DemandeService, DemandeStatus } from '../../../../core/services/demande.service';
+﻿import { DemandeService, DemandeStatus } from '../../../../core/services/demande.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { User, UserService } from '../../../../core/services/user.service';
 import { MessageService } from '../../../../core/services/message.service';
-import { Component, inject, signal } from '@angular/core';
+import { I18nService } from '../../../../core/services/I18n.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -14,7 +15,15 @@ import { CardModule } from 'primeng/card';
 @Component({
   selector: 'app-demande-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardModule, ButtonModule, SelectModule, CheckboxModule, InputNumberModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CardModule,
+    ButtonModule,
+    SelectModule,
+    CheckboxModule,
+    InputNumberModule,
+  ],
   templateUrl: './demande-form.html',
   styleUrls: ['./demande-form.scss'],
 })
@@ -23,13 +32,6 @@ export class DemandeFormDialogComponent {
   users = signal<User[]>([]);
   isEdit = false;
   demandeId: number | null = null;
-
-  statusOptions = [
-    { label: 'En cours', value: DemandeStatus.Encours },
-    { label: 'Attente Compagnie', value: DemandeStatus.AttenteComagnie },
-    { label: 'Finalisation', value: DemandeStatus.Finalisation },
-    { label: 'Valid?', value: DemandeStatus.Valide },
-    { label: 'Refus?', value: DemandeStatus.Refuse }];
 
   private readonly fb = inject(FormBuilder);
   form: FormGroup = this.fb.group({
@@ -46,6 +48,15 @@ export class DemandeFormDialogComponent {
   private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
+
+  readonly statusOptions = computed(() => [
+    { label: this.i18n.t().demandeStatus.encours, value: DemandeStatus.Encours },
+    { label: this.i18n.t().demandeStatus.attenteCompagnie, value: DemandeStatus.AttenteComagnie },
+    { label: this.i18n.t().demandeStatus.finalisation, value: DemandeStatus.Finalisation },
+    { label: this.i18n.t().demandeStatus.valide, value: DemandeStatus.Valide },
+    { label: this.i18n.t().demandeStatus.refuse, value: DemandeStatus.Refuse },
+  ]);
 
   constructor() {
     this.userService.getAll().subscribe({ next: (data) => this.users.set(data ?? []) });
@@ -62,7 +73,7 @@ export class DemandeFormDialogComponent {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.showError('Impossible de charger la demande');
+        this.messageService.showError(this.i18n.get('demandes.loadDemandeError'));
         this.loading.set(false);
         this.goBack();
       },
@@ -70,7 +81,10 @@ export class DemandeFormDialogComponent {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.loading.set(true);
     const v = this.form.getRawValue();
@@ -82,15 +96,34 @@ export class DemandeFormDialogComponent {
       ...(this.isEdit && this.demandeId ? { id: this.demandeId } : {}),
     };
 
-    (this.isEdit ? this.demandeService.update(payload) : this.demandeService.create(payload)).subscribe({
+    (this.isEdit
+      ? this.demandeService.update(payload)
+      : this.demandeService.create(payload)
+    ).subscribe({
       next: () => {
-        this.messageService.showSuccess(this.isEdit ? 'Demande modifi?e' : 'Demande cr??e', 'Succ?s');
+        this.messageService.showSuccess(
+          this.isEdit
+            ? this.i18n.get('demandes.demandeUpdated')
+            : this.i18n.get('demandes.demandeCreated'),
+          this.i18n.get('common.succes'),
+        );
         this.loading.set(false);
         this.goBack();
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.messageService.showError(
+          this.isEdit
+            ? this.i18n.get('demandes.updateError')
+            : this.i18n.get('demandes.createError'),
+        );
+        this.loading.set(false);
+      },
     });
   }
 
-  goBack(): void { this.router.navigate([this.router.url.startsWith('/manager/') ? '/manager/demandes' : '/admin/demandes']); }
+  goBack(): void {
+    this.router.navigate([
+      this.router.url.startsWith('/manager/') ? '/manager/demandes' : '/admin/demandes',
+    ]);
+  }
 }

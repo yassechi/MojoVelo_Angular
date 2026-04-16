@@ -2,6 +2,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { ContratService } from '../../core/services/contrat.service';
 import { MessageService } from '../../core/services/message.service';
+import { I18nService } from '../../core/services/I18n.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumber } from 'primeng/inputnumber';
@@ -18,7 +19,17 @@ import { map } from 'rxjs';
 @Component({
   selector: 'app-contrat-entretien',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, TableModule, InputTextModule, TooltipModule, DatePicker, InputNumber],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardModule,
+    ButtonModule,
+    TableModule,
+    InputTextModule,
+    TooltipModule,
+    DatePicker,
+    InputNumber,
+  ],
   templateUrl: './contrat-entretien.html',
   styleUrls: ['./contrat-entretien.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,18 +39,29 @@ export class ContratEntretienComponent {
   private readonly contratService = inject(ContratService);
   private readonly interventionService = inject(InterventionService);
   private readonly messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
-  readonly contratId = toSignal((this.route.parent ?? this.route).paramMap.pipe(map((p) => Number(p.get('id')) || null)), { initialValue: null });
+  readonly contratId = toSignal(
+    (this.route.parent ?? this.route).paramMap.pipe(map((p) => Number(p.get('id')) || null)),
+    { initialValue: null },
+  );
   readonly veloId = signal<number | null>(null);
   readonly interventions = signal<Intervention[]>([]);
   private readonly reloadInterventions = signal(0);
 
   private readonly loadContratEffect = effect((onCleanup) => {
     const id = this.contratId();
-    if (!id) { this.veloId.set(null); this.interventions.set([]); return; }
+    if (!id) {
+      this.veloId.set(null);
+      this.interventions.set([]);
+      return;
+    }
     const sub = this.contratService.getDetail(id).subscribe({
       next: (contrat) => this.veloId.set(contrat.veloId ?? null),
-      error: () => { this.veloId.set(null); this.interventions.set([]); },
+      error: () => {
+        this.veloId.set(null);
+        this.interventions.set([]);
+      },
     });
     onCleanup(() => sub.unsubscribe());
   });
@@ -47,10 +69,16 @@ export class ContratEntretienComponent {
   private readonly loadInterventionsEffect = effect((onCleanup) => {
     const veloId = this.veloId();
     this.reloadInterventions();
-    if (!veloId) { this.interventions.set([]); return; }
+    if (!veloId) {
+      this.interventions.set([]);
+      return;
+    }
     const sub = this.interventionService.getByVelo(veloId).subscribe({
       next: (data) => this.interventions.set(data ?? []),
-      error: (error) => { if (!this.isUnauthorized(error)) this.messageService.showError('Impossible de charger les interventions'); },
+      error: (error) => {
+        if (!this.isUnauthorized(error))
+          this.messageService.showError(this.i18n.get('contrats.loadInterventionsError'));
+      },
     });
     onCleanup(() => sub.unsubscribe());
   });
@@ -66,7 +94,13 @@ export class ContratEntretienComponent {
     this.interventionFormMode = 'create';
     this.editingIntervention = true;
     this.interventionDate = new Date();
-    this.currentIntervention = { typeIntervention: '', description: '', cout: 0, veloId, isActif: true };
+    this.currentIntervention = {
+      typeIntervention: '',
+      description: '',
+      cout: 0,
+      veloId,
+      isActif: true,
+    };
   }
 
   onEditIntervention(intervention: Intervention): void {
@@ -84,8 +118,13 @@ export class ContratEntretienComponent {
 
   onSaveIntervention(): void {
     const veloId = this.veloId();
-    if (!veloId || !this.interventionDate || !this.currentIntervention.typeIntervention || !this.currentIntervention.description) {
-      this.messageService.showWarn('Veuillez remplir tous les champs obligatoires', 'Attention');
+    if (
+      !veloId ||
+      !this.interventionDate ||
+      !this.currentIntervention.typeIntervention ||
+      !this.currentIntervention.description
+    ) {
+      this.messageService.showWarn(this.i18n.get('contrats.fillRequired'));
       return;
     }
 
@@ -99,26 +138,49 @@ export class ContratEntretienComponent {
       isActif: true,
     };
 
-    (this.interventionFormMode === 'create' ? this.interventionService.create(intervention) : this.interventionService.update(intervention)).subscribe({
+    (this.interventionFormMode === 'create'
+      ? this.interventionService.create(intervention)
+      : this.interventionService.update(intervention)
+    ).subscribe({
       next: () => {
-        this.messageService.showSuccess(this.interventionFormMode === 'create' ? 'Intervention cr??e' : 'Intervention modifi?e', 'Succ?s');
+        this.messageService.showSuccess(
+          this.interventionFormMode === 'create'
+            ? this.i18n.get('contrats.interventionCreated')
+            : this.i18n.get('contrats.interventionUpdated'),
+        );
         this.editingIntervention = false;
         this.reloadInterventions.update((value) => value + 1);
       },
-      error: () => this.messageService.showError("Impossible de sauvegarder l'intervention"),
+      error: () => this.messageService.showError(this.i18n.get('contrats.saveInterventionError')),
     });
   }
 
   onDeleteIntervention(intervention: Intervention): void {
-    if (!confirm(`Voulez-vous vraiment supprimer "${intervention.typeIntervention}" ?`)) return;
+    if (
+      !confirm(
+        this.i18n.format('contrats.deleteInterventionConfirm', {
+          type: intervention.typeIntervention,
+        }),
+      )
+    )
+      return;
     this.interventionService.delete(intervention.id).subscribe({
-      next: () => { this.messageService.showSuccess('Intervention supprim?e', 'Succ?s'); this.reloadInterventions.update((value) => value + 1); },
-      error: () => this.messageService.showError("Impossible de supprimer l'intervention"),
+      next: () => {
+        this.messageService.showSuccess(this.i18n.get('contrats.interventionDeleted'));
+        this.reloadInterventions.update((value) => value + 1);
+      },
+      error: () => this.messageService.showError(this.i18n.get('contrats.deleteInterventionError')),
     });
   }
 
-  formatDate(date: string): string { return new Date(date).toLocaleDateString('fr-FR'); }
-  formatCurrency(amount: number): string { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount); }
+  formatDate(date: string): string {
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return new Date(date).toLocaleDateString(locale);
+  }
+  formatCurrency(amount: number): string {
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(amount);
+  }
 
   private isUnauthorized(error: unknown): boolean {
     const err = error as { status?: number; cause?: { status?: number } };

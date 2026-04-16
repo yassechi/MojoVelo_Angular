@@ -81,3 +81,35 @@
 .nav-avatar {
   box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
 }
+
+.lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(15, 118, 110, 0.08);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(15, 118, 110, 0.14);
+  }
+
+  span {
+    color: var(--mojo-ink);
+    transition: color 0.2s;
+
+    &.lang-active {
+      color: var(--mojo-primary);
+    }
+  }
+
+  .lang-sep {
+    color: rgba(15, 23, 42, 0.35);
+  }
+}

@@ -13,6 +13,7 @@ import {
 import { Amortissement, AmortissementService } from '../../core/services/amortissement.service';
 import { MessageService } from '../../core/services/message.service';
 import { ContratService } from '../../core/services/contrat.service';
+import { I18nService } from '../../core/services/I18n.service';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -37,6 +38,7 @@ export class ContratAmortissementComponent implements OnInit, OnDestroy {
   private readonly moisService = inject(MoisAmortissementService);
   private readonly amortissementService = inject(AmortissementService);
   private readonly contratService = inject(ContratService);
+  readonly i18n = inject(I18nService);
   private readonly sub = new Subscription();
 
   contratId: number | null = null;
@@ -66,7 +68,7 @@ export class ContratAmortissementComponent implements OnInit, OnDestroy {
             error: () => {
               this.veloId = null;
               this.amortissement = null;
-              
+
               //forcer Angular à rafraîchir l’écran
               this.cdr.markForCheck();
             },
@@ -111,7 +113,7 @@ export class ContratAmortissementComponent implements OnInit, OnDestroy {
         error: () => {
           this.moisLoading = false;
           this.cdr.markForCheck();
-          this.messageService.showError("Impossible de charger l'amortissement");
+          this.messageService.showError(this.i18n.get('amortissement.loadError'));
         },
       }),
     );
@@ -131,7 +133,7 @@ export class ContratAmortissementComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.cdr.markForCheck();
-          this.messageService.showError("Impossible de charger l'amortissement");
+          this.messageService.showError(this.i18n.get('amortissement.loadError'));
         },
       }),
     );
@@ -152,14 +154,14 @@ export class ContratAmortissementComponent implements OnInit, OnDestroy {
             if (completed === this.moisEditable.length && !hasError) {
               this.saving = false;
               this.cdr.markForCheck();
-              this.messageService.showSuccess('Amortissement enregistr?', 'Succ?s');
+              this.messageService.showSuccess(this.i18n.get('amortissement.saveSuccess'));
             }
           },
           error: () => {
             hasError = true;
             this.saving = false;
             this.cdr.markForCheck();
-            this.messageService.showError("Impossible d'enregistrer l'amortissement");
+            this.messageService.showError(this.i18n.get('amortissement.saveError'));
           },
         }),
       );
@@ -167,6 +169,7 @@ export class ContratAmortissementComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(amount);
   }
 }

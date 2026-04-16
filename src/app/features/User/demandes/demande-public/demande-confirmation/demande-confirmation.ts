@@ -1,4 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
+import { I18nService } from '../../../../../core/services/I18n.service';
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +18,7 @@ export class DemandeConfirmationComponent {
   demandeId: number | null = null;
 
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     const params = inject(ActivatedRoute).snapshot.queryParamMap;
@@ -27,10 +29,20 @@ export class DemandeConfirmationComponent {
     this.demandeId = demande ? Number(demande) : null;
   }
 
-  goToDemandes(): void { this.router.navigate(['/user/demandes']); }
-  goToCatalogue(): void { this.router.navigate(['/catalogue-velos']); }
+  goToDemandes(): void {
+    this.router.navigate(['/user/demandes']);
+  }
+  goToCatalogue(): void {
+    this.router.navigate(['/catalogue-velos']);
+  }
 
   formatCurrency(amount?: number | null): string {
-    return amount == null || Number.isNaN(amount) ? '-' : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount);
+    if (amount == null || Number.isNaN(amount)) return '-';
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'EUR',
+      maximumFractionDigits: 0,
+    }).format(amount);
   }
 }

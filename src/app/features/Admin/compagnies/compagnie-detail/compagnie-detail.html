@@ -1,22 +1,40 @@
 <div class="compagnie-detail-page page-shell">
   <div class="page-header">
     <div>
-      <h1 class="page-title">Details de la compagnie</h1>
-      <p class="page-subtitle">Consultation d'une compagnie</p>
+      <h1 class="page-title">{{ i18n.t().compagnies.detailTitle }}</h1>
+      <p class="page-subtitle">{{ i18n.t().compagnies.detailSubtitle }}</p>
     </div>
-    <div class="flex gap-2">
+    <div class="flex gap-2 detail-action-group">
       <p-button
-        label="Retour"
+        [label]="i18n.t().common.retour"
         icon="pi pi-arrow-left"
-        class="p-button-text"
+        class="btn-action btn-action-1"
         (click)="goBack()"
       ></p-button>
       <p-button
-        label="Modifier"
+        [label]="i18n.t().common.modifier"
         icon="pi pi-pencil"
+        class="btn-action btn-action-2"
         (click)="goEdit()"
         [disabled]="!organisationId"
       ></p-button>
+      @if (organisation()?.isActif) {
+        <p-button
+          [label]="i18n.t().common.supprimer"
+          icon="pi pi-trash"
+          class="btn-action btn-action-3"
+          (click)="onDelete()"
+          [disabled]="!organisationId"
+        ></p-button>
+      } @else {
+        <p-button
+          [label]="i18n.t().compagnies.reactivate"
+          icon="pi pi-refresh"
+          class="btn-action btn-action-3"
+          (click)="onReactivate()"
+          [disabled]="!organisationId"
+        ></p-button>
+      }
     </div>
   </div>
 
@@ -25,13 +43,19 @@
       <div class="grid">
         <div class="col-12 md:col-4">
           <div class="field mb-3">
-            <div class="text-600 text-sm">Logo</div>
+            <div class="text-600 text-sm">{{ i18n.t().compagnies.logo }}</div>
             <div class="mt-2">
               @if (organisation()!.logoUrl) {
                 <img
                   [src]="organisation()!.logoUrl"
-                  alt="Logo"
-                  style="width: 120px; height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 8px"
+                  [alt]="i18n.t().compagnies.logo"
+                  style="
+                    width: 120px;
+                    height: 120px;
+                    object-fit: contain;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                  "
                 />
               } @else {
                 <i class="pi pi-building" style="font-size: 3rem; color: #ccc"></i>
@@ -44,45 +68,47 @@
           <div class="grid">
             <div class="col-12 md:col-6">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Nom</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.nom }}</div>
                 <div class="font-semibold">{{ organisation()!.name }}</div>
               </div>
             </div>
             <div class="col-12 md:col-6">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Code</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.code }}</div>
                 <div class="font-semibold">{{ organisation()!.code }}</div>
               </div>
             </div>
             <div class="col-12">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Adresse</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.address }}</div>
                 <div class="font-semibold">{{ organisation()!.address }}</div>
               </div>
             </div>
             <div class="col-12 md:col-6">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Email de contact</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.contactEmail }}</div>
                 <div class="font-semibold">{{ organisation()?.contactEmail }}</div>
               </div>
             </div>
             <div class="col-12 md:col-6">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Domaine autorisé</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.emailDomain }}</div>
                 <div class="font-semibold">{{ organisation()!.emailAutorise }}</div>
               </div>
             </div>
             <div class="col-12 md:col-6">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Contact (ID)</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.contactId }}</div>
                 <div class="font-semibold">{{ organisation()!.idContact }}</div>
               </div>
             </div>
             <div class="col-12 md:col-6">
               <div class="field mb-3">
-                <div class="text-600 text-sm">Statut</div>
+                <div class="text-600 text-sm">{{ i18n.t().compagnies.statut }}</div>
                 <p-tag
-                  [value]="organisation()!.isActif ? 'Actif' : 'Inactif'"
+                  [value]="
+                    organisation()!.isActif ? i18n.t().common.actif : i18n.t().common.inactif
+                  "
                   [severity]="organisation()!.isActif ? 'success' : 'danger'"
                 ></p-tag>
               </div>
@@ -93,8 +119,9 @@
     </p-card>
   } @else {
     <p-card>
-      <div class="text-600">Chargement...</div>
+      <div class="text-600">{{ i18n.t().common.chargement }}</div>
     </p-card>
   }
 </div>
 
+<p-confirmDialog></p-confirmDialog>

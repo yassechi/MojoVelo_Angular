@@ -1,4 +1,5 @@
 ﻿import { Injectable, inject } from '@angular/core';
+import { I18nService } from './I18n.service';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -99,12 +100,13 @@ export interface DemandeListParams {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DemandeService {
   private apiUrl = `${environment.urls.coreApi}/Demande`;
 
   private readonly http = inject(HttpClient);
+  private readonly i18n = inject(I18nService);
 
   getOne(id: number): Observable<Demande> {
     return this.http.get<Demande>(`${this.apiUrl}/get-one/${id}`);
@@ -116,7 +118,9 @@ export class DemandeService {
 
   getList(params?: DemandeListParams): Observable<AdminDemandeListItem[]> {
     const suffix = this.buildQueryParams(params);
-    return this.http.get<AdminDemandeListItem[]>(`${this.apiUrl}/list${suffix ? `?${suffix}` : ''}`);
+    return this.http.get<AdminDemandeListItem[]>(
+      `${this.apiUrl}/list${suffix ? `?${suffix}` : ''}`,
+    );
   }
 
   create(demande: Demande): Observable<any> {
@@ -125,7 +129,10 @@ export class DemandeService {
 
   createWithVelo(payload: CreateDemandeWithVeloPayload): Observable<CreateDemandeWithVeloResponse> {
     const { velo, ...rest } = payload;
-    return this.http.post<CreateDemandeWithVeloResponse>(`${this.apiUrl}/create-with-bike`, { ...rest, bike: velo });
+    return this.http.post<CreateDemandeWithVeloResponse>(`${this.apiUrl}/create-with-bike`, {
+      ...rest,
+      bike: velo,
+    });
   }
 
   update(demande: Demande): Observable<any> {
@@ -161,25 +168,24 @@ export class DemandeService {
   }
 
   getStatusLabel(status: DemandeStatus): string {
+    const t = this.i18n.t();
     switch (status) {
       case DemandeStatus.Encours:
-        return 'En cours';
+        return t.demandeStatus.encours;
       case DemandeStatus.AttenteComagnie:
-        return 'Attente Compagnie';
+        return t.demandeStatus.attenteCompagnie;
       case DemandeStatus.Finalisation:
-        return 'Finalisation';
+        return t.demandeStatus.finalisation;
       case DemandeStatus.Valide:
-        return 'Valide';
+        return t.demandeStatus.valide;
       case DemandeStatus.Refuse:
-        return 'Refuse';
+        return t.demandeStatus.refuse;
       default:
-        return 'Inconnu';
+        return t.common.inconnu;
     }
   }
 
-  getStatusSeverity(
-    status: DemandeStatus,
-  ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+  getStatusSeverity(status: DemandeStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
       case DemandeStatus.Encours:
         return 'success';

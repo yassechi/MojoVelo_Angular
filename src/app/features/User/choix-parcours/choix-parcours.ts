@@ -1,5 +1,6 @@
 import { OrganisationService } from '../../../core/services/organisation.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -24,12 +25,15 @@ export class ChoixParcoursUtilisateurComponent {
   private readonly params = inject(ActivatedRoute).snapshot.queryParams;
   private readonly organisationService = inject(OrganisationService);
   private readonly authService = inject(AuthService);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.firstName = this.params['firstName'] || '';
     this.lastName = this.params['lastName'] || '';
     this.organisationName = this.params['organisationName'] || '';
-    this.organisationId = this.params['organisationId'] ? Number(this.params['organisationId']) : null;
+    this.organisationId = this.params['organisationId']
+      ? Number(this.params['organisationId'])
+      : null;
     if (this.organisationId) {
       this.organisationService.getActiveLogo(this.organisationId).subscribe({
         next: (logo) => {
@@ -40,8 +44,12 @@ export class ChoixParcoursUtilisateurComponent {
     }
   }
 
-  goToQuestionnaire(): void { this.router.navigate(this.getQuestionnaireRoute(), { queryParams: this.queryParams() }); }
-  goToCatalogue(): void { this.router.navigate(this.getCatalogueRoute(), { queryParams: this.queryParams() }); }
+  goToQuestionnaire(): void {
+    this.router.navigate(this.getQuestionnaireRoute(), { queryParams: this.queryParams() });
+  }
+  goToCatalogue(): void {
+    this.router.navigate(this.getCatalogueRoute(), { queryParams: this.queryParams() });
+  }
 
   private getQuestionnaireRoute(): string[] {
     const role = this.authService.getCurrentUser()?.role ?? null;

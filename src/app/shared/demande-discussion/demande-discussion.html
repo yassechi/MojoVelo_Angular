@@ -1,9 +1,8 @@
 <div class="detail-section">
-  <h3>Discussion</h3>
+  <h3>{{ i18n.t().discussion.title }}</h3>
   <div class="message-card">
-
     @if (messages.length === 0) {
-      <div class="text-600">Aucun message pour cette demande.</div>
+      <div class="text-600">{{ i18n.t().discussion.aucunMessage }}</div>
     } @else {
       <div class="message-list" #messageList>
         @for (message of messages; track message.id) {
@@ -12,7 +11,7 @@
               <div class="message-author">{{ message.roleLabel }}</div>
               <div class="message-content">{{ message.contenu }}</div>
               <div class="message-date">
-                {{ (message.dateEnvoi || message.createdDate) | date: 'dd/MM/yyyy HH:mm' }}
+                {{ message.dateEnvoi || message.createdDate | date: 'dd/MM/yyyy HH:mm' }}
               </div>
             </div>
           </div>
@@ -25,18 +24,17 @@
         pInputTextarea
         rows="3"
         class="w-full"
-        placeholder="Ecrire un message..."
+        [placeholder]="i18n.t().discussion.ecrireMessage"
         [(ngModel)]="messageText"
       ></textarea>
       <div class="flex justify-content-end mt-2">
         <p-button
-          label="Envoyer"
+          [label]="i18n.t().discussion.envoyer"
           icon="pi pi-send"
           (click)="sendMessage()"
           [disabled]="!messageText.trim()"
         ></p-button>
       </div>
     </div>
-
   </div>
 </div>

@@ -1,8 +1,8 @@
-<div class="demande-landing page-shell">
+﻿<div class="demande-landing page-shell">
   <div class="page-header">
     <div>
-      <h1 class="page-title">Faire une demande</h1>
-      <p class="page-subtitle">Demandez une offre vélo adaptée à votre entreprise</p>
+      <h1 class="page-title">{{ i18n.t().publicDemande.title }}</h1>
+      <p class="page-subtitle">{{ i18n.t().publicDemande.subtitle }}</p>
     </div>
   </div>
 
@@ -10,12 +10,12 @@
     <div class="precheck-header">
       <div class="precheck-icon"><i class="pi pi-building"></i></div>
       <div class="precheck-text">
-        <h2 class="precheck-title">Votre société</h2>
-        <p class="precheck-subtitle">Sélectionnez votre entreprise déjà enregistrée.</p>
+        <h2 class="precheck-title">{{ i18n.t().publicDemande.companyTitle }}</h2>
+        <p class="precheck-subtitle">{{ i18n.t().publicDemande.companySubtitle }}</p>
       </div>
     </div>
     <div class="precheck-body">
-      <label class="block mb-2 font-semibold">Société</label>
+      <label class="block mb-2 font-semibold">{{ i18n.t().publicDemande.companyLabel }}</label>
       <p-select
         class="w-full precheck-select"
         [options]="organisationOptions"
@@ -23,7 +23,7 @@
         [filter]="true"
         filterBy="name,code,emailAutorise"
         [showClear]="true"
-        placeholder="Rechercher une société"
+        [placeholder]="i18n.t().publicDemande.companySearchPlaceholder"
         [(ngModel)]="organisation"
       >
         <ng-template pTemplate="item" let-org>
@@ -34,22 +34,24 @@
         </ng-template>
       </p-select>
       <div class="precheck-help">
-        Votre société n'apparaît pas ?
-        <a class="precheck-email" [href]="supportMailto">Envoyer un email</a>
+        {{ i18n.t().publicDemande.companyMissing }}
+        <a class="precheck-email" [href]="supportMailto">{{
+          i18n.t().publicDemande.companyContactEmail
+        }}</a>
       </div>
       @if (loading()) {
-        <div class="text-600 text-sm">Chargement des sociétés...</div>
+        <div class="text-600 text-sm">{{ i18n.t().publicDemande.companyLoading }}</div>
       }
       @if (!loading() && organisationOptions.length === 0) {
         <div class="precheck-warning">
           <i class="pi pi-exclamation-triangle"></i>
-          <span>Aucune société disponible. Contactez-nous par email.</span>
+          <span>{{ i18n.t().publicDemande.companyNone }}</span>
         </div>
       }
       @if (!organisation && !loading() && organisationOptions.length > 0) {
         <div class="precheck-warning">
           <i class="pi pi-exclamation-triangle"></i>
-          <span>Sélectionnez votre société pour continuer.</span>
+          <span>{{ i18n.t().publicDemande.companySelectHint }}</span>
         </div>
       }
     </div>
@@ -68,23 +70,27 @@
           </div>
           <div class="company-info">
             <div class="company-name">{{ org.name }}</div>
-            <div class="company-domain"><span>Domaine : {{ org.emailAutorise }}</span></div>
+            <div class="company-domain">
+              <span>{{ i18n.t().publicDemande.domainLabel }} : {{ org.emailAutorise }}</span>
+            </div>
           </div>
         </div>
 
         <div class="hero-content">
-          <h2 class="brand-title hero-title">Leasing Vélo pour le personnel de {{ org.name }}</h2>
-          <p class="hero-subtitle">Durée 36 mois | Entretien et assurance inclus</p>
+          <h2 class="brand-title hero-title">
+            {{ i18n.format('publicDemande.heroTitle', { company: org.name }) }}
+          </h2>
+          <p class="hero-subtitle">{{ i18n.t().publicDemande.heroSubtitle }}</p>
           <div class="hero-actions">
             <p-button
-              label="Demander une offre"
+              [label]="i18n.t().publicDemande.heroAction"
               icon="pi pi-arrow-right"
               (click)="onPrimaryAction()"
               [disabled]="!isAuthenticated && !organisation"
             ></p-button>
           </div>
           @if (loading()) {
-            <p class="hero-loading">Détection de la compagnie...</p>
+            <p class="hero-loading">{{ i18n.t().publicDemande.heroDetecting }}</p>
           }
         </div>
       </div>

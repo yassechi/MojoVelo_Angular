@@ -1,4 +1,4 @@
-import { DemandeService, DemandeStatus } from '../../../core/services/demande.service';
+﻿import { DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 import { ContratService, StatutContrat } from '../../../core/services/contrat.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import {
@@ -8,7 +8,8 @@ import {
   AiUploadSingleResponse,
 } from '../../../core/services/ai.service';
 import { MessageService } from '../../../core/services/message.service';
-import { Component, inject, signal } from '@angular/core';
+import { I18nService } from '../../../core/services/I18n.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChartModule } from 'primeng/chart';
@@ -38,6 +39,13 @@ import { Observable } from 'rxjs';
 export class AdminDashboardComponent {
   stats = signal({ pendingDemandes: 0, activeContrats: 0, expiringContrats: 0 });
   activityFeed = signal<Array<{ title: string; detail: string; time: string }>>([]);
+  readonly activityFeedView = computed(() => {
+    const feed = this.activityFeed();
+    return feed.map((item) => ({
+      ...item,
+      title: this.localizeActivityTitle(item.title),
+    }));
+  });
   demandeStatusChartData = signal<any>(null);
   contratStatusChartData = signal<any>(null);
   selectedAiFiles = signal<File[]>([]);
@@ -84,6 +92,7 @@ export class AdminDashboardComponent {
   private readonly aiService = inject(AiService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.dashboardService.getAdminDashboard().subscribe((data) => {
@@ -101,10 +110,17 @@ export class AdminDashboardComponent {
       const finalisation = demandes.filter((d) => d.status === DemandeStatus.Finalisation).length;
       const valide = demandes.filter((d) => d.status === DemandeStatus.Valide).length;
       const refuse = demandes.filter((d) => d.status === DemandeStatus.Refuse).length;
+      const t = this.i18n.t();
 
-      // Remplir le chart 
+      // Remplir le chart
       this.demandeStatusChartData.set({
-        labels: ['En cours', 'Attente Compagnie', 'Finalisation', 'Valide', 'Refuse'],
+        labels: [
+          t.demandeStatus.encours,
+          t.demandeStatus.attenteCompagnie,
+          t.demandeStatus.finalisation,
+          t.demandeStatus.valide,
+          t.demandeStatus.refuse,
+        ],
         datasets: [
           {
             data: [enCours, attente, finalisation, valide, refuse],
@@ -149,21 +165,22 @@ export class AdminDashboardComponent {
     const rejected: string[] = [];
 
     files.forEach((file) => {
-      const isPdf =
-        file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
       if (!isPdf) {
-        rejected.push(`${file.name} (format non PDF)`);
+        rejected.push(`${file.name} (${this.i18n.t().ai.fileNotPdfSuffix})`);
         return;
       }
       if (file.size > this.maxFileBytes) {
-        rejected.push(`${file.name} (trop volumineux)`);
+        rejected.push(`${file.name} (${this.i18n.t().ai.fileTooLargeSuffix})`);
         return;
       }
       validFiles.push(file);
     });
 
     if (rejected.length) {
-      this.messageService.showWarn(`Fichiers ignorés: ${rejected.join(' | ')}`);
+      this.messageService.showWarn(
+        this.i18n.format('ai.fileIgnored', { names: rejected.join(' | ') }),
+      );
     }
     this.selectedAiFiles.set(validFiles);
   }
@@ -180,7 +197,7 @@ export class AdminDashboardComponent {
     const files = this.selectedAiFiles();
     if (this.uploadLoading()) return;
     if (!files.length) {
-      this.messageService.showWarn('Sélectionnez au moins un PDF.');
+      this.messageService.showWarn(this.i18n.get('ai.selectAtLeastOnePdf'));
       return;
     }
 
@@ -199,11 +216,17 @@ export class AdminDashboardComponent {
           const uploaded = response?.uploades ?? [];
           const errors = response?.erreurs ?? [];
           if (uploaded.length) {
-            this.messageService.showSuccess(`${uploaded.length} fichier(s) uploadé(s).`);
-            this.lastUploadSummary.set(`Uploadés : ${uploaded.join(', ')}`);
+            this.messageService.showSuccess(
+              this.i18n.format('ai.uploadedCount', { count: uploaded.length }),
+            );
+            this.lastUploadSummary.set(
+              this.i18n.format('ai.uploadedSummary', { files: uploaded.join(', ') }),
+            );
           }
           if (errors.length) {
-            this.messageService.showWarn(`Erreurs: ${errors.join(' | ')}`);
+            this.messageService.showWarn(
+              this.i18n.format('ai.errorsPrefix', { errors: errors.join(' | ') }),
+            );
           }
         }
         this.selectedAiFiles.set([]);
@@ -212,7 +235,7 @@ export class AdminDashboardComponent {
         }
       },
       error: () => {
-        this.messageService.showError("Impossible d'uploader les documents.");
+        this.messageService.showError(this.i18n.get('ai.uploadError'));
         this.uploadLoading.set(false);
       },
       complete: () => this.uploadLoading.set(false),
@@ -224,7 +247,7 @@ export class AdminDashboardComponent {
     this.aiService.getAdminFiles().subscribe({
       next: (files) => this.uploadedAiFiles.set(files ?? []),
       error: () => {
-        this.messageService.showError("Impossible de charger la liste des PDFs.");
+        this.messageService.showError(this.i18n.get('ai.loadPdfListError'));
         this.uploadedListLoading.set(false);
       },
       complete: () => this.uploadedListLoading.set(false),
@@ -248,21 +271,22 @@ export class AdminDashboardComponent {
     const rejected: string[] = [];
 
     files.forEach((file) => {
-      const isPdf =
-        file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
       if (!isPdf) {
-        rejected.push(`${file.name} (format non PDF)`);
+        rejected.push(`${file.name} (${this.i18n.t().ai.fileNotPdfSuffix})`);
         return;
       }
       if (file.size > this.maxFileBytes) {
-        rejected.push(`${file.name} (trop volumineux)`);
+        rejected.push(`${file.name} (${this.i18n.t().ai.fileTooLargeSuffix})`);
         return;
       }
       validFiles.push(file);
     });
 
     if (rejected.length) {
-      this.messageService.showWarn(`Fichiers ignores: ${rejected.join(' | ')}`);
+      this.messageService.showWarn(
+        this.i18n.format('ai.fileIgnored', { names: rejected.join(' | ') }),
+      );
     }
     this.selectedClientAiFiles.set(validFiles);
   }
@@ -279,7 +303,7 @@ export class AdminDashboardComponent {
     const files = this.selectedClientAiFiles();
     if (this.uploadClientLoading()) return;
     if (!files.length) {
-      this.messageService.showWarn('Selectionnez au moins un PDF.');
+      this.messageService.showWarn(this.i18n.get('ai.selectAtLeastOnePdf'));
       return;
     }
 
@@ -298,11 +322,17 @@ export class AdminDashboardComponent {
           const uploaded = response?.uploades ?? [];
           const errors = response?.erreurs ?? [];
           if (uploaded.length) {
-            this.messageService.showSuccess(`${uploaded.length} fichier(s) uploade(s).`);
-            this.lastClientUploadSummary.set(`Uploades : ${uploaded.join(', ')}`);
+            this.messageService.showSuccess(
+              this.i18n.format('ai.uploadedCount', { count: uploaded.length }),
+            );
+            this.lastClientUploadSummary.set(
+              this.i18n.format('ai.uploadedSummary', { files: uploaded.join(', ') }),
+            );
           }
           if (errors.length) {
-            this.messageService.showWarn(`Erreurs: ${errors.join(' | ')}`);
+            this.messageService.showWarn(
+              this.i18n.format('ai.errorsPrefix', { errors: errors.join(' | ') }),
+            );
           }
         }
         this.selectedClientAiFiles.set([]);
@@ -311,7 +341,7 @@ export class AdminDashboardComponent {
         }
       },
       error: () => {
-        this.messageService.showError("Impossible d'uploader les documents.");
+        this.messageService.showError(this.i18n.get('ai.uploadError'));
         this.uploadClientLoading.set(false);
       },
       complete: () => this.uploadClientLoading.set(false),
@@ -323,7 +353,7 @@ export class AdminDashboardComponent {
     this.aiService.getClientFiles().subscribe({
       next: (files) => this.uploadedClientAiFiles.set(files ?? []),
       error: () => {
-        this.messageService.showError("Impossible de charger la liste des PDFs.");
+        this.messageService.showError(this.i18n.get('ai.loadPdfListError'));
         this.uploadedClientListLoading.set(false);
       },
       complete: () => this.uploadedClientListLoading.set(false),
@@ -388,23 +418,24 @@ export class AdminDashboardComponent {
     }
   }
 
-
   deleteUploadedAiFile(file: AiPdfInfo): void {
     this.confirmationService.confirm({
-      message: `Etes-vous sur de vouloir supprimer "${file.fileName}" ?`,
-      header: 'Confirmation',
+      message: this.i18n.format('ai.deleteFileConfirm', { file: file.fileName }),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () => {
         this.uploadedListLoading.set(true);
         this.aiService.deleteAdminFile(file.fileName).subscribe({
           next: (response) => {
-            this.messageService.showSuccess(response?.message ?? 'Fichier supprime.');
+            this.messageService.showSuccess(
+              response?.message ?? this.i18n.get('ai.deleteFileSuccess'),
+            );
             this.loadUploadedAiFiles();
           },
           error: () => {
-            this.messageService.showError("Impossible de supprimer le fichier.");
+            this.messageService.showError(this.i18n.get('ai.deleteFileError'));
             this.uploadedListLoading.set(false);
           },
         });
@@ -414,20 +445,22 @@ export class AdminDashboardComponent {
 
   deleteUploadedClientAiFile(file: AiPdfInfo): void {
     this.confirmationService.confirm({
-      message: `Etes-vous sur de vouloir supprimer "${file.fileName}" ?`,
-      header: 'Confirmation',
+      message: this.i18n.format('ai.deleteFileConfirm', { file: file.fileName }),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () => {
         this.uploadedClientListLoading.set(true);
         this.aiService.deleteClientFile(file.fileName).subscribe({
           next: (response) => {
-            this.messageService.showSuccess(response?.message ?? 'Fichier supprime.');
+            this.messageService.showSuccess(
+              response?.message ?? this.i18n.get('ai.deleteFileSuccess'),
+            );
             this.loadUploadedClientAiFiles();
           },
           error: () => {
-            this.messageService.showError("Impossible de supprimer le fichier.");
+            this.messageService.showError(this.i18n.get('ai.deleteFileError'));
             this.uploadedClientListLoading.set(false);
           },
         });
@@ -445,15 +478,12 @@ export class AdminDashboardComponent {
 
     this.aiService.askAdmin(question).subscribe({
       next: (response) => {
-        const text = response?.response?.trim() || 'JE NE SAIS PAS';
+        const text = response?.response?.trim() || this.i18n.get('ai.noAnswer');
         this.appendAiMessage('assistant', text);
       },
       error: () => {
-        this.appendAiMessage(
-          'assistant',
-          "Une erreur est survenue. Merci de réessayer dans quelques instants.",
-        );
-        this.messageService.showError("Impossible d'obtenir une réponse IA.");
+        this.appendAiMessage('assistant', this.i18n.get('ai.chatError'));
+        this.messageService.showError(this.i18n.get('ai.aiError'));
         this.askLoading.set(false);
       },
       complete: () => this.askLoading.set(false),
@@ -466,7 +496,16 @@ export class AdminDashboardComponent {
   }
 
   private formatTime(date: Date): string {
-    return date.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' });
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  private localizeActivityTitle(title: string): string {
+    if (!title) return title;
+    const idMatch = title.match(/#\s*(\d+)/);
+    if (!idMatch) return title;
+    if (!/(demande|aanvraag)/i.test(title)) return title;
+    return this.i18n.format('dashboard.demandeItemTitle', { id: idMatch[1] });
   }
 
   formatFileSize(bytes: number): string {
@@ -477,6 +516,7 @@ export class AdminDashboardComponent {
   formatDate(isoDate: string): string {
     const date = new Date(isoDate);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
+    return date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 }

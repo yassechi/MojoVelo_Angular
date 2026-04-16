@@ -1,6 +1,10 @@
-import { Organisation, OrganisationService } from '../../../../../core/services/organisation.service';
+import {
+  Organisation,
+  OrganisationService,
+} from '../../../../../core/services/organisation.service';
 import { MessageService } from '../../../../../core/services/message.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { I18nService } from '../../../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -26,6 +30,7 @@ export class FaireDemandeComponent {
   private readonly organisationService = inject(OrganisationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     const user = this.authService.getCurrentUser();
@@ -41,12 +46,14 @@ export class FaireDemandeComponent {
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.showError('Impossible de detecter la compagnie');
+        this.messageService.showError(this.i18n.get('publicDemande.loadError'));
       },
     });
   }
 
-  onPrimaryAction(): void { this.goToCreateLamdaUser(); }
+  onPrimaryAction(): void {
+    this.goToCreateLamdaUser();
+  }
 
   goToCreateLamdaUser(): void {
     const qp: Record<string, string> = {};
@@ -74,12 +81,14 @@ export class FaireDemandeComponent {
   }
 
   get organisationOptions(): Organisation[] {
-    return this.organisations().slice().sort((a, b) => a.name.localeCompare(b.name));
+    return this.organisations()
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   get supportMailto(): string {
-    const subject = encodeURIComponent('Demande ajout de ma societe');
-    const body = encodeURIComponent("Bonjour,\n\nMa societe n'apparait pas dans la liste. Pouvez-vous l'ajouter ?\n\nMerci.");
+    const subject = encodeURIComponent(this.i18n.get('publicDemande.supportSubject'));
+    const body = encodeURIComponent(this.i18n.get('publicDemande.supportBody'));
     return `mailto:${this.supportEmail}?subject=${subject}&body=${body}`;
   }
 }
