@@ -2,6 +2,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { User, UserService } from '../../core/services/user.service';
 import { MessageService } from '../../core/services/message.service';
 import { AuthService } from '../../core/services/auth.service';
+import { I18nService } from '../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -40,6 +41,7 @@ export class ParametresComponent {
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.loadProfile();
@@ -66,12 +68,12 @@ export class ParametresComponent {
     }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.messageService.showSuccess('Informations mises a jour', 'Succes');
+        this.messageService.showSuccess(this.i18n.get('parametres.profileUpdated'));
         this.loadProfile();
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.showError('Impossible de mettre a jour vos informations');
+        this.messageService.showError(this.i18n.get('parametres.profileUpdateError'));
       },
     });
   }
@@ -91,11 +93,11 @@ export class ParametresComponent {
       next: () => {
         this.loading.set(false);
         this.passwordForm.reset();
-        this.messageService.showSuccess('Mot de passe modifie', 'Succes');
+        this.messageService.showSuccess(this.i18n.get('parametres.passwordUpdated'));
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.showError('Impossible de modifier votre mot de passe');
+        this.messageService.showError(this.i18n.get('parametres.passwordUpdateError'));
       },
     });
   }
@@ -109,12 +111,12 @@ export class ParametresComponent {
       next: (data: any) => this.applyUserData(data),
       error: () => {
         if (!storedId) {
-          this.messageService.showError('Impossible de charger vos informations');
+          this.messageService.showError(this.i18n.get('parametres.loadProfileError'));
           return;
         }
         this.userService.getOne(storedId).subscribe({
           next: (data: any) => this.applyUserData(data),
-          error: () => this.messageService.showError('Impossible de charger vos informations'),
+          error: () => this.messageService.showError(this.i18n.get('parametres.loadProfileError')),
         });
       },
     });

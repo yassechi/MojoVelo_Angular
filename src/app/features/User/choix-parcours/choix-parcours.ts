@@ -1,5 +1,6 @@
 import { OrganisationService } from '../../../core/services/organisation.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -24,6 +25,7 @@ export class ChoixParcoursUtilisateurComponent {
   private readonly params = inject(ActivatedRoute).snapshot.queryParams;
   private readonly organisationService = inject(OrganisationService);
   private readonly authService = inject(AuthService);
+  readonly i18n = inject(I18nService);
 
   constructor() {
     this.firstName = this.params['firstName'] || '';

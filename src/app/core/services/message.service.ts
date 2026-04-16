@@ -1,9 +1,11 @@
 import { MessageService as PrimeMessageService, PrimeIcons } from 'primeng/api';
 import { Injectable, inject } from '@angular/core';
+import { I18nService } from './I18n.service';
 
 @Injectable({ providedIn: 'root' })
 export class MessageService {
   private readonly primeMessageService = inject(PrimeMessageService);
+  private readonly i18n = inject(I18nService);
 
   private showMessage(
     severity: 'success' | 'info' | 'warn' | 'error',
@@ -17,7 +19,7 @@ export class MessageService {
     });
   }
 
-  showError(detail: string, summary = 'Erreur'): void {
+  showError(detail: string, summary = this.i18n.get('common.erreur')): void {
     this.primeMessageService.add({
       severity: 'error',
       summary,
@@ -26,15 +28,15 @@ export class MessageService {
     });
   }
 
-  showSuccess(detail: string, summary = 'Succès'): void {
+  showSuccess(detail: string, summary = this.i18n.get('common.succes')): void {
     this.showMessage('success', detail, summary);
   }
 
-  showInfo(detail: string, summary = 'Info'): void {
+  showInfo(detail: string, summary = this.i18n.get('common.info')): void {
     this.showMessage('info', detail, summary);
   }
 
-  showWarn(detail: string, summary = 'Attention'): void {
+  showWarn(detail: string, summary = this.i18n.get('common.attention')): void {
     this.showMessage('warn', detail, summary);
   }
 }

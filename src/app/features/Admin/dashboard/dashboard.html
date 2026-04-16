@@ -1,22 +1,22 @@
 <div class="dashboard-container page-shell">
   <div class="page-header">
     <div>
-      <h1 class="page-title">Dashboard RH</h1>
-      <p class="page-subtitle">Vue d'ensemble des demandes et contrats</p>
+      <h1 class="page-title">{{ i18n.t().dashboard.title }}</h1>
+      <p class="page-subtitle">{{ i18n.t().dashboard.subtitle }}</p>
     </div>
   </div>
 
   <div class="stat-grid">
     <div class="stat-card">
-      <div class="stat-label">Demandes en attente compagnie</div>
+      <div class="stat-label">{{ i18n.t().dashboard.pendingDemandes }}</div>
       <div class="stat-value">{{ stats().pendingDemandes }}</div>
     </div>
     <div class="stat-card stat-card--success">
-      <div class="stat-label">Contrats actifs</div>
+      <div class="stat-label">{{ i18n.t().dashboard.activeContrats }}</div>
       <div class="stat-value">{{ stats().activeContrats }}</div>
     </div>
     <div class="stat-card stat-card--accent">
-      <div class="stat-label">Contrats expirant bientot (30j)</div>
+      <div class="stat-label">{{ i18n.t().dashboard.expiringContrats }}</div>
       <div class="stat-value">{{ stats().expiringContrats }}</div>
     </div>
   </div>
@@ -28,7 +28,7 @@
           <p-card class="chart-card">
             <ng-template pTemplate="header">
               <div class="p-3">
-                <h3 class="m-0 chart-title">Demandes par statut</h3>
+                <h3 class="m-0 chart-title">{{ i18n.t().dashboard.demandesByStatus }}</h3>
               </div>
             </ng-template>
             <p-chart
@@ -43,7 +43,7 @@
           <p-card class="chart-card">
             <ng-template pTemplate="header">
               <div class="p-3">
-                <h3 class="m-0 chart-title">Contrats par statut</h3>
+                <h3 class="m-0 chart-title">{{ i18n.t().dashboard.contratsByStatus }}</h3>
               </div>
             </ng-template>
             <p-chart
@@ -61,14 +61,14 @@
       <p-card class="section-card activity-card">
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0 chart-title">Dernieres demandes</h3>
+            <h3 class="m-0 chart-title">{{ i18n.t().dashboard.recentDemandes }}</h3>
           </div>
         </ng-template>
         <div class="activity-list">
-          @if (activityFeed().length === 0) {
-            <div class="text-600">Aucune activite recente</div>
+          @if (activityFeedView().length === 0) {
+            <div class="text-600">{{ i18n.t().dashboard.noActivity }}</div>
           } @else {
-            @for (item of activityFeed(); track $index) {
+            @for (item of activityFeedView(); track $index) {
               <div class="activity-item">
                 <div>
                   <div class="font-semibold">{{ item.title }}</div>
@@ -90,7 +90,7 @@
         <p-card class="section-card ai-card">
           <ng-template pTemplate="header">
             <div class="p-3">
-              <h3 class="m-0 chart-title">Documents IA - Admin</h3>
+              <h3 class="m-0 chart-title">{{ i18n.t().ai.docsAdminTitle }}</h3>
             </div>
           </ng-template>
           <div class="ai-upload">
@@ -106,7 +106,7 @@
               class="ai-dropzone"
               role="button"
               tabindex="0"
-              aria-label="Choisir un PDF"
+              [attr.aria-label]="i18n.t().ai.choosePdf"
               [class.is-dragover]="isDragOver()"
               (click)="aiFileInput.click()"
               (keydown.enter)="aiFileInput.click()"
@@ -118,14 +118,14 @@
               <div class="ai-dropzone-icon">
                 <i class="pi pi-cloud-upload"></i>
               </div>
-              <div class="ai-dropzone-title">Importer des PDFs admin</div>
-              <div class="ai-dropzone-sub">Glissez-deposez ici ou cliquez</div>
-              <div class="ai-dropzone-meta">PDF uniquement, 10 MB max</div>
+              <div class="ai-dropzone-title">{{ i18n.t().ai.dropTitleAdmin }}</div>
+              <div class="ai-dropzone-sub">{{ i18n.t().ai.dropSub }}</div>
+              <div class="ai-dropzone-meta">{{ i18n.t().ai.dropMeta }}</div>
             </div>
 
             <div class="ai-upload-list">
               @if (selectedAiFiles().length === 0) {
-                <div class="text-600">Aucun fichier selectionne.</div>
+                <div class="text-600">{{ i18n.t().ai.noFileSelected }}</div>
               } @else {
                 @for (file of selectedAiFiles(); track $index) {
                   <div class="ai-file-item">
@@ -150,7 +150,7 @@
             <div class="ai-upload-actions">
               <div class="ai-upload-action">
                 <p-button
-                  label="Uploader"
+                  [label]="i18n.t().ai.upload"
                   icon="pi pi-cloud-upload"
                   (click)="uploadAiFiles()"
                   [loading]="uploadLoading()"
@@ -159,7 +159,7 @@
               </div>
               <div class="ai-upload-action">
                 <p-button
-                  label="Vider"
+                  [label]="i18n.t().ai.clear"
                   icon="pi pi-times"
                   class="p-button-text"
                   (click)="clearAiFiles()"
@@ -168,7 +168,7 @@
               </div>
               <div class="ai-upload-action ai-upload-action--full">
                 <p-button
-                  label="Manage fichiers"
+                  [label]="i18n.t().ai.manageFiles"
                   icon="pi pi-folder-open"
                   class="p-button-outlined"
                   (click)="toggleUploadedFiles()"
@@ -179,12 +179,12 @@
 
             @if (showUploadedFiles()) {
               <div class="ai-uploaded">
-              <div class="ai-uploaded-title">Documents charges</div>
+              <div class="ai-uploaded-title">{{ i18n.t().ai.uploadedDocs }}</div>
               @if (uploadedListLoading()) {
-                <div class="text-600">Chargement...</div>
+                <div class="text-600">{{ i18n.t().common.chargement }}</div>
               } @else {
                 @if (uploadedAiFiles().length === 0) {
-                  <div class="text-600">Aucun document uploade.</div>
+                  <div class="text-600">{{ i18n.t().ai.noUploadedDocs }}</div>
                 } @else {
                   @for (file of uploadedAiFiles(); track file.fileName) {
                     <div class="ai-file-item ai-file-item--uploaded">
@@ -213,7 +213,7 @@
               <div class="text-600 text-sm">{{ lastUploadSummary() }}</div>
             }
 
-            <small class="text-600">PDF uniquement, 10 MB maximum par fichier.</small>
+            <small class="text-600">{{ i18n.t().ai.pdfOnlyHint }}</small>
           </div>
         </p-card>
         </div>
@@ -221,7 +221,7 @@
         <p-card class="section-card ai-card">
           <ng-template pTemplate="header">
             <div class="p-3">
-              <h3 class="m-0 chart-title">Documents IA - Client</h3>
+              <h3 class="m-0 chart-title">{{ i18n.t().ai.docsClientTitle }}</h3>
             </div>
           </ng-template>
           <div class="ai-upload">
@@ -237,7 +237,7 @@
               class="ai-dropzone"
               role="button"
               tabindex="0"
-              aria-label="Choisir un PDF client"
+              [attr.aria-label]="i18n.t().ai.choosePdfClient"
               [class.is-dragover]="isClientDragOver()"
               (click)="aiClientFileInput.click()"
               (keydown.enter)="aiClientFileInput.click()"
@@ -249,14 +249,14 @@
               <div class="ai-dropzone-icon">
                 <i class="pi pi-cloud-upload"></i>
               </div>
-              <div class="ai-dropzone-title">Importer des PDFs client</div>
-              <div class="ai-dropzone-sub">Glissez-deposez ici ou cliquez</div>
-              <div class="ai-dropzone-meta">PDF uniquement, 10 MB max</div>
+              <div class="ai-dropzone-title">{{ i18n.t().ai.dropTitleClient }}</div>
+              <div class="ai-dropzone-sub">{{ i18n.t().ai.dropSub }}</div>
+              <div class="ai-dropzone-meta">{{ i18n.t().ai.dropMeta }}</div>
             </div>
 
             <div class="ai-upload-list">
               @if (selectedClientAiFiles().length === 0) {
-                <div class="text-600">Aucun fichier selectionne.</div>
+                <div class="text-600">{{ i18n.t().ai.noFileSelected }}</div>
               } @else {
                 @for (file of selectedClientAiFiles(); track $index) {
                   <div class="ai-file-item">
@@ -281,7 +281,7 @@
             <div class="ai-upload-actions">
               <div class="ai-upload-action">
                 <p-button
-                  label="Uploader"
+                  [label]="i18n.t().ai.upload"
                   icon="pi pi-cloud-upload"
                   (click)="uploadClientAiFiles()"
                   [loading]="uploadClientLoading()"
@@ -290,7 +290,7 @@
               </div>
               <div class="ai-upload-action">
                 <p-button
-                  label="Vider"
+                  [label]="i18n.t().ai.clear"
                   icon="pi pi-times"
                   class="p-button-text"
                   (click)="clearClientAiFiles()"
@@ -299,7 +299,7 @@
               </div>
               <div class="ai-upload-action ai-upload-action--full">
                 <p-button
-                  label="Manage fichiers"
+                  [label]="i18n.t().ai.manageFiles"
                   icon="pi pi-folder-open"
                   class="p-button-outlined"
                   (click)="toggleUploadedClientFiles()"
@@ -310,12 +310,12 @@
 
             @if (showUploadedClientFiles()) {
               <div class="ai-uploaded">
-              <div class="ai-uploaded-title">Documents charges</div>
+              <div class="ai-uploaded-title">{{ i18n.t().ai.uploadedDocs }}</div>
               @if (uploadedClientListLoading()) {
-                <div class="text-600">Chargement...</div>
+                <div class="text-600">{{ i18n.t().common.chargement }}</div>
               } @else {
                 @if (uploadedClientAiFiles().length === 0) {
-                  <div class="text-600">Aucun document uploade.</div>
+                  <div class="text-600">{{ i18n.t().ai.noUploadedDocs }}</div>
                 } @else {
                   @for (file of uploadedClientAiFiles(); track file.fileName) {
                     <div class="ai-file-item ai-file-item--uploaded">
@@ -344,7 +344,7 @@
               <div class="text-600 text-sm">{{ lastClientUploadSummary() }}</div>
             }
 
-            <small class="text-600">PDF uniquement, 10 MB maximum par fichier.</small>
+            <small class="text-600">{{ i18n.t().ai.pdfOnlyHint }}</small>
           </div>
         </p-card>
         </div>
@@ -355,26 +355,26 @@
       <p-card class="section-card ai-card">
         <ng-template pTemplate="header">
           <div class="p-3">
-            <h3 class="m-0 chart-title">Questions / Réponses IA</h3>
+            <h3 class="m-0 chart-title">{{ i18n.t().ai.questionsTitle }}</h3>
           </div>
         </ng-template>
 
         <div class="ai-chat">
           <div class="ai-messages">
             @if (aiMessages().length === 0) {
-              <div class="text-600">Posez une question pour démarrer.</div>
+              <div class="text-600">{{ i18n.t().ai.askStart }}</div>
             } @else {
               @for (message of aiMessages(); track $index) {
                 <div class="ai-message" [class.user]="message.role === 'user'">
                   <div class="ai-message-meta">
-                    {{ message.role === 'user' ? 'Vous' : 'IA' }} • {{ message.time }}
+                    {{ message.role === 'user' ? i18n.t().ai.you : i18n.t().ai.ia }} • {{ message.time }}
                   </div>
                   <div class="ai-message-text">{{ message.text }}</div>
                 </div>
               }
             }
             @if (askLoading()) {
-              <div class="ai-thinking">IA en cours de réflexion...</div>
+              <div class="ai-thinking">{{ i18n.t().ai.thinking }}</div>
             }
           </div>
 
@@ -383,12 +383,12 @@
               pInputTextarea
               rows="3"
               class="w-full"
-              placeholder="Posez une question sur les documents uploadés..."
+              [placeholder]="i18n.t().ai.askPlaceholder"
               [(ngModel)]="aiQuestion"
             ></textarea>
             <div class="flex justify-content-end mt-2">
               <p-button
-                label="Envoyer"
+                [label]="i18n.t().ai.send"
                 icon="pi pi-send"
                 (click)="askAi()"
                 [loading]="askLoading()"

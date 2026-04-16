@@ -1,10 +1,10 @@
 import { Organisation, OrganisationService } from '../../../../core/services/organisation.service';
 import { MessageService } from '../../../../core/services/message.service';
+import { I18nService } from '../../../../core/services/I18n.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmationService } from 'primeng/api';
-import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -25,7 +25,6 @@ import { finalize } from 'rxjs';
     ButtonModule,
     TableModule,
     TagModule,
-    TooltipModule,
     ConfirmDialogModule,
     SelectModule,
     InputTextModule],
@@ -39,15 +38,17 @@ export class AdminCompagniesComponent {
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
 
-  statusOptions = [
-    { label: 'Tous', value: 'all' },
-    { label: 'Actif', value: 'active' },
-    { label: 'Inactif', value: 'inactive' }];
-
   private readonly organisationService = inject(OrganisationService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  readonly i18n = inject(I18nService);
+
+  readonly statusOptions = computed(() => [
+    { label: this.i18n.t().common.tous, value: 'all' },
+    { label: this.i18n.t().common.actif, value: 'active' },
+    { label: this.i18n.t().common.inactif, value: 'inactive' },
+  ]);
 
   constructor() {
     this.load();
@@ -67,7 +68,7 @@ export class AdminCompagniesComponent {
           this.organisations.set(organisations);
           this.loadLogos(organisations);
         },
-        error: () => this.messageService.showError('Impossible de charger les organisations'),
+        error: () => this.messageService.showError(this.i18n.get('compagnies.loadError')),
       });
   }
 
@@ -93,24 +94,24 @@ export class AdminCompagniesComponent {
   onView(org: Organisation): void {
     this.router.navigate(['/admin/compagnies', org.id]);
   }
-  onEdit(org: Organisation): void {
-    this.router.navigate(['/admin/compagnies', org.id, 'edit']);
-  }
 
-  onDelete(org: Organisation): void {
+  onReactivate(org: Organisation): void {
     this.confirmationService.confirm({
-      message: `êtes-vous sur de vouloir supprimer "${org.name}" ?`,
-      header: 'Confirmation',
+      message: this.i18n.get('compagnies.reactivateConfirm'),
+      header: this.i18n.get('common.confirmer'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Oui',
-      rejectLabel: 'Non',
+      acceptLabel: this.i18n.get('common.oui'),
+      rejectLabel: this.i18n.get('common.non'),
       accept: () =>
-        this.organisationService.delete(org.id).subscribe({
+        this.organisationService.update({ ...org, isActif: true }).subscribe({
           next: () => {
-            this.messageService.showSuccess('Compagnie supprimée', 'Succès');
+            this.messageService.showSuccess(
+              this.i18n.get('compagnies.reactivateSuccess'),
+              this.i18n.get('common.succes'),
+            );
             this.load();
           },
-          error: () => this.messageService.showError('Impossible de supprimer la compagnie'),
+          error: () => this.messageService.showError(this.i18n.get('compagnies.reactivateError')),
         }),
     });
   }

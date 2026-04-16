@@ -3,6 +3,7 @@ import { VeloBrand, VeloCatalogService, VeloItem } from '../../core/services/vel
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from '../../core/services/message.service';
 import { AuthService } from '../../core/services/auth.service';
+import { I18nService } from '../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
@@ -48,6 +49,7 @@ export class DemandeCatalogueComponent {
   private readonly authService = inject(AuthService);
   private readonly veloCatalogService = inject(VeloCatalogService);
   private readonly messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -62,7 +64,11 @@ export class DemandeCatalogueComponent {
       this.loading.set(true);
       this.demandeService.getOne(this.demandeId).subscribe({
         next: (d) => { this.demande = d; this.form.patchValue({ idVelo: d.idVelo }); this.loading.set(false); },
-        error: () => { this.loading.set(false); this.messageService.showError('Impossible de charger la demande'); this.goBack(); },
+        error: () => {
+          this.loading.set(false);
+          this.messageService.showError(this.i18n.get('demandes.loadDemandeError'));
+          this.goBack();
+        },
       });
     }
 
@@ -78,7 +84,10 @@ export class DemandeCatalogueComponent {
         this.currentPage = 1;
         this.trySelectPreselectedVelo();
       },
-      error: () => { this.loadingVelos.set(false); this.messageService.showError('Impossible de charger les velos'); },
+      error: () => {
+        this.loadingVelos.set(false);
+        this.messageService.showError(this.i18n.get('demandes.loadBikesError'));
+      },
     });
   }
 
@@ -121,7 +130,7 @@ export class DemandeCatalogueComponent {
   selectVelo(velo: VeloItem): void {
     if (this.selectedVeloId === velo.id) return;
     this.form.patchValue({ idVelo: velo.id });
-    this.messageService.showInfo(velo.title?.rendered ?? '', 'Velo selectionne');
+    this.messageService.showInfo(velo.title?.rendered ?? '', this.i18n.get('demandes.bikeSelected'));
   }
 
   onFilterChange(): void { this.currentPage = 1; }
@@ -132,8 +141,8 @@ export class DemandeCatalogueComponent {
   onSubmit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const user: User | null = this.authService.getCurrentUser();
-    if (!user?.id) { this.messageService.showError('Utilisateur non authentifie'); return; }
-    if (!this.selectedVelo) { this.messageService.showError('Veuillez selectionner un velo'); return; }
+    if (!user?.id) { this.messageService.showError(this.i18n.get('demandes.userNotAuth')); return; }
+    if (!this.selectedVelo) { this.messageService.showError(this.i18n.get('demandes.selectBike')); return; }
 
     this.loading.set(true);
     const v = this.form.getRawValue();
@@ -148,11 +157,14 @@ export class DemandeCatalogueComponent {
       };
       this.demandeService.update(payload).subscribe({
         next: () => {
-          this.messageService.showSuccess('Demande modifiee', 'Succes');
+          this.messageService.showSuccess(this.i18n.get('demandes.demandeUpdated'));
           this.loading.set(false);
           this.goToUserDemandes(user);
         },
-        error: () => { this.loading.set(false); this.messageService.showError('Impossible de modifier la demande'); },
+        error: () => {
+          this.loading.set(false);
+          this.messageService.showError(this.i18n.get('demandes.updateError'));
+        },
       });
       return;
     }
@@ -164,7 +176,7 @@ export class DemandeCatalogueComponent {
       velo: {
         cmsId: velo.id,
         marque: this.getBrandName(velo.velos_brand?.[0]),
-        modele: velo.title?.rendered ?? 'Modele inconnu',
+        modele: velo.title?.rendered ?? this.i18n.get('demandes.modelUnknown'),
         type: velo.acf?.type ?? null,
         prixAchat: velo.acf?.prix ?? 0,
       },
@@ -172,10 +184,10 @@ export class DemandeCatalogueComponent {
 
     this.demandeService.createWithVelo(payload).pipe(finalize(() => this.loading.set(false))).subscribe({
       next: () => {
-        this.messageService.showSuccess('Demande creee', 'Succes');
+        this.messageService.showSuccess(this.i18n.get('demandes.demandeCreated'));
         this.goToUserDemandes(user);
       },
-      error: (err) => this.messageService.showError(err?.error?.message || 'Impossible de creer la demande'),
+      error: (err) => this.messageService.showError(err?.error?.message || this.i18n.get('demandes.createError')),
     });
   }
 
@@ -183,7 +195,10 @@ export class DemandeCatalogueComponent {
     this.authService.isAuthenticated() ? this.router.navigate(['/user/demandes']) : this.router.navigate(['/catalogue-velos']);
   }
 
-  getBrandName(brandId?: number): string { return brandId ? (this.brandMap.get(brandId)?.name ?? 'Marque inconnue') : 'Marque inconnue'; }
+  getBrandName(brandId?: number): string {
+    const fallback = this.i18n.get('demandes.brandUnknown');
+    return brandId ? (this.brandMap.get(brandId)?.name ?? fallback) : fallback;
+  }
   getVeloImage(velo: VeloItem): string | null { return velo._embedded?.['wp:featuredmedia']?.[0]?.source_url ?? null; }
   formatCurrency(amount?: number): string { return amount == null ? '-' : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount); }
 
@@ -196,7 +211,7 @@ export class DemandeCatalogueComponent {
   private goToUserDemandes(user: User): void {
     this.authService.setCurrentUser(user);
     if (!this.authService.isAuthenticated()) {
-      this.messageService.showError('Veuillez vous connecter pour acceder a vos demandes');
+      this.messageService.showError(this.i18n.get('demandes.loginToAccess'));
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/user/demandes' } });
       return;
     }

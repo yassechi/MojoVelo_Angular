@@ -3,6 +3,7 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angula
 import { UserService, UserRole } from '../../../../../core/services/user.service';
 import { MessageService } from '../../../../../core/services/message.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { I18nService } from '../../../../../core/services/I18n.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { Component, inject } from '@angular/core';
@@ -25,6 +26,7 @@ export class CreateLamdaUserComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   loading = false;
   loadingOrganisations = false;
@@ -60,7 +62,7 @@ export class CreateLamdaUserComponent {
       },
       error: () => {
         this.loadingOrganisations = false;
-        this.messageService.showError('Impossible de charger les organisations');
+        this.messageService.showError(this.i18n.get('auth.loadOrganisationsError'));
       },
     });
   }
@@ -86,11 +88,14 @@ export class CreateLamdaUserComponent {
     }).subscribe({
       next: () => this.authService.login({ email, password }, { redirectToDashboard: false }).subscribe({
         next: (response) => this.ensureUserActive(response.id, values),
-        error: () => { this.loading = false; this.messageService.showError('Compte cree, mais connexion impossible'); },
+        error: () => {
+          this.loading = false;
+          this.messageService.showError(this.i18n.get('auth.accountCreatedButLoginFailed'));
+        },
       }),
       error: (error) => {
         this.loading = false;
-        const message = error?.error?.message || (error instanceof Error && error.message ? error.message : 'Impossible de creer le compte');
+        const message = error?.error?.message || (error instanceof Error && error.message ? error.message : this.i18n.get('auth.registerError'));
         this.messageService.showError(message);
       },
     });
@@ -167,7 +172,7 @@ export class CreateLamdaUserComponent {
           next: () => this.finishRegistration(values),
           error: () => {
             this.loading = false;
-            this.messageService.showError('Compte cree, mais activation impossible. Contactez un administrateur.');
+            this.messageService.showError(this.i18n.get('auth.accountCreatedButActivationFailed'));
           },
         });
       },
@@ -177,7 +182,7 @@ export class CreateLamdaUserComponent {
 
   private finishRegistration(values: any): void {
     this.loading = false;
-    this.messageService.showSuccess('Compte cree et connecte', 'Succes');
+    this.messageService.showSuccess(this.i18n.get('auth.accountCreatedAndLogged'), this.i18n.get('common.succes'));
     const organisation = this.findSelectedOrganisation();
     const queryParams: Record<string, string> = {};
     if (values.firstName) queryParams['firstName'] = String(values.firstName).trim();

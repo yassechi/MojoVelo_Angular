@@ -1,6 +1,7 @@
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from '../../../core/services/message.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { I18nService } from '../../../core/services/I18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
@@ -22,6 +23,7 @@ export class ResetPasswordComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
 
   resetForm: FormGroup = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -37,7 +39,7 @@ export class ResetPasswordComponent {
       this.token = params['token'] || '';
       this.email = params['email'] || '';
       if (!this.token || !this.email) {
-        this.messageService.showError('Lien invalide ou expir?');
+        this.messageService.showError(this.i18n.get('auth.resetLinkInvalid'));
         setTimeout(() => this.router.navigate(['/login']), 2000);
       }
     });
@@ -62,13 +64,13 @@ export class ResetPasswordComponent {
       newPassword: this.resetForm.value.newPassword
     }).subscribe({
       next: () => {
-        this.messageService.showSuccess('Mot de passe r?initialis? avec succ?s !', 'Succ?s');
+        this.messageService.showSuccess(this.i18n.get('auth.resetSuccess'));
         setTimeout(() => this.router.navigate(['/login']), 2000);
         this.loading.set(false);
       },
       error: (error) => {
         this.loading.set(false);
-        this.messageService.showError(error.error?.message || 'Impossible de r?initialiser le mot de passe');
+        this.messageService.showError(error.error?.message || this.i18n.get('auth.resetError'));
       }
     });
   }

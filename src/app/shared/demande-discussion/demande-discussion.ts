@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { DemandeMessage, DemandeService } from '../../core/services/demande.service';
 import { MessageApiService } from '../../core/services/message-api.service';
+import { I18nService } from '../../core/services/I18n.service';
 import { filter, interval, switchMap } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { TextareaModule } from 'primeng/textarea';
@@ -28,6 +29,7 @@ export class DemandeDiscussionComponent implements OnInit {
   private readonly demandeService = inject(DemandeService);
   private readonly authService = inject(AuthService);
   private readonly messageApiService = inject(MessageApiService);
+  readonly i18n = inject(I18nService);
 
   ngOnInit(): void {
     if (this.demandeId)

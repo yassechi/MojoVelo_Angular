@@ -1,5 +1,6 @@
 import { environment } from '../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
+import { I18nService } from './I18n.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -72,6 +73,7 @@ export class ContratService {
   private apiUrl = `${environment.urls.coreApi}/Contrat`;
 
   private readonly http = inject(HttpClient);
+  private readonly i18n = inject(I18nService);
 
   getAll(): Observable<Contrat[]> {
     return this.http.request<Contrat[]>('GET', `${this.apiUrl}/get-all`);
@@ -146,15 +148,16 @@ export class ContratService {
   }
 
   getStatutLabel(statut: StatutContrat): string {
+    const t = this.i18n.t();
     switch (statut) {
       case StatutContrat.EnCours:
-        return 'En cours';
+        return t.contratStatus.enCours;
       case StatutContrat.Termine:
-        return 'Terminé';
+        return t.contratStatus.termine;
       case StatutContrat.Resilie:
-        return 'Résilié';
+        return t.contratStatus.resilie;
       default:
-        return 'Inconnu';
+        return t.common.inconnu;
     }
   }
 }

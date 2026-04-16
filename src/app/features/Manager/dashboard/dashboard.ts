@@ -1,6 +1,7 @@
-import { DashboardService } from '../../../core/services/dashboard.service';
+﻿import { DashboardService } from '../../../core/services/dashboard.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Component, inject, signal } from '@angular/core';
+import { I18nService } from '../../../core/services/I18n.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartModule } from 'primeng/chart';
 import { CardModule } from 'primeng/card';
@@ -17,8 +18,40 @@ export class ManagerDashboardComponent {
   totalDemandes = signal(0);
   totalContrats = signal(0);
   demandesEnCours = signal(0);
-  demandesChartData = signal<any>(null);
-  contratsChartData = signal<any>(null);
+
+  private readonly demandesStats = signal({ enCours: 0, attente: 0, attenteCompagnie: 0, valide: 0 });
+  private readonly contratsStats = signal({ enCours: 0, termine: 0 });
+
+  readonly demandesChartData = computed(() => {
+    const t = this.i18n.t();
+    const stats = this.demandesStats();
+    return {
+      labels: [
+        t.demandeStatus.encours,
+        t.demandeStatus.attente,
+        t.demandeStatus.attenteCompagnie,
+        t.demandeStatus.valide,
+      ],
+      datasets: [{
+        data: [stats.enCours, stats.attente, stats.attenteCompagnie, stats.valide],
+        backgroundColor: ['#0F766E', '#F59E0B', '#F97316', '#84CC16'],
+        hoverBackgroundColor: ['#0B5D56', '#D97706', '#EA580C', '#65A30D'],
+      }],
+    };
+  });
+
+  readonly contratsChartData = computed(() => {
+    const t = this.i18n.t();
+    const stats = this.contratsStats();
+    return {
+      labels: [t.contratStatus.enCours, t.contratStatus.termine],
+      datasets: [{
+        data: [stats.enCours, stats.termine],
+        backgroundColor: ['#0F766E', '#94A3B8'],
+        hoverBackgroundColor: ['#0B5D56', '#64748B'],
+      }],
+    };
+  });
 
   readonly chartOptions = {
     responsive: true,
@@ -42,6 +75,7 @@ export class ManagerDashboardComponent {
 
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
+  readonly i18n = inject(I18nService);
   readonly currentUser = this.authService.getCurrentUser();
 
   constructor() {
@@ -58,22 +92,16 @@ export class ManagerDashboardComponent {
         this.totalContrats.set(data.totalContrats);
         this.demandesEnCours.set(data.demandesEnCours);
 
-        this.demandesChartData.set({
-          labels: ['En cours', 'En attente', 'Attente Compagnie', 'Valid?'],
-          datasets: [{
-            data: [data.demandesEnCours ?? 0, data.demandesAttente ?? 0, data.demandesAttenteCompagnie ?? 0, data.demandesValide ?? 0],
-            backgroundColor: ['#0F766E', '#F59E0B', '#F97316', '#84CC16'],
-            hoverBackgroundColor: ['#0B5D56', '#D97706', '#EA580C', '#65A30D'],
-          }],
+        this.demandesStats.set({
+          enCours: data.demandesEnCours ?? 0,
+          attente: data.demandesAttente ?? 0,
+          attenteCompagnie: data.demandesAttenteCompagnie ?? 0,
+          valide: data.demandesValide ?? 0,
         });
 
-        this.contratsChartData.set({
-          labels: ['En cours', 'Termin?'],
-          datasets: [{
-            data: [data.contratsEnCours ?? 0, data.contratsTermine ?? 0],
-            backgroundColor: ['#0F766E', '#94A3B8'],
-            hoverBackgroundColor: ['#0B5D56', '#64748B'],
-          }],
+        this.contratsStats.set({
+          enCours: data.contratsEnCours ?? 0,
+          termine: data.contratsTermine ?? 0,
         });
       },
     });
