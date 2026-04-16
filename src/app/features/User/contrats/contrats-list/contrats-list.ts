@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Contrat, ContratService, StatutContrat } from '../../../../core/services/contrat.service';
+import { Contrat, ContratService } from '../../../../core/services/contrat.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { I18nService } from '../../../../core/services/I18n.service';

@@ -1,7 +1,6 @@
 import {
   AdminDemandeListItem,
   DemandeService,
-  DemandeStatus,
 } from '../../../../core/services/demande.service';
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';

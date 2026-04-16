@@ -1,16 +1,10 @@
-import {
-  AiPdfInfo,
-  AiUploadMultipleResponse,
-  AiUploadSingleResponse,
-} from '../../core/services/ai.service';
+import { AiPdfInfo } from '../../core/services/ai.service';
 import { MessageService } from '../../core/services/message.service';
 import { I18nService } from '../../core/services/I18n.service';
-import { ConfirmationService } from 'primeng/api';
 import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { Observable } from 'rxjs';
 
 export interface AiUploaderConfig {
   /** Libellé du titre de la section (affiché dans le header de la card) */
