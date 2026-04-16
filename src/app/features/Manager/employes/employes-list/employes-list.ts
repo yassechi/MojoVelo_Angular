@@ -2,6 +2,8 @@ import { User, UserRole, UserService } from '../../../../core/services/user.serv
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PageHeaderComponent } from '../../../../shared/page-header/page-header';
+import { EmptyTableComponent } from '../../../../shared/empty-table/empty-table';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -13,7 +15,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-manager-employes',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule],
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, PageHeaderComponent, EmptyTableComponent],
   templateUrl: './employes-list.html',
   styleUrls: ['./employes-list.scss'],
 })

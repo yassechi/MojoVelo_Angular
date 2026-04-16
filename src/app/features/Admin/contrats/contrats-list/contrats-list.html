@@ -1,9 +1,5 @@
 <div class="contrats-container page-shell">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">{{ i18n.t().contrats.title }}</h1>
-      <p class="page-subtitle">{{ i18n.t().contrats.subtitle }}</p>
-    </div>
+  <app-page-header [title]="i18n.t().contrats.title" [subtitle]="i18n.t().contrats.subtitle">
     <div class="flex gap-2">
       <p-button
         [label]="i18n.t().contrats.create"
@@ -17,7 +13,7 @@
         (click)="exportContrats()"
       ></p-button>
     </div>
-  </div>
+  </app-page-header>
 
   <p-card class="section-card mb-3">
     <div class="grid">
@@ -107,7 +103,7 @@
               <td>{{ formatDate(contrat.dateFin) }}</td>
               <td>{{ contrat.duree }}</td>
               <td>{{ formatCurrency(contrat.loyerMensuelHT) }}</td>
-              <td>{{ getStatutLabel(contrat.statutContrat) }}</td>
+              <td><app-contrat-statut-tag [statut]="contrat.statutContrat" /></td>
               <td>
                 <div class="flex gap-2">
                   <p-button
@@ -122,12 +118,7 @@
           </ng-template>
 
           <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="10" class="text-center py-5">
-                <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc"></i>
-                <p class="mt-3 text-600">{{ i18n.t().contrats.aucun }}</p>
-              </td>
-            </tr>
+            <app-empty-table [message]="i18n.t().contrats.aucun" [colspan]="10" />
           </ng-template>
         </p-table>
       </p-card>

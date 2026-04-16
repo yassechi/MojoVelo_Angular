@@ -6,6 +6,9 @@ import {
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
+import { PageHeaderComponent } from '../../../../shared/page-header/page-header';
+import { EmptyTableComponent } from '../../../../shared/empty-table/empty-table';
+import { DemandeStatutTagComponent } from '../../../../shared/demande-statut-tag/demande-statut-tag';
 import { Component, effect, inject, signal } from '@angular/core';
 import { VeloService } from '../../../../core/services/velo.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -32,6 +35,9 @@ import { finalize } from 'rxjs';
     TooltipModule,
     SelectModule,
     InputTextModule,
+    PageHeaderComponent,
+    EmptyTableComponent,
+    DemandeStatutTagComponent,
   ],
   templateUrl: './demandes-list.html',
   styleUrls: ['./demandes-list.scss'],
@@ -127,14 +133,5 @@ export class AdminDemandesComponent {
 
   hasUnreadMessages(d: AdminDemandeListItem): boolean {
     return d.discussionId != null && this.unreadDiscussionIds().has(d.discussionId);
-  }
-  getStatusLabel(status: DemandeStatus): string {
-    return this.demandeService.getStatusLabel(status);
-  }
-  getStatusClass(status: DemandeStatus): string {
-    return this.demandeService.getStatusClass(status);
-  }
-  getStatusSeverity(status: DemandeStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    return this.demandeService.getStatusSeverity(status);
   }
 }

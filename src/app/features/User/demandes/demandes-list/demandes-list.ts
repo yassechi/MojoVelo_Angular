@@ -6,6 +6,9 @@ import {
 import { MessageApiService } from '../../../../core/services/message-api.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
+import { PageHeaderComponent } from '../../../../shared/page-header/page-header';
+import { EmptyTableComponent } from '../../../../shared/empty-table/empty-table';
+import { DemandeStatutTagComponent } from '../../../../shared/demande-statut-tag/demande-statut-tag';
 import { Component, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../core/models/user.model';
@@ -20,7 +23,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-user-demandes',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, TooltipModule],
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, TagModule, TooltipModule, PageHeaderComponent, EmptyTableComponent, DemandeStatutTagComponent],
   templateUrl: './demandes-list.html',
   styleUrls: ['./demandes-list.scss'],
 })
@@ -87,14 +90,5 @@ export class DemandesUtilisateurComponent {
 
   hasUnreadMessages(d: AdminDemandeListItem): boolean {
     return !!d.discussionId && this.unreadDiscussionIds().has(d.discussionId);
-  }
-  getStatusLabel(s: DemandeStatus): string {
-    return this.demandeService.getStatusLabel(s);
-  }
-  getStatusSeverity(s: DemandeStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' {
-    return this.demandeService.getStatusSeverity(s);
-  }
-  getStatusClass(s: DemandeStatus): string {
-    return this.demandeService.getStatusClass(s);
   }
 }

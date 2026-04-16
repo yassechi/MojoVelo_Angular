@@ -1,6 +1,8 @@
-﻿import { DashboardService } from '../../../core/services/dashboard.service';
+import { DashboardService } from '../../../core/services/dashboard.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { I18nService } from '../../../core/services/I18n.service';
+import { StatCardComponent } from '../../../shared/stat-card/stat-card';
+import { DoughnutChartCardComponent } from '../../../shared/doughnut-chart-card/doughnut-chart-card';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartModule } from 'primeng/chart';
@@ -9,7 +11,7 @@ import { CardModule } from 'primeng/card';
 @Component({
   selector: 'app-manager-dashboard',
   standalone: true,
-  imports: [CommonModule, CardModule, ChartModule],
+  imports: [CommonModule, CardModule, ChartModule, StatCardComponent, DoughnutChartCardComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
 })

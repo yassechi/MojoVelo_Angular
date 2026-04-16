@@ -1,6 +1,8 @@
 import { User, UserRole, UserService } from '../../../../core/services/user.service';
 import { MessageService } from '../../../../core/services/message.service';
 import { I18nService } from '../../../../core/services/I18n.service';
+import { PageHeaderComponent } from '../../../../shared/page-header/page-header';
+import { EmptyTableComponent } from '../../../../shared/empty-table/empty-table';
 import { Component, computed, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { CommonModule } from '@angular/common';
@@ -29,6 +31,8 @@ import { finalize } from 'rxjs';
     PasswordModule,
     SelectModule,
     InputTextModule,
+    PageHeaderComponent,
+    EmptyTableComponent,
   ],
   templateUrl: './employes-list.html',
   styleUrls: ['./employes-list.scss'],

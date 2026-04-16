@@ -2,6 +2,9 @@ import { Contrat, ContratService, StatutContrat } from '../../../../core/service
 import { MessageService } from '../../../../core/services/message.service';
 import { VeloService } from '../../../../core/services/velo.service';
 import { I18nService } from '../../../../core/services/I18n.service';
+import { PageHeaderComponent } from '../../../../shared/page-header/page-header';
+import { EmptyTableComponent } from '../../../../shared/empty-table/empty-table';
+import { ContratStatutTagComponent } from '../../../../shared/contrat-statut-tag/contrat-statut-tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Component, effect, inject, signal } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
@@ -29,6 +32,9 @@ import { finalize } from 'rxjs';
     ConfirmDialogModule,
     SelectModule,
     InputTextModule,
+    PageHeaderComponent,
+    EmptyTableComponent,
+    ContratStatutTagComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './contrats-list.html',
@@ -165,9 +171,6 @@ export class AdminContratsComponent {
       });
   }
 
-  getStatutLabel(statut: StatutContrat): string {
-    return this.contratService.getStatutLabel(statut);
-  }
   formatDate(date: string): string {
     const locale = this.i18n.lang() === 'nl' ? 'nl-BE' : 'fr-BE';
     return new Date(date).toLocaleDateString(locale);

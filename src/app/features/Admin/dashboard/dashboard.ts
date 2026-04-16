@@ -1,4 +1,4 @@
-﻿import { DemandeService, DemandeStatus } from '../../../core/services/demande.service';
+import { DemandeService, DemandeStatus } from '../../../core/services/demande.service';
 import { ContratService, StatutContrat } from '../../../core/services/contrat.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import {
@@ -9,6 +9,10 @@ import {
 } from '../../../core/services/ai.service';
 import { MessageService } from '../../../core/services/message.service';
 import { I18nService } from '../../../core/services/I18n.service';
+import { StatCardComponent } from '../../../shared/stat-card/stat-card';
+import { AiPdfUploaderComponent } from '../../../shared/ai-pdf-uploader/ai-pdf-uploader';
+import { DoughnutChartCardComponent } from '../../../shared/doughnut-chart-card/doughnut-chart-card';
+import { AiChatComponent } from '../../../shared/ai-chat/ai-chat';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,6 +35,10 @@ import { Observable } from 'rxjs';
     ButtonModule,
     ConfirmDialogModule,
     TextareaModule,
+    StatCardComponent,
+    AiPdfUploaderComponent,
+    DoughnutChartCardComponent,
+    AiChatComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './dashboard.html',
@@ -48,23 +56,14 @@ export class AdminDashboardComponent {
   });
   demandeStatusChartData = signal<any>(null);
   contratStatusChartData = signal<any>(null);
-  selectedAiFiles = signal<File[]>([]);
   uploadedAiFiles = signal<AiPdfInfo[]>([]);
-  showUploadedFiles = signal(false);
-  isDragOver = signal(false);
-  selectedClientAiFiles = signal<File[]>([]);
   uploadedClientAiFiles = signal<AiPdfInfo[]>([]);
-  showUploadedClientFiles = signal(false);
-  isClientDragOver = signal(false);
-  aiMessages = signal<Array<{ role: 'user' | 'assistant'; text: string; time: string }>>([]);
   uploadLoading = signal(false);
   uploadedListLoading = signal(false);
   uploadClientLoading = signal(false);
   uploadedClientListLoading = signal(false);
-  askLoading = signal(false);
   lastUploadSummary = signal<string | null>(null);
   lastClientUploadSummary = signal<string | null>(null);
-  aiQuestion = '';
 
   private readonly maxFileBytes = 10 * 1024 * 1024;
 
@@ -148,53 +147,7 @@ export class AdminDashboardComponent {
     });
   }
 
-  onAiFileInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    const files = input?.files ? Array.from(input.files) : [];
-    if (!files.length) return;
-
-    this.processAiFiles(files);
-
-    if (input) {
-      input.value = '';
-    }
-  }
-
-  private processAiFiles(files: File[]): void {
-    const validFiles: File[] = [];
-    const rejected: string[] = [];
-
-    files.forEach((file) => {
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      if (!isPdf) {
-        rejected.push(`${file.name} (${this.i18n.t().ai.fileNotPdfSuffix})`);
-        return;
-      }
-      if (file.size > this.maxFileBytes) {
-        rejected.push(`${file.name} (${this.i18n.t().ai.fileTooLargeSuffix})`);
-        return;
-      }
-      validFiles.push(file);
-    });
-
-    if (rejected.length) {
-      this.messageService.showWarn(
-        this.i18n.format('ai.fileIgnored', { names: rejected.join(' | ') }),
-      );
-    }
-    this.selectedAiFiles.set(validFiles);
-  }
-
-  clearAiFiles(): void {
-    this.selectedAiFiles.set([]);
-  }
-
-  removeSelectedAiFile(index: number): void {
-    this.selectedAiFiles.update((files) => files.filter((_, i) => i !== index));
-  }
-
-  uploadAiFiles(): void {
-    const files = this.selectedAiFiles();
+  uploadAiFiles(files: File[]): void {
     if (this.uploadLoading()) return;
     if (!files.length) {
       this.messageService.showWarn(this.i18n.get('ai.selectAtLeastOnePdf'));
@@ -229,10 +182,7 @@ export class AdminDashboardComponent {
             );
           }
         }
-        this.selectedAiFiles.set([]);
-        if (this.showUploadedFiles()) {
-          this.loadUploadedAiFiles();
-        }
+        this.loadUploadedAiFiles();
       },
       error: () => {
         this.messageService.showError(this.i18n.get('ai.uploadError'));
@@ -254,53 +204,7 @@ export class AdminDashboardComponent {
     });
   }
 
-  onClientAiFileInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    const files = input?.files ? Array.from(input.files) : [];
-    if (!files.length) return;
-
-    this.processClientAiFiles(files);
-
-    if (input) {
-      input.value = '';
-    }
-  }
-
-  private processClientAiFiles(files: File[]): void {
-    const validFiles: File[] = [];
-    const rejected: string[] = [];
-
-    files.forEach((file) => {
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      if (!isPdf) {
-        rejected.push(`${file.name} (${this.i18n.t().ai.fileNotPdfSuffix})`);
-        return;
-      }
-      if (file.size > this.maxFileBytes) {
-        rejected.push(`${file.name} (${this.i18n.t().ai.fileTooLargeSuffix})`);
-        return;
-      }
-      validFiles.push(file);
-    });
-
-    if (rejected.length) {
-      this.messageService.showWarn(
-        this.i18n.format('ai.fileIgnored', { names: rejected.join(' | ') }),
-      );
-    }
-    this.selectedClientAiFiles.set(validFiles);
-  }
-
-  clearClientAiFiles(): void {
-    this.selectedClientAiFiles.set([]);
-  }
-
-  removeSelectedClientAiFile(index: number): void {
-    this.selectedClientAiFiles.update((files) => files.filter((_, i) => i !== index));
-  }
-
-  uploadClientAiFiles(): void {
-    const files = this.selectedClientAiFiles();
+  uploadClientAiFiles(files: File[]): void {
     if (this.uploadClientLoading()) return;
     if (!files.length) {
       this.messageService.showWarn(this.i18n.get('ai.selectAtLeastOnePdf'));
@@ -335,10 +239,7 @@ export class AdminDashboardComponent {
             );
           }
         }
-        this.selectedClientAiFiles.set([]);
-        if (this.showUploadedClientFiles()) {
-          this.loadUploadedClientAiFiles();
-        }
+        this.loadUploadedClientAiFiles();
       },
       error: () => {
         this.messageService.showError(this.i18n.get('ai.uploadError'));
@@ -360,63 +261,7 @@ export class AdminDashboardComponent {
     });
   }
 
-  onAiDragOver(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'copy';
-    }
-    this.isDragOver.set(true);
-  }
 
-  onAiDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragOver.set(false);
-  }
-
-  onAiDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragOver.set(false);
-    const files = event.dataTransfer?.files ? Array.from(event.dataTransfer.files) : [];
-    if (!files.length) return;
-    this.processAiFiles(files);
-  }
-
-  onClientAiDragOver(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'copy';
-    }
-    this.isClientDragOver.set(true);
-  }
-
-  onClientAiDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isClientDragOver.set(false);
-  }
-
-  onClientAiDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isClientDragOver.set(false);
-    const files = event.dataTransfer?.files ? Array.from(event.dataTransfer.files) : [];
-    if (!files.length) return;
-    this.processClientAiFiles(files);
-  }
-
-  toggleUploadedFiles(): void {
-    const next = !this.showUploadedFiles();
-    this.showUploadedFiles.set(next);
-    if (next && this.uploadedAiFiles().length === 0 && !this.uploadedListLoading()) {
-      this.loadUploadedAiFiles();
-    }
-  }
-
-  toggleUploadedClientFiles(): void {
-    const next = !this.showUploadedClientFiles();
-    this.showUploadedClientFiles.set(next);
-    if (next && this.uploadedClientAiFiles().length === 0 && !this.uploadedClientListLoading()) {
-      this.loadUploadedClientAiFiles();
-    }
-  }
 
   deleteUploadedAiFile(file: AiPdfInfo): void {
     this.confirmationService.confirm({
@@ -466,33 +311,6 @@ export class AdminDashboardComponent {
         });
       },
     });
-  }
-
-  askAi(): void {
-    const question = this.aiQuestion.trim();
-    if (!question || this.askLoading()) return;
-
-    this.appendAiMessage('user', question);
-    this.aiQuestion = '';
-    this.askLoading.set(true);
-
-    this.aiService.askAdmin(question).subscribe({
-      next: (response) => {
-        const text = response?.response?.trim() || this.i18n.get('ai.noAnswer');
-        this.appendAiMessage('assistant', text);
-      },
-      error: () => {
-        this.appendAiMessage('assistant', this.i18n.get('ai.chatError'));
-        this.messageService.showError(this.i18n.get('ai.aiError'));
-        this.askLoading.set(false);
-      },
-      complete: () => this.askLoading.set(false),
-    });
-  }
-
-  private appendAiMessage(role: 'user' | 'assistant', text: string): void {
-    const time = this.formatTime(new Date());
-    this.aiMessages.update((items) => [...items, { role, text, time }]);
   }
 
   private formatTime(date: Date): string {
