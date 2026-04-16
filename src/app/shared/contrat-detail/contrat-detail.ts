@@ -26,7 +26,6 @@ import { ConfirmationService } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
-import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-contrat-detail',
@@ -40,7 +39,8 @@ import { User } from '../../core/models/user.model';
     TooltipModule,
     RouterLink,
     RouterLinkActive,
-    RouterOutlet],
+    RouterOutlet,
+  ],
   providers: [ConfirmationService],
   templateUrl: './contrat-detail.html',
   styleUrls: ['./contrat-detail.scss'],
@@ -65,7 +65,7 @@ export class ContratDetailComponent implements OnInit, OnDestroy {
   tabs: Array<{ route: string; label: string; icon: string }> = [];
 
   ngOnInit(): void {
-    this.role.set(this.AuthService.getCurrentUser()?.role!);
+    this.role.set(this.AuthService.getCurrentUser()?.role ?? null);
 
     this.tabs = this.buildTabs();
     this.sub.add(
@@ -96,7 +96,8 @@ export class ContratDetailComponent implements OnInit, OnDestroy {
       { route: 'detail', label: t.contrats.tabDetail, icon: 'pi pi-id-card' },
       { route: 'documents', label: t.contrats.tabDocuments, icon: 'pi pi-file-pdf' },
       { route: 'entretien', label: t.contrats.tabEntretien, icon: 'pi pi-wrench' },
-      { route: 'amortissement', label: t.contrats.tabAmortissement, icon: 'pi pi-chart-line' }];
+      { route: 'amortissement', label: t.contrats.tabAmortissement, icon: 'pi pi-chart-line' },
+    ];
 
     if (this.role() === 1) return tabs;
     if (this.role() === 2) {
